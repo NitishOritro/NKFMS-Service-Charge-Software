@@ -1,0 +1,62 @@
+<!doctype html>
+<html lang="bn">
+<head>
+  <meta charset="utf-8">
+  <meta http-equiv="Content-Security-Policy"
+        content="default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline'; img-src 'self' data:;">
+  <title>সার্ভিস চার্জ ব্যবস্থাপনা</title>
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+  <div class="app">
+    <aside class="sidebar">
+      <div class="brand">
+        <div class="brand-mark">নী</div>
+        <div class="brand-text">
+          <div class="brand-title" id="brandTitle">নীলকণ্ঠ ফ্ল্যাট মালিক সমিতি</div>
+          <div class="brand-sub">সার্ভিস চার্জ ব্যবস্থাপনা</div>
+        </div>
+      </div>
+      <nav class="nav" id="nav">
+        <button class="nav-item active" data-tab="dashboard"><span class="ico">▤</span> ড্যাশবোর্ড</button>
+        <button class="nav-item" data-tab="collection"><span class="ico">✎</span> মাসিক আদায় এন্ট্রি</button>
+        <button class="nav-item" data-tab="dues"><span class="ico">⚠</span> বকেয়া তালিকা</button>
+        <button class="nav-item" data-tab="flats"><span class="ico">⌂</span> ফ্ল্যাট ও মালিক</button>
+        <button class="nav-item" data-tab="report"><span class="ico">🖨</span> রিপোর্ট</button>
+        <button class="nav-item" data-tab="settings"><span class="ico">⚙</span> সেটিংস</button>
+      </nav>
+      <div class="sidebar-foot">
+        <div class="rate-chip">মাসিক হার: <b id="rateChip">—</b></div>
+      </div>
+    </aside>
+
+    <main class="main">
+      <header class="topbar">
+        <div class="topbar-left">
+          <h1 id="pageTitle">ড্যাশবোর্ড</h1>
+          <p id="pageSub" class="page-sub"></p>
+        </div>
+        <div class="topbar-right">
+          <label class="month-picker">
+            <span>কার্যরত মাস</span>
+            <select id="monthSelect"></select>
+          </label>
+        </div>
+      </header>
+
+      <section class="content" id="content"></section>
+    </main>
+  </div>
+
+  <div class="toast" id="toast"></div>
+
+  <div class="modal-backdrop" id="modalBackdrop" hidden>
+    <div class="modal" id="modal"></div>
+  </div>
+
+  <script src="util.js"></script>
+  <script src="calc.js"></script>
+  <script src="report.js"></script>
+  <script src="app.js"></script>
+</body>
+</html>

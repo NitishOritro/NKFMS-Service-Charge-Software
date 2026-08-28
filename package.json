@@ -1,0 +1,17 @@
+{
+  "name": "nkfms-service-charge",
+  "productName": "NKFMS Service Charge",
+  "version": "1.0.0",
+  "description": "নীলকণ্ঠ ফ্ল্যাট মালিক সমিতি - সার্ভিস চার্জ ব্যবস্থাপনা সফটওয়্যার",
+  "main": "main.js",
+  "scripts": {
+    "start": "electron .",
+    "build": "electron-packager . --overwrite --platform=win32 --arch=x64 --out=dist --app-version=1.0.0 --ignore=\"^/dist\" --ignore=\"^/Service Charge_August 26.pdf\""
+  },
+  "author": "ICB Software Dev Team",
+  "license": "UNLICENSED",
+  "devDependencies": {
+    "@electron/packager": "^20.3.0",
+    "electron": "^44.0.0"
+  }
+}
