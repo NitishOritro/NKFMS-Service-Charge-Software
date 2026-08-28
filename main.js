@@ -4,6 +4,7 @@ const { app, BrowserWindow, ipcMain, dialog, shell } = require('electron');
 const path = require('path');
 const fs = require('fs');
 const store = require('./src/store');
+const auth = require('./src/auth');
 
 // নাম স্পষ্ট করে বেঁধে দেওয়া হয়, যাতে সোর্স থেকে চালালে আর তৈরি করা .exe
 // থেকে চালালে — দুই ক্ষেত্রেই একই ডেটা ফোল্ডার ব্যবহৃত হয়।
@@ -117,20 +118,67 @@ app.on('window-all-closed', () => {
   if (process.platform !== 'darwin') app.quit();
 });
 
+/* ---------- লগইন ---------- */
+
+// লগইন না করে যেন ডেটার কোনো হ্যান্ডলার কাজ না করে
+let session = null;
+
+function requireLogin() {
+  if (!session) throw new Error('আগে লগইন করুন।');
+  return session;
+}
+
+ipcMain.handle('auth:login', (_e, { username, password }) => {
+  const data = store.load();
+  const result = auth.verify(data, username, password);
+  if (result.ok) session = result.user;
+  return result;
+});
+
+ipcMain.handle('auth:logout', () => {
+  session = null;
+  return { ok: true };
+});
+
+ipcMain.handle('auth:current', () => session);
+
+ipcMain.handle('auth:change-password', (_e, { currentPassword, newPassword }) => {
+  const user = requireLogin();
+  const data = store.load();
+  const result = auth.changePassword(data, user.username, currentPassword, newPassword);
+  if (result.ok) store.save(data);
+  return result;
+});
+
 /* ---------- ডেটা ---------- */
 
-ipcMain.handle('data:load', () => store.load());
+ipcMain.handle('data:load', () => {
+  requireLogin();
+  // লগইনের তথ্য পর্দায় পাঠানোর দরকার নেই
+  const { users, ...rest } = store.load();
+  return rest;
+});
 
-ipcMain.handle('data:save', (_e, data) => store.save(data));
+ipcMain.handle('data:save', (_e, data) => {
+  requireLogin();
+  // পর্দা থেকে আসা ডেটায় users থাকে না — ফাইলেরটি অক্ষত রাখা হয়
+  const current = store.load();
+  return store.save(Object.assign({}, data, { users: current.users }));
+});
 
-ipcMain.handle('data:paths', () => store.paths());
+ipcMain.handle('data:paths', () => {
+  requireLogin();
+  return store.paths();
+});
 
 ipcMain.handle('data:reveal', () => {
+  requireLogin();
   shell.showItemInFolder(store.paths().dataFile);
   return { ok: true };
 });
 
 ipcMain.handle('data:export', async () => {
+  requireLogin();
   const stamp = new Date().toISOString().slice(0, 10);
   const res = await dialog.showSaveDialog(mainWindow, {
     title: 'ডেটা ব্যাকআপ সংরক্ষণ',
@@ -142,6 +190,7 @@ ipcMain.handle('data:export', async () => {
 });
 
 ipcMain.handle('data:import', async () => {
+  requireLogin();
   const res = await dialog.showOpenDialog(mainWindow, {
     title: 'ব্যাকআপ ফাইল থেকে ডেটা ফেরত আনুন',
     properties: ['openFile'],
@@ -149,7 +198,7 @@ ipcMain.handle('data:import', async () => {
   });
   if (res.canceled || !res.filePaths.length) return { ok: false, canceled: true };
   try {
-    const data = store.importFrom(res.filePaths[0]);
+    const { users, ...data } = store.importFrom(res.filePaths[0]);
     return { ok: true, data };
   } catch (err) {
     return { ok: false, error: err.message };

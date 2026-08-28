@@ -7,6 +7,7 @@
   const api = window.api;
 
   const state = {
+    user: null,
     data: null,
     paths: null,
     month: null,
@@ -796,6 +797,35 @@
       </div>
 
       <div class="card">
+        <div class="card-head">
+          <div>
+            <h2>লগইন ও পাসওয়ার্ড</h2>
+            <p class="hint">বর্তমান ইউজার আইডি: <b>${U.escapeHtml(state.user ? state.user.username : '—')}</b></p>
+          </div>
+        </div>
+        <div class="card-body">
+          <div class="form-grid">
+            <div class="field">
+              <label>বর্তমান পাসওয়ার্ড</label>
+              <input type="password" id="pwCurrent" autocomplete="current-password">
+            </div>
+            <div class="field">
+              <label>নতুন পাসওয়ার্ড</label>
+              <input type="password" id="pwNew" autocomplete="new-password">
+              <span class="help">অন্তত ৪ অক্ষর</span>
+            </div>
+            <div class="field">
+              <label>নতুন পাসওয়ার্ড আবার লিখুন</label>
+              <input type="password" id="pwConfirm" autocomplete="new-password">
+            </div>
+          </div>
+          <div class="row" style="margin-top:12px">
+            <button class="btn primary" id="savePassword">পাসওয়ার্ড পরিবর্তন করুন</button>
+          </div>
+        </div>
+      </div>
+
+      <div class="card">
         <div class="card-head"><div><h2>ডেটা ও ব্যাকআপ</h2><p class="hint">সব তথ্য আপনার এই কম্পিউটারেই সংরক্ষিত থাকে।</p></div></div>
         <div class="card-body">
           <div class="row">
@@ -1137,7 +1167,18 @@
       return;
     }
 
-    if (target.closest('#revealData')) { api.reveal(); }
+    if (target.closest('#revealData')) { api.reveal(); return; }
+
+    if (target.closest('#savePassword')) {
+      const current = $('#pwCurrent').value;
+      const next = $('#pwNew').value;
+      const confirmed = $('#pwConfirm').value;
+      if (!current || !next) { toast('সব ঘর পূরণ করুন।', true); return; }
+      if (next !== confirmed) { toast('নতুন পাসওয়ার্ড দুবার একরকম হয়নি।', true); return; }
+      const res = await api.changePassword(current, next);
+      if (res.ok) { toast('পাসওয়ার্ড পরিবর্তিত হয়েছে।'); render(); }
+      else toast(res.error, true);
+    }
   }
 
   async function onContentChange(e) {
@@ -1257,9 +1298,51 @@
     render();
   }
 
+  /* ---------- লগইন ---------- */
+
+  function showLoginError(message) {
+    const box = $('#loginError');
+    box.textContent = message;
+    box.hidden = false;
+  }
+
+  async function onLoginSubmit(e) {
+    e.preventDefault();
+    const button = $('#loginSubmit');
+    const username = $('#loginUser').value.trim();
+    const password = $('#loginPass').value;
+
+    if (!username || !password) {
+      showLoginError('ইউজার আইডি ও পাসওয়ার্ড দুটোই লিখুন।');
+      return;
+    }
+
+    button.disabled = true;
+    const label = button.textContent;
+    button.textContent = 'যাচাই করা হচ্ছে…';
+    try {
+      const res = await api.login(username, password);
+      if (!res.ok) {
+        showLoginError(res.error);
+        $('#loginPass').value = '';
+        $('#loginPass').focus();
+        return;
+      }
+      $('#loginError').hidden = true;
+      $('#loginPass').value = '';
+      await boot(res.user);
+    } catch (err) {
+      showLoginError('লগইন করা যায়নি: ' + err.message);
+    } finally {
+      button.disabled = false;
+      button.textContent = label;
+    }
+  }
+
   /* ---------- চালু ---------- */
 
-  async function boot() {
+  async function boot(user) {
+    state.user = user;
     state.data = await api.load();
     if (!state.data.settings.rateHistory) {
       state.data.settings.rateHistory = [{
@@ -1269,11 +1352,30 @@
     }
     state.month = defaultMonth();
     state.paths = await api.paths();
+
+    $('#loginScreen').hidden = true;
+    $('#appShell').hidden = false;
+    $('#signedInAs').textContent = user.name || user.username;
+
     wireGlobal();
     render();
   }
 
-  boot().catch((err) => {
+  async function start() {
+    $('#loginForm').addEventListener('submit', onLoginSubmit);
+    $('#logoutBtn').addEventListener('click', async () => {
+      await api.logout();
+      // নতুন করে শুরু হলে আগের ব্যবহারকারীর কোনো তথ্য পর্দায় থেকে যায় না
+      window.location.reload();
+    });
+
+    // উইন্ডো রিলোড হলেও যদি সেশন চালু থাকে, আবার লগইন চাইতে হয় না
+    const existing = await api.currentUser();
+    if (existing) await boot(existing);
+    else $('#loginUser').focus();
+  }
+
+  start().catch((err) => {
     document.body.innerHTML = `<div style="padding:40px;font-family:sans-serif">
       <h2>সফটওয়্যার চালু হতে সমস্যা হয়েছে</h2><pre>${err.stack || err.message}</pre></div>`;
   });

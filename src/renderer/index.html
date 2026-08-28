@@ -8,7 +8,29 @@
   <link rel="stylesheet" href="styles.css">
 </head>
 <body>
-  <div class="app">
+  <div class="login-screen" id="loginScreen">
+    <form class="login-card" id="loginForm" autocomplete="off">
+      <img class="login-logo" src="assets/logo.png" alt="নীলকণ্ঠ ফ্ল্যাট মালিক সমিতি">
+      <h1 class="login-title">নীলকণ্ঠ ফ্ল্যাট মালিক সমিতি</h1>
+      <p class="login-sub">সার্ভিস চার্জ ব্যবস্থাপনা সফটওয়্যার</p>
+
+      <label class="login-field">
+        <span>ইউজার আইডি</span>
+        <input type="text" id="loginUser" autocomplete="username" spellcheck="false" autofocus>
+      </label>
+
+      <label class="login-field">
+        <span>পাসওয়ার্ড</span>
+        <input type="password" id="loginPass" autocomplete="current-password">
+      </label>
+
+      <p class="login-error" id="loginError" hidden></p>
+
+      <button type="submit" class="btn primary login-submit" id="loginSubmit">প্রবেশ করুন</button>
+    </form>
+  </div>
+
+  <div class="app" id="appShell" hidden>
     <aside class="sidebar">
       <div class="brand">
         <img class="brand-mark" src="assets/logo.png" alt="নীলকণ্ঠ ফ্ল্যাট মালিক সমিতি">
@@ -28,6 +50,10 @@
       </nav>
       <div class="sidebar-foot">
         <div class="rate-chip">মাসিক হার: <b id="rateChip">—</b></div>
+        <div class="signed-in">
+          <span id="signedInAs">—</span>
+          <button class="link-btn" id="logoutBtn">লগ আউট</button>
+        </div>
       </div>
     </aside>
 

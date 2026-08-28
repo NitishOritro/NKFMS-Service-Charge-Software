@@ -3,6 +3,7 @@
 const fs = require('fs');
 const path = require('path');
 const { buildSeed } = require('./seed');
+const auth = require('./auth');
 
 let dataFile = null;
 let backupDir = null;
@@ -15,6 +16,9 @@ function init(userDataDir) {
   if (!fs.existsSync(dataFile)) {
     writeJson(dataFile, buildSeed());
   }
+  // আগের সংস্করণে তৈরি ফাইলে ব্যবহারকারীর তালিকা নেই — এখানে যোগ করে দেওয়া হয়
+  const data = load();
+  if (auth.ensureUsers(data)) writeJson(dataFile, data);
   return dataFile;
 }
 
@@ -81,6 +85,13 @@ function importFrom(sourcePath) {
   const parsed = JSON.parse(raw);
   if (!parsed || !Array.isArray(parsed.flats) || !Array.isArray(parsed.payments)) {
     throw new Error('ফাইলটি বৈধ NKFMS ডেটা ফাইল নয়।');
+  }
+  // পুরোনো ব্যাকআপে লগইনের তথ্য না-ও থাকতে পারে; থাকলে সেটিই, নইলে বর্তমানগুলো
+  // রাখা হয় — নইলে ব্যাকআপ ফেরানোর পর আর লগইন করা যেত না।
+  if (!Array.isArray(parsed.users) || !parsed.users.length) {
+    const current = load();
+    parsed.users = Array.isArray(current.users) ? current.users : [];
+    auth.ensureUsers(parsed);
   }
   backup();
   writeJson(dataFile, parsed);
