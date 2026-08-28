@@ -19,6 +19,7 @@
       </div>
       <nav class="nav" id="nav">
         <button class="nav-item active" data-tab="dashboard"><span class="ico">▤</span> ড্যাশবোর্ড</button>
+        <button class="nav-item" data-tab="monthly"><span class="ico">🗓</span> মাসিক হিসাব</button>
         <button class="nav-item" data-tab="collection"><span class="ico">✎</span> মাসিক আদায় এন্ট্রি</button>
         <button class="nav-item" data-tab="dues"><span class="ico">⚠</span> বকেয়া তালিকা</button>
         <button class="nav-item" data-tab="flats"><span class="ico">⌂</span> ফ্ল্যাট ও মালিক</button>
@@ -37,10 +38,11 @@
           <p id="pageSub" class="page-sub"></p>
         </div>
         <div class="topbar-right">
-          <label class="month-picker">
+          <div class="month-picker" id="monthPicker">
             <span>কার্যরত মাস</span>
-            <select id="monthSelect"></select>
-          </label>
+            <select id="monthName" aria-label="মাসের নাম"></select>
+            <select id="monthYear" aria-label="সাল"></select>
+          </div>
         </div>
       </header>
 

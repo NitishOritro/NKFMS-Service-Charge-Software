@@ -162,6 +162,18 @@ select:focus, input:focus, textarea:focus { border-color: var(--brand); box-shad
 .btn:disabled { opacity: .5; cursor: not-allowed; }
 
 .row { display: flex; gap: 10px; align-items: center; flex-wrap: wrap; }
+.grow { flex: 1; }
+
+/* ---------- মাসিক হিসাব পাতার উপরের বার ---------- */
+
+.month-head { margin-bottom: 14px; }
+
+.month-bar { display: flex; align-items: center; gap: 12px; flex-wrap: wrap; }
+
+.month-now { min-width: 190px; text-align: center; }
+.month-now-title { font-size: 18px; font-weight: 700; line-height: 1.2; }
+
+.month-picker select { min-width: 96px; }
 .spacer { flex: 1; }
 
 /* ---------- পরিসংখ্যান কার্ড ---------- */
