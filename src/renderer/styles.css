@@ -250,17 +250,30 @@ table.grid tfoot td {
 
 /* ---------- এন্ট্রি টেবিল ---------- */
 
+/* এন্ট্রি টেবিলে অনেক কলাম — ঘরগুলো একটু সরু রেখে নামের জন্য জায়গা রাখা হয় */
+#collectionTable th, #collectionTable td { padding-left: 8px; padding-right: 8px; }
+#collectionTable .owner { min-width: 166px; }
+#collectionTable td.entry select { min-width: 148px; }
+
 td.entry input[type="number"] { width: 108px; text-align: right; padding: 5px 8px; }
 td.entry select { width: 100%; max-width: 200px; padding: 5px 8px; }
 
 tr.entered td.entry input { border-color: #a9d5c1; background: #f6fdf9; }
 
-.quick { display: flex; gap: 4px; }
+.quick { display: flex; gap: 4px; justify-content: center; flex-wrap: nowrap; }
 .quick button {
   border: 1px solid var(--line); background: #fff; border-radius: 6px;
-  padding: 3px 8px; font-size: 11.5px; cursor: pointer; white-space: nowrap;
+  padding: 3px 7px; font-size: 11.5px; cursor: pointer; white-space: nowrap;
 }
 .quick button:hover { background: var(--brand-soft); border-color: var(--brand); }
+
+.quick button.submit {
+  background: var(--brand);
+  border-color: var(--brand);
+  color: #fff;
+  font-weight: 600;
+}
+.quick button.submit:hover { background: var(--brand-dark); border-color: var(--brand-dark); }
 
 /* ---------- ফর্ম ---------- */
 

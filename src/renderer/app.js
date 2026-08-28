@@ -492,7 +492,7 @@
         <tr data-flat="${r.flat.id}" class="${payment ? 'entered' : ''}">
           <td class="c muted">${U.bnDigits(r.flat.serial)}</td>
           <td><span class="pill flat">${U.escapeHtml(r.flat.flatNo)}</span></td>
-          <td>${U.escapeHtml(r.flat.ownerName)}</td>
+          <td class="owner">${U.escapeHtml(r.flat.ownerName)}</td>
           <td class="num ${previousDue > 0 ? 'strong' : 'muted'}">${previousDue > 0 ? U.bnNumber(previousDue) : (previousDue < 0 ? 'অগ্রীম ' + U.bnNumber(-previousDue) : '—')}</td>
           <td class="entry">
             <input type="number" min="0" step="100" data-field="amount" value="${payment ? payment.amount : ''}" placeholder="${U.bnNumber(rate)}">
@@ -502,9 +502,8 @@
           <td class="num">${r.due > 0 ? `<span class="pill due">${U.bnNumber(r.due)}</span>` : (r.advance > 0 ? `<span class="pill warn">অগ্রীম ${U.bnNumber(r.advance)}</span>` : '<span class="pill ok">নেই</span>')}</td>
           <td class="c">
             <div class="quick">
-              <button data-quick="${rate}">${U.bnNumber(rate)}</button>
-              <button data-quick="${rate * 2}">×২</button>
-              <button data-quick="${rate * 3}">×৩</button>
+              <button class="submit" data-submit="1" title="এই সারিতে লেখা তথ্য সংরক্ষণ করুন">✓ জমা দিন</button>
+              <button data-quick="${rate}" title="${U.bnNumber(rate)}/- বসিয়ে সংরক্ষণ করুন">${U.bnNumber(rate)}</button>
               <button data-quick="0" title="জমা মুছে ফেলুন">✕</button>
               ${payment ? '<button data-receipt="1" title="রসিদ ছাপুন">🧾</button>' : ''}
             </div>
@@ -529,15 +528,15 @@
             <table class="grid" id="collectionTable">
               <thead>
                 <tr>
-                  <th style="width:52px">ক্রম</th>
-                  <th style="width:78px">ফ্ল্যাট</th>
-                  <th>মালিকের নাম</th>
-                  <th class="num" style="width:120px">পূর্বের বকেয়া</th>
-                  <th style="width:130px">এ মাসে জমা</th>
-                  <th style="width:190px">আদায়কারী</th>
-                  <th style="width:150px">জমার তারিখ</th>
-                  <th class="num" style="width:130px">হালনাগাদ বকেয়া</th>
-                  <th class="c" style="width:190px">দ্রুত</th>
+                  <th style="width:46px">ক্রম</th>
+                  <th style="width:72px">ফ্ল্যাট</th>
+                  <th class="owner">মালিকের নাম</th>
+                  <th class="num" style="width:100px">পূর্বের বকেয়া</th>
+                  <th style="width:120px">এ মাসে জমা</th>
+                  <th style="width:175px">আদায়কারী</th>
+                  <th style="width:140px">জমার তারিখ</th>
+                  <th class="num" style="width:104px">নতুন বকেয়া</th>
+                  <th class="c" style="width:200px">কার্যক্রম</th>
                 </tr>
               </thead>
               <tbody>${body}</tbody>
@@ -989,6 +988,26 @@
 
     const ledgerBtn = target.closest('[data-ledger]');
     if (ledgerBtn) { openLedger(ledgerBtn.dataset.ledger); return; }
+
+    const submit = target.closest('[data-submit]');
+    if (submit) {
+      const tr = submit.closest('tr[data-flat]');
+      const flatId = tr.dataset.flat;
+      const amount = Number($('input[data-field="amount"]', tr).value) || 0;
+      const had = !!getPayment(flatId, state.month);
+      setPayment(flatId, state.month, {
+        amount,
+        collectorId: $('select[data-field="collectorId"]', tr).value,
+        receivedOn: $('input[data-field="receivedOn"]', tr).value || (amount > 0 ? U.todayIso() : '')
+      });
+      let message;
+      if (amount > 0) message = 'জমা সংরক্ষিত হয়েছে।';
+      else if (had) message = 'জমা মুছে ফেলা হয়েছে।';
+      else message = 'টাকার ঘর খালি — কিছু সংরক্ষণ করা হয়নি।';
+      await persist(message);
+      render();
+      return;
+    }
 
     const quick = target.closest('[data-quick]');
     if (quick) {
