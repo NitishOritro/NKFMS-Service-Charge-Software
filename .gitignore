@@ -6,9 +6,10 @@ dist/
 out/
 *.exe
 
-# Application data & backups (runtime generated)
-nkfms-data.json
+# Runtime backups only — data/nkfms-data.json is tracked on purpose so the
+# hisab can be carried between computers with git pull / git push.
 backups/
+data/backups/
 
 # Logs
 npm-debug.log*

@@ -20,6 +20,27 @@ const SPLASH_MAX_MS = 9000;
 let mainWindow = null;
 let splashWindow = null;
 
+/*
+ * ডেটা কোথায় রাখা হবে।
+ *
+ * সোর্স থেকে চালালে প্রজেক্ট ফোল্ডারের `data` — কারণ সেটি git-এ থাকে, ফলে
+ * অন্য কম্পিউটারে `git pull` করলেই হালনাগাদ হিসাব পাওয়া যায়। প্যাকেজ করা
+ * .exe-র ক্ষেত্রে .exe ফাইলটির পাশের `data` ফোল্ডার — গোটা ফোল্ডারটি
+ * পেনড্রাইভে নিলে ডেটাও সঙ্গে যায়। কোনোটিতেই লেখা না গেলে (যেমন Program
+ * Files-এ বসানো থাকলে) আগের মতো উইন্ডোজের userData ফোল্ডার ব্যবহৃত হয়।
+ */
+function resolveDataDir() {
+  const base = app.isPackaged ? path.dirname(app.getPath('exe')) : __dirname;
+  const dir = path.join(base, 'data');
+  try {
+    fs.mkdirSync(dir, { recursive: true });
+    fs.accessSync(dir, fs.constants.W_OK);
+    return dir;
+  } catch (err) {
+    return app.getPath('userData');
+  }
+}
+
 function createSplash() {
   splashWindow = new BrowserWindow({
     width: 620,
@@ -106,7 +127,7 @@ function createWindow() {
 }
 
 app.whenReady().then(() => {
-  store.init(app.getPath('userData'));
+  store.init(resolveDataDir(), app.getPath('userData'));
   createSplash();
   createWindow();
   app.on('activate', () => {

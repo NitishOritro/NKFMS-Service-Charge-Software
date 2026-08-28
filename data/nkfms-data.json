@@ -1,0 +1,632 @@
+{
+  "version": 1,
+  "settings": {
+    "societyName": "নীলকণ্ঠ ফ্ল্যাট মালিক সমিতি",
+    "committeeName": "ভবন ব্যবস্থাপনা ও সার্ভিস চার্জ কমিটি",
+    "monthlyRate": 1500,
+    "startMonth": "2026-07",
+    "rateHistory": [
+      {
+        "fromMonth": "2026-07",
+        "rate": 1500
+      }
+    ],
+    "collectors": [
+      {
+        "id": "c1",
+        "bn": "সীমা চন্দ",
+        "en": "Sima Chanda"
+      },
+      {
+        "id": "c2",
+        "bn": "নীতিশ রঞ্জন ভৌমিক",
+        "en": "Nitish Ranjan"
+      },
+      {
+        "id": "c3",
+        "bn": "শিশির কুমার দাস",
+        "en": "Shishir Kumar"
+      },
+      {
+        "id": "c4",
+        "bn": "নির্মল কুমার মন্ডল",
+        "en": "Nirmal Mondal"
+      },
+      {
+        "id": "c5",
+        "bn": "সুকুমার কুমার মন্ডল",
+        "en": "Sukumar Mondal"
+      }
+    ],
+    "signatories": [
+      {
+        "id": "s1",
+        "name": "শিশির কুমার দাস",
+        "designation": "আহ্বায়ক"
+      },
+      {
+        "id": "s2",
+        "name": "নীতিশ রঞ্জন ভৌমিক",
+        "designation": "সদস্য সচিব"
+      },
+      {
+        "id": "s3",
+        "name": "সুকুমার কুমার মন্ডল",
+        "designation": "নির্বাহী সদস্য"
+      },
+      {
+        "id": "s4",
+        "name": "সীমা চন্দ",
+        "designation": "নির্বাহী সদস্য"
+      },
+      {
+        "id": "s5",
+        "name": "নির্মল কুমার মন্ডল",
+        "designation": "নির্বাহী সদস্য"
+      }
+    ]
+  },
+  "flats": [
+    {
+      "id": "fA-1",
+      "serial": 1,
+      "flatNo": "A-1",
+      "ownerName": "সুখেন্দ্র নাথ চন্দ",
+      "openingDue": 0,
+      "phone": "",
+      "note": "",
+      "active": true
+    },
+    {
+      "id": "fB-1",
+      "serial": 2,
+      "flatNo": "B-1",
+      "ownerName": "হীরেন্দ্র চন্দ্র পাল",
+      "openingDue": 3000,
+      "phone": "",
+      "note": "",
+      "active": true
+    },
+    {
+      "id": "fC-1",
+      "serial": 3,
+      "flatNo": "C-1",
+      "ownerName": "দর্শনা সরকার",
+      "openingDue": 0,
+      "phone": "",
+      "note": "",
+      "active": true
+    },
+    {
+      "id": "fA-2",
+      "serial": 4,
+      "flatNo": "A-2",
+      "ownerName": "বিপ্লব ভূষণ বকসী",
+      "openingDue": 0,
+      "phone": "",
+      "note": "",
+      "active": true
+    },
+    {
+      "id": "fB-2",
+      "serial": 5,
+      "flatNo": "B-2",
+      "ownerName": "গৌতম চন্দ্র মজুমদার",
+      "openingDue": 0,
+      "phone": "",
+      "note": "",
+      "active": true
+    },
+    {
+      "id": "fC-2",
+      "serial": 6,
+      "flatNo": "C-2",
+      "ownerName": "নবনীতা বিশ্বাস",
+      "openingDue": 19500,
+      "phone": "",
+      "note": "",
+      "active": true
+    },
+    {
+      "id": "fA-3",
+      "serial": 7,
+      "flatNo": "A-3",
+      "ownerName": "দিপুল কুমার বিশ্বাস",
+      "openingDue": 18000,
+      "phone": "",
+      "note": "",
+      "active": true
+    },
+    {
+      "id": "fB-3",
+      "serial": 8,
+      "flatNo": "B-3",
+      "ownerName": "শিউলী দত্ত",
+      "openingDue": 0,
+      "phone": "",
+      "note": "",
+      "active": true
+    },
+    {
+      "id": "fC-3",
+      "serial": 9,
+      "flatNo": "C-3",
+      "ownerName": "নমিতা রানী বাউল",
+      "openingDue": 9500,
+      "phone": "",
+      "note": "",
+      "active": true
+    },
+    {
+      "id": "fA-4",
+      "serial": 10,
+      "flatNo": "A-4",
+      "ownerName": "চিত্রলেখা বিশ্বাস",
+      "openingDue": 0,
+      "phone": "",
+      "note": "",
+      "active": true
+    },
+    {
+      "id": "fB-4",
+      "serial": 11,
+      "flatNo": "B-4",
+      "ownerName": "লোকেশ রঞ্জন তালুকদার",
+      "openingDue": 0,
+      "phone": "",
+      "note": "",
+      "active": true
+    },
+    {
+      "id": "fC-4",
+      "serial": 12,
+      "flatNo": "C-4",
+      "ownerName": "শিবানী রানী দাস",
+      "openingDue": 0,
+      "phone": "",
+      "note": "",
+      "active": true
+    },
+    {
+      "id": "fA-5",
+      "serial": 13,
+      "flatNo": "A-5",
+      "ownerName": "জ্যোতি রানী বিশ্বাস",
+      "openingDue": 14000,
+      "phone": "",
+      "note": "",
+      "active": true
+    },
+    {
+      "id": "fB-5",
+      "serial": 14,
+      "flatNo": "B-5",
+      "ownerName": "অশোক কুমার শীল",
+      "openingDue": 0,
+      "phone": "",
+      "note": "",
+      "active": true
+    },
+    {
+      "id": "fC-5",
+      "serial": 15,
+      "flatNo": "C-5",
+      "ownerName": "দিলীপ কুমার বিশ্বাস",
+      "openingDue": 29500,
+      "phone": "",
+      "note": "",
+      "active": true
+    },
+    {
+      "id": "fA-6",
+      "serial": 16,
+      "flatNo": "A-6",
+      "ownerName": "নন্দিতা বিশ্বাস",
+      "openingDue": 15000,
+      "phone": "",
+      "note": "",
+      "active": true
+    },
+    {
+      "id": "fB-6",
+      "serial": 17,
+      "flatNo": "B-6",
+      "ownerName": "বিকাশ সিংহ সূত্রধর (প্রয়াত)",
+      "openingDue": 0,
+      "phone": "",
+      "note": "",
+      "active": true
+    },
+    {
+      "id": "fC-6",
+      "serial": 18,
+      "flatNo": "C-6",
+      "ownerName": "তপন কুমার দেবনাথ",
+      "openingDue": 0,
+      "phone": "",
+      "note": "",
+      "active": true
+    },
+    {
+      "id": "fA-7",
+      "serial": 19,
+      "flatNo": "A-7",
+      "ownerName": "শিপ্রা চক্রবর্তী",
+      "openingDue": 0,
+      "phone": "",
+      "note": "",
+      "active": true
+    },
+    {
+      "id": "fB-7",
+      "serial": 20,
+      "flatNo": "B-7",
+      "ownerName": "তপতী চক্রবর্তী",
+      "openingDue": 0,
+      "phone": "",
+      "note": "",
+      "active": true
+    },
+    {
+      "id": "fC-7",
+      "serial": 21,
+      "flatNo": "C-7",
+      "ownerName": "চিন্ময় দেবনাথ",
+      "openingDue": 0,
+      "phone": "",
+      "note": "",
+      "active": true
+    },
+    {
+      "id": "fA-8",
+      "serial": 22,
+      "flatNo": "A-8",
+      "ownerName": "পংকজ কুমার চক্রবর্তী",
+      "openingDue": 6000,
+      "phone": "",
+      "note": "",
+      "active": true
+    },
+    {
+      "id": "fB-8",
+      "serial": 23,
+      "flatNo": "B-8",
+      "ownerName": "মনিকা ভৌমিক",
+      "openingDue": 0,
+      "phone": "",
+      "note": "",
+      "active": true
+    },
+    {
+      "id": "fC-8",
+      "serial": 24,
+      "flatNo": "C-8",
+      "ownerName": "নিলিমা দে",
+      "openingDue": 0,
+      "phone": "",
+      "note": "",
+      "active": true
+    },
+    {
+      "id": "fA-9",
+      "serial": 25,
+      "flatNo": "A-9",
+      "ownerName": "দিপুল কুমার বিশ্বাস",
+      "openingDue": 34500,
+      "phone": "",
+      "note": "",
+      "active": true
+    },
+    {
+      "id": "fB-9",
+      "serial": 26,
+      "flatNo": "B-9",
+      "ownerName": "রনজিৎ সরকার",
+      "openingDue": 3000,
+      "phone": "",
+      "note": "",
+      "active": true
+    },
+    {
+      "id": "fC-9",
+      "serial": 27,
+      "flatNo": "C-9",
+      "ownerName": "অশোক কুমার শীল",
+      "openingDue": 30000,
+      "phone": "",
+      "note": "",
+      "active": true
+    }
+  ],
+  "payments": [
+    {
+      "id": "p-2026-07-A-1",
+      "flatId": "fA-1",
+      "month": "2026-07",
+      "amount": 1500,
+      "collectorId": "c1",
+      "receivedOn": "2026-07-31",
+      "note": ""
+    },
+    {
+      "id": "p-2026-07-B-1",
+      "flatId": "fB-1",
+      "month": "2026-07",
+      "amount": 4500,
+      "collectorId": "c2",
+      "receivedOn": "2026-07-31",
+      "note": ""
+    },
+    {
+      "id": "p-2026-07-C-1",
+      "flatId": "fC-1",
+      "month": "2026-07",
+      "amount": 1500,
+      "collectorId": "c3",
+      "receivedOn": "2026-07-31",
+      "note": ""
+    },
+    {
+      "id": "p-2026-07-B-2",
+      "flatId": "fB-2",
+      "month": "2026-07",
+      "amount": 1500,
+      "collectorId": "c1",
+      "receivedOn": "2026-07-31",
+      "note": ""
+    },
+    {
+      "id": "p-2026-07-C-2",
+      "flatId": "fC-2",
+      "month": "2026-07",
+      "amount": 1500,
+      "collectorId": "c1",
+      "receivedOn": "2026-07-31",
+      "note": ""
+    },
+    {
+      "id": "p-2026-07-A-3",
+      "flatId": "fA-3",
+      "month": "2026-07",
+      "amount": 1500,
+      "collectorId": "c1",
+      "receivedOn": "2026-07-31",
+      "note": ""
+    },
+    {
+      "id": "p-2026-07-B-3",
+      "flatId": "fB-3",
+      "month": "2026-07",
+      "amount": 1500,
+      "collectorId": "c3",
+      "receivedOn": "2026-07-31",
+      "note": ""
+    },
+    {
+      "id": "p-2026-07-A-4",
+      "flatId": "fA-4",
+      "month": "2026-07",
+      "amount": 1500,
+      "collectorId": "c3",
+      "receivedOn": "2026-07-31",
+      "note": ""
+    },
+    {
+      "id": "p-2026-07-B-4",
+      "flatId": "fB-4",
+      "month": "2026-07",
+      "amount": 1500,
+      "collectorId": "c3",
+      "receivedOn": "2026-07-31",
+      "note": ""
+    },
+    {
+      "id": "p-2026-07-C-4",
+      "flatId": "fC-4",
+      "month": "2026-07",
+      "amount": 1500,
+      "collectorId": "c3",
+      "receivedOn": "2026-07-31",
+      "note": ""
+    },
+    {
+      "id": "p-2026-07-A-5",
+      "flatId": "fA-5",
+      "month": "2026-07",
+      "amount": 1500,
+      "collectorId": "c2",
+      "receivedOn": "2026-07-31",
+      "note": ""
+    },
+    {
+      "id": "p-2026-07-B-5",
+      "flatId": "fB-5",
+      "month": "2026-07",
+      "amount": 1500,
+      "collectorId": "c2",
+      "receivedOn": "2026-07-31",
+      "note": ""
+    },
+    {
+      "id": "p-2026-07-A-6",
+      "flatId": "fA-6",
+      "month": "2026-07",
+      "amount": 1500,
+      "collectorId": "c4",
+      "receivedOn": "2026-07-31",
+      "note": ""
+    },
+    {
+      "id": "p-2026-07-C-6",
+      "flatId": "fC-6",
+      "month": "2026-07",
+      "amount": 1500,
+      "collectorId": "c3",
+      "receivedOn": "2026-07-31",
+      "note": ""
+    },
+    {
+      "id": "p-2026-07-A-7",
+      "flatId": "fA-7",
+      "month": "2026-07",
+      "amount": 1500,
+      "collectorId": "c3",
+      "receivedOn": "2026-07-31",
+      "note": ""
+    },
+    {
+      "id": "p-2026-07-B-7",
+      "flatId": "fB-7",
+      "month": "2026-07",
+      "amount": 1500,
+      "collectorId": "c2",
+      "receivedOn": "2026-07-31",
+      "note": ""
+    },
+    {
+      "id": "p-2026-07-C-7",
+      "flatId": "fC-7",
+      "month": "2026-07",
+      "amount": 1500,
+      "collectorId": "c3",
+      "receivedOn": "2026-07-31",
+      "note": ""
+    },
+    {
+      "id": "p-2026-07-A-8",
+      "flatId": "fA-8",
+      "month": "2026-07",
+      "amount": 1500,
+      "collectorId": "c3",
+      "receivedOn": "2026-07-31",
+      "note": ""
+    },
+    {
+      "id": "p-2026-07-B-8",
+      "flatId": "fB-8",
+      "month": "2026-07",
+      "amount": 1500,
+      "collectorId": "c2",
+      "receivedOn": "2026-07-31",
+      "note": ""
+    },
+    {
+      "id": "p-2026-07-C-8",
+      "flatId": "fC-8",
+      "month": "2026-07",
+      "amount": 1500,
+      "collectorId": "c2",
+      "receivedOn": "2026-07-31",
+      "note": ""
+    },
+    {
+      "id": "p-2026-07-B-9",
+      "flatId": "fB-9",
+      "month": "2026-07",
+      "amount": 4500,
+      "collectorId": "c2",
+      "receivedOn": "2026-07-31",
+      "note": ""
+    },
+    {
+      "id": "p-2026-07-C-9",
+      "flatId": "fC-9",
+      "month": "2026-07",
+      "amount": 1500,
+      "collectorId": "c2",
+      "receivedOn": "2026-07-31",
+      "note": ""
+    },
+    {
+      "id": "p-8zuvclx",
+      "flatId": "fA-1",
+      "month": "2026-08",
+      "amount": 1500,
+      "collectorId": "c1",
+      "receivedOn": "2026-08-12",
+      "note": ""
+    },
+    {
+      "id": "p-d1773r4",
+      "flatId": "fB-1",
+      "month": "2026-08",
+      "amount": 1500,
+      "collectorId": "c2",
+      "receivedOn": "2026-08-13",
+      "note": ""
+    },
+    {
+      "id": "p-2lzqvjt",
+      "flatId": "fC-1",
+      "month": "2026-08",
+      "amount": 1500,
+      "collectorId": "c3",
+      "receivedOn": "2026-08-28",
+      "note": ""
+    },
+    {
+      "id": "p-kul5faz",
+      "flatId": "fB-2",
+      "month": "2026-08",
+      "amount": 1500,
+      "collectorId": "c1",
+      "receivedOn": "2026-08-28",
+      "note": ""
+    },
+    {
+      "id": "p-zpal1pp",
+      "flatId": "fC-2",
+      "month": "2026-08",
+      "amount": 1500,
+      "collectorId": "c1",
+      "receivedOn": "2026-08-28",
+      "note": ""
+    },
+    {
+      "id": "p-jflc17f",
+      "flatId": "fB-3",
+      "month": "2026-08",
+      "amount": 1500,
+      "collectorId": "c3",
+      "receivedOn": "2026-08-28",
+      "note": ""
+    },
+    {
+      "id": "p-m36nt6i",
+      "flatId": "fA-4",
+      "month": "2026-08",
+      "amount": 1500,
+      "collectorId": "c3",
+      "receivedOn": "2026-08-28",
+      "note": ""
+    },
+    {
+      "id": "p-wyfy829",
+      "flatId": "fB-4",
+      "month": "2026-08",
+      "amount": 1500,
+      "collectorId": "c3",
+      "receivedOn": "2026-08-28",
+      "note": ""
+    },
+    {
+      "id": "p-a88xs9m",
+      "flatId": "fC-4",
+      "month": "2026-08",
+      "amount": 1500,
+      "collectorId": "c3",
+      "receivedOn": "2026-08-28",
+      "note": ""
+    }
+  ],
+  "users": [
+    {
+      "id": "u-f61f301f7a2b",
+      "username": "nitish",
+      "name": "নীতিশ রঞ্জন ভৌমিক",
+      "salt": "6c34debcff4bd8c56b3f4c0d3c22df14",
+      "hash": "20a988ca2b1238e6d83de1cf9e5b44a56e2a4e6c43e04d71a94eb638eaf746c91adfb40fca29e1b1f6c214a299ee8b530a60e10ebef4f2938cd091206b382e6a",
+      "createdAt": "2026-08-28T09:01:47.165Z"
+    }
+  ]
+}

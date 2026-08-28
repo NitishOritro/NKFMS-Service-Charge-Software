@@ -8,13 +8,21 @@ const auth = require('./auth');
 let dataFile = null;
 let backupDir = null;
 
-function init(userDataDir) {
-  dataFile = path.join(userDataDir, 'nkfms-data.json');
-  backupDir = path.join(userDataDir, 'backups');
-  if (!fs.existsSync(userDataDir)) fs.mkdirSync(userDataDir, { recursive: true });
+/**
+ * @param {string} dataDir      যে ফোল্ডারে ডেটা রাখা হবে
+ * @param {string} [previousDir] আগের ফোল্ডার — নতুন জায়গায় ফাইল না থাকলে
+ *                               সেখান থেকে তুলে আনা হয়, যাতে জায়গা বদলানোর
+ *                               কারণে আগের এন্ট্রিগুলো হারিয়ে না যায়।
+ */
+function init(dataDir, previousDir) {
+  dataFile = path.join(dataDir, 'nkfms-data.json');
+  backupDir = path.join(dataDir, 'backups');
+  if (!fs.existsSync(dataDir)) fs.mkdirSync(dataDir, { recursive: true });
   if (!fs.existsSync(backupDir)) fs.mkdirSync(backupDir, { recursive: true });
   if (!fs.existsSync(dataFile)) {
-    writeJson(dataFile, buildSeed());
+    const carriedOver = previousDir && path.join(previousDir, 'nkfms-data.json');
+    if (carriedOver && fs.existsSync(carriedOver)) fs.copyFileSync(carriedOver, dataFile);
+    else writeJson(dataFile, buildSeed());
   }
   // আগের সংস্করণে তৈরি ফাইলে ব্যবহারকারীর তালিকা নেই — এখানে যোগ করে দেওয়া হয়
   const data = load();
