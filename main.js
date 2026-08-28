@@ -9,9 +9,63 @@ const store = require('./src/store');
 // থেকে চালালে — দুই ক্ষেত্রেই একই ডেটা ফোল্ডার ব্যবহৃত হয়।
 app.setName('NKFMS Service Charge');
 
+const APP_ICON = path.join(__dirname, 'build', 'icon.ico');
+
+// স্প্ল্যাশ অন্তত এতক্ষণ দেখা যাবে — লোগোটি যেন ঝলক দিয়ে মিলিয়ে না যায়
+const SPLASH_MIN_MS = 1900;
+// মূল উইন্ডো কোনো কারণে প্রস্তুত না হলেও স্প্ল্যাশ যেন আটকে না থাকে
+const SPLASH_MAX_MS = 9000;
+
 let mainWindow = null;
+let splashWindow = null;
+
+function createSplash() {
+  splashWindow = new BrowserWindow({
+    width: 620,
+    height: 400,
+    frame: false,
+    transparent: true,
+    backgroundColor: '#00000000',
+    resizable: false,
+    movable: false,
+    minimizable: false,
+    maximizable: false,
+    fullscreenable: false,
+    skipTaskbar: true,
+    alwaysOnTop: true,
+    center: true,
+    show: false,
+    icon: APP_ICON,
+    webPreferences: { contextIsolation: true, nodeIntegration: false }
+  });
+
+  splashWindow.loadFile(path.join(__dirname, 'src', 'renderer', 'splash.html'));
+  splashWindow.once('ready-to-show', () => splashWindow.show());
+  splashWindow.on('closed', () => { splashWindow = null; });
+}
+
+// মিলিয়ে যাওয়ার মতো করে স্প্ল্যাশ বন্ধ করা
+function closeSplash() {
+  const win = splashWindow;
+  if (!win || win.isDestroyed()) return;
+  splashWindow = null;
+
+  let opacity = 1;
+  const timer = setInterval(() => {
+    if (win.isDestroyed()) { clearInterval(timer); return; }
+    opacity -= 0.12;
+    if (opacity <= 0) {
+      clearInterval(timer);
+      win.destroy();
+    } else {
+      win.setOpacity(opacity);
+    }
+  }, 22);
+}
 
 function createWindow() {
+  const openedAt = Date.now();
+
   mainWindow = new BrowserWindow({
     width: 1440,
     height: 900,
@@ -20,6 +74,8 @@ function createWindow() {
     title: 'নীলকণ্ঠ ফ্ল্যাট মালিক সমিতি — সার্ভিস চার্জ ব্যবস্থাপনা',
     backgroundColor: '#f4f6fa',
     autoHideMenuBar: true,
+    icon: APP_ICON,
+    show: false,
     webPreferences: {
       preload: path.join(__dirname, 'preload.js'),
       contextIsolation: true,
@@ -27,6 +83,20 @@ function createWindow() {
       spellcheck: false
     }
   });
+
+  let revealed = false;
+  const reveal = () => {
+    if (revealed || mainWindow.isDestroyed()) return;
+    revealed = true;
+    closeSplash();
+    mainWindow.show();
+    mainWindow.focus();
+  };
+
+  mainWindow.once('ready-to-show', () => {
+    setTimeout(reveal, Math.max(0, SPLASH_MIN_MS - (Date.now() - openedAt)));
+  });
+  setTimeout(reveal, SPLASH_MAX_MS);
 
   // পাতার <title> যেন উইন্ডোর শিরোনাম বদলে না দেয়
   mainWindow.on('page-title-updated', (e) => e.preventDefault());
@@ -36,6 +106,7 @@ function createWindow() {
 
 app.whenReady().then(() => {
   store.init(app.getPath('userData'));
+  createSplash();
   createWindow();
   app.on('activate', () => {
     if (BrowserWindow.getAllWindows().length === 0) createWindow();

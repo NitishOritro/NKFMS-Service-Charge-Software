@@ -6,7 +6,7 @@
   "main": "main.js",
   "scripts": {
     "start": "electron .",
-    "build": "electron-packager . --overwrite --platform=win32 --arch=x64 --out=dist --app-version=1.0.0 --ignore=\"^/dist\" --ignore=\"^/Service Charge_August 26.pdf\""
+    "build": "electron-packager . --overwrite --platform=win32 --arch=x64 --out=dist --app-version=1.0.0 --icon=build/icon.ico --ignore=\"^/dist\" --ignore=\"^/Service Charge_August 26.pdf\""
   },
   "author": "ICB Software Dev Team",
   "license": "UNLICENSED",
