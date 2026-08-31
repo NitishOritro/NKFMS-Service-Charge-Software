@@ -181,14 +181,14 @@ export function SingleFlatEntryView({ onOpenLedger }) {
           marginBottom: '20px'
         }}
       >
-        <div style={{ display: 'flex', alignItems: 'center', gap: '12px', flexWrap: 'wrap' }}>
-          <div>
-            <label style={{ fontSize: '12px', fontWeight: 600, color: '#475569', display: 'block', marginBottom: '4px' }}>
+        <div style={{ display: 'flex', alignItems: 'flex-end', gap: '18px', flexWrap: 'wrap' }}>
+          <div style={{ minWidth: '280px' }}>
+            <label style={{ fontSize: '14px', fontWeight: 700, color: '#334155', display: 'block', marginBottom: '6px' }}>
               ফ্ল্যাট নির্বাচন:
             </label>
             <select
               className="form-select"
-              style={{ minWidth: '220px', fontWeight: 700, borderColor: 'var(--primary)' }}
+              style={{ width: '100%', fontWeight: 700, borderColor: 'var(--primary)', padding: '9px 14px', fontSize: '15.5px' }}
               value={selectedFlatId}
               onChange={(e) => setSelectedFlatId(e.target.value)}
             >
@@ -200,13 +200,13 @@ export function SingleFlatEntryView({ onOpenLedger }) {
             </select>
           </div>
 
-          <div>
-            <label style={{ fontSize: '12px', fontWeight: 600, color: '#475569', display: 'block', marginBottom: '4px' }}>
+          <div style={{ minWidth: '310px' }}>
+            <label style={{ fontSize: '14px', fontWeight: 700, color: '#334155', display: 'block', marginBottom: '6px' }}>
               মাস / সাল ফিল্টার:
             </label>
             <select
               className="form-select"
-              style={{ minWidth: '200px' }}
+              style={{ width: '100%', padding: '9px 14px', fontSize: '15.5px' }}
               value={monthFilter}
               onChange={(e) => setMonthFilter(e.target.value)}
             >
@@ -221,18 +221,20 @@ export function SingleFlatEntryView({ onOpenLedger }) {
         <div style={{ display: 'flex', alignItems: 'center', gap: '10px', flexWrap: 'wrap' }}>
           <button
             onClick={handleBulkFillUnpaid}
-            className="btn btn-primary btn-sm"
+            className="btn btn-primary"
             title="যেসব মাস খালি আছে সেগুলোতে সার্ভিস চার্জ বসান"
+            style={{ padding: '9px 16px', fontSize: '15px' }}
           >
-            <Sparkles size={15} />
+            <Sparkles size={16} />
             <span>সব খালি ঘরে ১,৫০০/- বসান</span>
           </button>
 
           <button
             onClick={() => setBulkCollectorModalOpen(true)}
-            className="btn btn-outline btn-sm"
+            className="btn btn-outline"
+            style={{ padding: '9px 16px', fontSize: '15px' }}
           >
-            <Users size={15} />
+            <Users size={16} />
             <span>সবার জন্য একই আদায়কারী</span>
           </button>
         </div>
