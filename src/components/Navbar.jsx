@@ -63,14 +63,16 @@ export function Navbar({ pageTitle }) {
           মাসিক চার্জ: <span style={{ color: 'var(--primary)', fontWeight: 700 }}>{U.bnTaka(currentRate)}</span>
         </div>
 
-        <button
-          onClick={exportBackupJson}
-          className="btn btn-outline btn-sm"
-          title="ডেটা ব্যাকআপ ডাউনলোড"
-        >
-          <Download size={15} />
-          <span>ব্যাকআপ</span>
-        </button>
+        {!isReadOnly && (
+          <button
+            onClick={exportBackupJson}
+            className="btn btn-outline btn-sm"
+            title="ডেটা ব্যাকআপ ডাউনলোড"
+          >
+            <Download size={15} />
+            <span>ব্যাকআপ</span>
+          </button>
+        )}
       </div>
     </header>
   );

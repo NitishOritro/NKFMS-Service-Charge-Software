@@ -150,25 +150,40 @@ export function SettingsBackupView() {
           </div>
           <div className="card-body">
             <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
-              <div
-                style={{
-                  padding: '16px',
-                  background: '#f0f9ff',
-                  border: '1px solid #bae6fd',
-                  borderRadius: 'var(--radius-md)'
-                }}
-              >
-                <h4 style={{ fontSize: '15px', fontWeight: 700, color: '#0369a1', marginBottom: '6px' }}>
-                  ১. ব্যাকআপ ডাউনলোড (Export)
-                </h4>
-                <p style={{ fontSize: '13px', color: '#64748b', marginBottom: '12px' }}>
-                  সম্পূর্ণ ডেটাবেজের একটি `.json` কপি নিজের কম্পিউটার বা মোবাইলে সেভ করুন।
-                </p>
-                <button onClick={exportBackupJson} className="btn btn-primary btn-sm">
-                  <Download size={15} />
-                  <span>ব্যাকআপ JSON ডাউনলোড করুন</span>
-                </button>
-              </div>
+              {!isReadOnly ? (
+                <div
+                  style={{
+                    padding: '16px',
+                    background: '#f0f9ff',
+                    border: '1px solid #bae6fd',
+                    borderRadius: 'var(--radius-md)'
+                  }}
+                >
+                  <h4 style={{ fontSize: '15px', fontWeight: 700, color: '#0369a1', marginBottom: '6px' }}>
+                    ১. ব্যাকআপ ডাউনলোড (Export)
+                  </h4>
+                  <p style={{ fontSize: '13px', color: '#64748b', marginBottom: '12px' }}>
+                    সম্পূর্ণ ডেটাবেজের একটি `.json` কপি নিজের কম্পিউটার বা মোবাইলে সেভ করুন।
+                  </p>
+                  <button onClick={exportBackupJson} className="btn btn-primary btn-sm">
+                    <Download size={15} />
+                    <span>ব্যাকআপ JSON ডাউনলোড করুন</span>
+                  </button>
+                </div>
+              ) : (
+                <div
+                  style={{
+                    padding: '16px',
+                    background: '#f8fafc',
+                    border: '1px solid #e2e8f0',
+                    borderRadius: 'var(--radius-md)',
+                    color: '#64748b',
+                    fontSize: '13.5px'
+                  }}
+                >
+                  🔒 <b>ডেটা ডাউনলোড সংরক্ষিত:</b> ভিউ মুডে ডেটাবেজ ডাউনলোড বা ব্যাকআপ সুবিধা নিষ্ক্রিয় রয়েছে। ডেটা এক্সপোর্ট করতে অ্যাডমিন অ্যাকাউন্ট ব্যবহার করুন।
+                </div>
+              )}
 
               {!isReadOnly && (
                 <>
