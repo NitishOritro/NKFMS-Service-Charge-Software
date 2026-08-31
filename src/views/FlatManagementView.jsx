@@ -4,9 +4,11 @@ import * as U from '../utils/format';
 import { Building2, Edit2, Plus, Check, X } from 'lucide-react';
 import { Modal } from '../components/Modal';
 import { Pagination } from '../components/Pagination';
+import { useAuth } from '../context/AuthContext';
 
 export function FlatManagementView() {
   const { data, updateFlat, addFlat } = useData();
+  const { isReadOnly } = useAuth();
   const [editModal, setEditModal] = useState({ isOpen: false, flat: null });
   const [addModal, setAddModal] = useState(false);
   const [currentPage, setCurrentPage] = useState(1);
@@ -78,16 +80,18 @@ export function FlatManagementView() {
           </p>
         </div>
 
-        <button
-          onClick={() => {
-            setFormData({ serial: flats.length + 1, flatNo: '', ownerName: '', openingDue: 0, phone: '', note: '' });
-            setAddModal(true);
-          }}
-          className="btn btn-primary btn-sm"
-        >
-          <Plus size={15} />
-          <span>নতুন ফ্ল্যাট যুক্ত করুন</span>
-        </button>
+        {!isReadOnly && (
+          <button
+            onClick={() => {
+              setFormData({ serial: flats.length + 1, flatNo: '', ownerName: '', openingDue: 0, phone: '', note: '' });
+              setAddModal(true);
+            }}
+            className="btn btn-primary btn-sm"
+          >
+            <Plus size={15} />
+            <span>নতুন ফ্ল্যাট যুক্ত করুন</span>
+          </button>
+        )}
       </div>
 
       <div className="card">
@@ -102,7 +106,7 @@ export function FlatManagementView() {
                   <th style={{ width: '130px' }}>মোবাইল নং</th>
                   <th style={{ width: '130px', textAlign: 'right' }}>প্রারম্ভিক বকেয়া</th>
                   <th style={{ width: '80px', textAlign: 'center' }}>অবস্থা</th>
-                  <th style={{ width: '90px', textAlign: 'center' }}>কার্যক্রম</th>
+                  {!isReadOnly && <th style={{ width: '90px', textAlign: 'center' }}>কার্যক্রম</th>}
                 </tr>
               </thead>
               <tbody>
@@ -118,15 +122,17 @@ export function FlatManagementView() {
                     <td style={{ textAlign: 'center' }}>
                       <span className="pill ok">সক্রিয়</span>
                     </td>
-                    <td style={{ textAlign: 'center' }}>
-                      <button
-                        onClick={() => openEdit(f)}
-                        className="btn btn-icon"
-                        title="সম্পাদনা করুন"
-                      >
-                        <Edit2 size={15} />
-                      </button>
-                    </td>
+                    {!isReadOnly && (
+                      <td style={{ textAlign: 'center' }}>
+                        <button
+                          onClick={() => openEdit(f)}
+                          className="btn btn-icon"
+                          title="সম্পাদনা করুন"
+                        >
+                          <Edit2 size={15} />
+                        </button>
+                      </td>
+                    )}
                   </tr>
                 ))}
               </tbody>

@@ -1,11 +1,13 @@
 import React from 'react';
-import { Calendar, Download, RefreshCw } from 'lucide-react';
+import { Calendar, Download, Eye } from 'lucide-react';
 import { useData } from '../context/DataContext';
+import { useAuth } from '../context/AuthContext';
 import * as U from '../utils/format';
 import * as Calc from '../utils/calc';
 
 export function Navbar({ pageTitle }) {
   const { data, selectedMonth, setSelectedMonth, exportBackupJson } = useData();
+  const { isReadOnly } = useAuth();
 
   // Generate available months list from 2024-08 to 2026-08
   const start = data.settings.startMonth || '2024-08';
@@ -23,6 +25,14 @@ export function Navbar({ pageTitle }) {
     <header className="navbar no-print">
       <div className="navbar-left">
         <h1 className="page-heading">{pageTitle}</h1>
+        {isReadOnly && (
+          <span
+            className="pill warning"
+            style={{ fontSize: '13px', padding: '4px 10px', display: 'inline-flex', alignItems: 'center', gap: '5px' }}
+          >
+            <Eye size={14} /> ভিউ মুড (View Only)
+          </span>
+        )}
       </div>
 
       <div className="navbar-right">

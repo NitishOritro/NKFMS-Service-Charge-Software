@@ -15,9 +15,11 @@ import {
 } from 'lucide-react';
 import { Modal } from '../components/Modal';
 import { Pagination } from '../components/Pagination';
+import { useAuth } from '../context/AuthContext';
 
 export function SingleFlatEntryView({ onOpenLedger }) {
   const { data, setPayment, deletePayment, bulkSetPayments, addToast } = useData();
+  const { isReadOnly } = useAuth();
   const [selectedFlatId, setSelectedFlatId] = useState(() => {
     return data.flats.length ? data.flats[0].id : '';
   });
@@ -218,26 +220,28 @@ export function SingleFlatEntryView({ onOpenLedger }) {
           </div>
         </div>
 
-        <div style={{ display: 'flex', alignItems: 'center', gap: '10px', flexWrap: 'wrap' }}>
-          <button
-            onClick={handleBulkFillUnpaid}
-            className="btn btn-primary"
-            title="যেসব মাস খালি আছে সেগুলোতে সার্ভিস চার্জ বসান"
-            style={{ padding: '9px 16px', fontSize: '15px' }}
-          >
-            <Sparkles size={16} />
-            <span>সব খালি ঘরে ১,৫০০/- বসান</span>
-          </button>
+        {!isReadOnly && (
+          <div style={{ display: 'flex', alignItems: 'center', gap: '10px', flexWrap: 'wrap' }}>
+            <button
+              onClick={handleBulkFillUnpaid}
+              className="btn btn-primary"
+              title="যেসব মাস খালি আছে সেগুলোতে সার্ভিস চার্জ বসান"
+              style={{ padding: '9px 16px', fontSize: '15px' }}
+            >
+              <Sparkles size={16} />
+              <span>সব খালি ঘরে ১,৫০০/- বসান</span>
+            </button>
 
-          <button
-            onClick={() => setBulkCollectorModalOpen(true)}
-            className="btn btn-outline"
-            style={{ padding: '9px 16px', fontSize: '15px' }}
-          >
-            <Users size={16} />
-            <span>সবার জন্য একই আদায়কারী</span>
-          </button>
-        </div>
+            <button
+              onClick={() => setBulkCollectorModalOpen(true)}
+              className="btn btn-outline"
+              style={{ padding: '9px 16px', fontSize: '15px' }}
+            >
+              <Users size={16} />
+              <span>সবার জন্য একই আদায়কারী</span>
+            </button>
+          </div>
+        )}
       </div>
 
       {/* Flat Financial Stats Cards */}
@@ -334,15 +338,19 @@ export function SingleFlatEntryView({ onOpenLedger }) {
                           type="number"
                           step="100"
                           min="0"
+                          disabled={isReadOnly}
                           className="table-input"
+                          style={{ background: isReadOnly ? '#f8fafc' : '#fff', cursor: isReadOnly ? 'default' : 'auto' }}
                           value={payment ? payment.amount : ''}
-                          placeholder={U.bnNumber(charge)}
+                          placeholder={isReadOnly ? '—' : U.bnNumber(charge)}
                           onChange={(e) => handleInputChange(m, 'amount', e.target.value)}
                         />
                       </td>
                       <td>
                         <select
                           className="table-input"
+                          disabled={isReadOnly}
+                          style={{ background: isReadOnly ? '#f8fafc' : '#fff', cursor: isReadOnly ? 'default' : 'pointer' }}
                           value={payment ? payment.collectorId : ''}
                           onChange={(e) => handleInputChange(m, 'collectorId', e.target.value)}
                         >
@@ -357,7 +365,9 @@ export function SingleFlatEntryView({ onOpenLedger }) {
                       <td>
                         <input
                           type="date"
+                          disabled={isReadOnly}
                           className="table-input"
+                          style={{ background: isReadOnly ? '#f8fafc' : '#fff', cursor: isReadOnly ? 'default' : 'auto' }}
                           value={payment ? payment.receivedOn : ''}
                           onChange={(e) => handleInputChange(m, 'receivedOn', e.target.value)}
                         />
@@ -373,23 +383,29 @@ export function SingleFlatEntryView({ onOpenLedger }) {
                       </td>
                       <td style={{ textAlign: 'center' }}>
                         <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '6px' }}>
-                          <button
-                            onClick={() => handleFillStandard(m)}
-                            className="btn btn-outline btn-sm"
-                            title="ধার্যকৃত টাকা বসান"
-                            style={{ padding: '2px 8px', fontSize: '11.5px' }}
-                          >
-                            {U.bnNumber(charge)}
-                          </button>
-                          {isPaid && (
-                            <button
-                              onClick={() => deletePayment(currentFlat.id, m)}
-                              className="btn btn-icon"
-                              title="রিসেট / মুছে ফেলুন"
-                              style={{ color: '#ef4444', padding: '3px' }}
-                            >
-                              <RotateCcw size={14} />
-                            </button>
+                          {!isReadOnly ? (
+                            <>
+                              <button
+                                onClick={() => handleFillStandard(m)}
+                                className="btn btn-outline btn-sm"
+                                title="ধার্যকৃত টাকা বসান"
+                                style={{ padding: '2px 8px', fontSize: '11.5px' }}
+                              >
+                                {U.bnNumber(charge)}
+                              </button>
+                              {isPaid && (
+                                <button
+                                  onClick={() => deletePayment(currentFlat.id, m)}
+                                  className="btn btn-icon"
+                                  title="রিসেট / মুছে ফেলুন"
+                                  style={{ color: '#ef4444', padding: '3px' }}
+                                >
+                                  <RotateCcw size={14} />
+                                </button>
+                              )}
+                            </>
+                          ) : (
+                            <span style={{ color: '#94a3b8', fontSize: '13px' }}>—</span>
                           )}
                         </div>
                       </td>

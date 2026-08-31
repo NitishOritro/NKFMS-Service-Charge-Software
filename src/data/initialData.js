@@ -2291,12 +2291,18 @@ export const INITIAL_DATA = {
                  ],
     "users":  [
                   {
-                      "id":  "u-529cec2e0d09",
+                      "id":  "u-admin",
                       "username":  "nitish",
-                      "name":  "নীতিশ রঞ্জন ভৌমিক",
-                      "salt":  "5f0cf9ce6490e8061b70c0fe61d1729d",
-                      "hash":  "2de034e952f18ab0c42b677be5946fd1393821d7afb459ae674c46ef34595d604c4cf79e568342a3a1d047b61ae00d81dab7a995ef76a651e82764611e3f9e99",
+                      "name":  "নীতিশ রঞ্জন ভৌমিক (অ্যাডমিন)",
+                      "role":  "admin",
                       "createdAt":  "2026-08-30T05:23:49.773Z"
+                  },
+                  {
+                      "id":  "u-viewer",
+                      "username":  "viewer",
+                      "name":  "ভিউয়ার (শুধুমাত্র প্রদর্শন)",
+                      "role":  "viewer",
+                      "createdAt":  "2026-08-31T09:00:00.000Z"
                   }
               ]
 };

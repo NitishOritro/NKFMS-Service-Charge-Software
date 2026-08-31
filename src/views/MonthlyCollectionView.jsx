@@ -5,9 +5,11 @@ import * as U from '../utils/format';
 import { CalendarCheck, Receipt, Sparkles, Check, RotateCcw, Printer } from 'lucide-react';
 import { Modal } from '../components/Modal';
 import { Pagination } from '../components/Pagination';
+import { useAuth } from '../context/AuthContext';
 
 export function MonthlyCollectionView() {
   const { data, selectedMonth, setPayment, deletePayment, bulkSetPayments, addToast } = useData();
+  const { isReadOnly } = useAuth();
   const [receiptModal, setReceiptModal] = useState({ isOpen: false, flat: null, payment: null });
   const [currentPage, setCurrentPage] = useState(1);
   const [pageSize, setPageSize] = useState('all');
@@ -98,10 +100,12 @@ export function MonthlyCollectionView() {
           </p>
         </div>
 
-        <button onClick={handleBulkFillThisMonth} className="btn btn-primary btn-sm">
-          <Sparkles size={15} />
-          <span>সবার জন্য ১,৫০০/- বসান</span>
-        </button>
+        {!isReadOnly && (
+          <button onClick={handleBulkFillThisMonth} className="btn btn-primary btn-sm">
+            <Sparkles size={15} />
+            <span>সবার জন্য ১,৫০০/- বসান</span>
+          </button>
+        )}
       </div>
 
       {/* Main Collection Table */}
@@ -142,15 +146,19 @@ export function MonthlyCollectionView() {
                           type="number"
                           step="100"
                           min="0"
+                          disabled={isReadOnly}
                           className="table-input"
+                          style={{ background: isReadOnly ? '#f8fafc' : '#fff', cursor: isReadOnly ? 'default' : 'auto' }}
                           value={payment ? payment.amount : ''}
-                          placeholder={U.bnNumber(r.monthRate)}
+                          placeholder={isReadOnly ? '—' : U.bnNumber(r.monthRate)}
                           onChange={(e) => handleInputChange(flat.id, 'amount', e.target.value)}
                         />
                       </td>
                       <td>
                         <select
                           className="table-input"
+                          disabled={isReadOnly}
+                          style={{ background: isReadOnly ? '#f8fafc' : '#fff', cursor: isReadOnly ? 'default' : 'pointer' }}
                           value={payment ? payment.collectorId : ''}
                           onChange={(e) => handleInputChange(flat.id, 'collectorId', e.target.value)}
                         >
@@ -165,7 +173,9 @@ export function MonthlyCollectionView() {
                       <td>
                         <input
                           type="date"
+                          disabled={isReadOnly}
                           className="table-input"
+                          style={{ background: isReadOnly ? '#f8fafc' : '#fff', cursor: isReadOnly ? 'default' : 'auto' }}
                           value={payment ? payment.receivedOn : ''}
                           onChange={(e) => handleInputChange(flat.id, 'receivedOn', e.target.value)}
                         />
@@ -175,15 +185,17 @@ export function MonthlyCollectionView() {
                       </td>
                       <td style={{ textAlign: 'center' }}>
                         <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '6px' }}>
-                          <button
-                            onClick={() => handleQuickFill(flat)}
-                            className="btn btn-outline btn-sm"
-                            style={{ padding: '2px 6px', fontSize: '11px' }}
-                            title="১,৫০০/- বসান"
-                          >
-                            {U.bnNumber(r.monthRate)}
-                          </button>
-                          {isPaid && (
+                          {!isReadOnly && (
+                            <button
+                              onClick={() => handleQuickFill(flat)}
+                              className="btn btn-outline btn-sm"
+                              style={{ padding: '2px 6px', fontSize: '11px' }}
+                              title="১,৫০০/- বসান"
+                            >
+                              {U.bnNumber(r.monthRate)}
+                            </button>
+                          )}
+                          {isPaid ? (
                             <>
                               <button
                                 onClick={() => handlePrintReceipt(flat, payment)}
@@ -193,15 +205,19 @@ export function MonthlyCollectionView() {
                               >
                                 <Receipt size={15} />
                               </button>
-                              <button
-                                onClick={() => deletePayment(flat.id, selectedMonth)}
-                                className="btn btn-icon"
-                                title="মুছে ফেলুন"
-                                style={{ color: '#ef4444', padding: '4px' }}
-                              >
-                                <RotateCcw size={14} />
-                              </button>
+                              {!isReadOnly && (
+                                <button
+                                  onClick={() => deletePayment(flat.id, selectedMonth)}
+                                  className="btn btn-icon"
+                                  title="মুছে ফেলুন"
+                                  style={{ color: '#ef4444', padding: '4px' }}
+                                >
+                                  <RotateCcw size={14} />
+                                </button>
+                              )}
                             </>
+                          ) : (
+                            isReadOnly && <span style={{ color: '#94a3b8', fontSize: '12px' }}>বকেয়া</span>
                           )}
                         </div>
                       </td>

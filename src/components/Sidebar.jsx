@@ -60,10 +60,17 @@ export function Sidebar({ currentTab, setCurrentTab }) {
 
       <div className="sidebar-footer">
         <div className="user-info">
-          <div className="user-avatar">{user?.name ? user.name.charAt(0) : 'U'}</div>
+          <div
+            className="user-avatar"
+            style={{ background: user?.role === 'viewer' ? '#10b981' : '#0284c7' }}
+          >
+            {user?.role === 'viewer' ? '👁️' : (user?.name ? user.name.charAt(0) : 'U')}
+          </div>
           <div>
             <div className="user-name">{user?.name || 'ব্যবহারকারী'}</div>
-            <div className="user-role">অ্যাডমিন প্যানেল</div>
+            <div className="user-role">
+              {user?.role === 'viewer' ? 'ভিউ মুড (প্রদর্শন মাত্র)' : 'অ্যাডমিন প্যানেল'}
+            </div>
           </div>
         </div>
         <button

@@ -1,8 +1,7 @@
-import React, { createContext, useContext, useState, useEffect } from 'react';
+import React, { createContext, useContext, useState } from 'react';
 
 const AuthContext = createContext();
-
-const STORAGE_KEY = 'nkfms_auth_user';
+const STORAGE_KEY = 'nkfms_auth_user_v2';
 
 export function AuthProvider({ children }) {
   const [user, setUser] = useState(() => {
@@ -15,27 +14,47 @@ export function AuthProvider({ children }) {
   });
 
   const login = (username, password, allUsers = []) => {
-    // ডিফল্ট অ্যাডমিন বা ডেটাবেজে সংরক্ষিত ব্যবহারকারী
-    const normalizedUser = username.trim().toLowerCase();
-    
-    // nitish অথবা সেভ করা ব্যবহারকারী চেক
+    const normalizedUser = (username || '').trim().toLowerCase();
+
+    // 1. Viewer / View Mode Account (Read Only)
+    if (normalizedUser === 'viewer' || normalizedUser === 'view' || normalizedUser === 'guest') {
+      const viewerUser = {
+        id: 'u-viewer',
+        username: 'viewer',
+        name: 'ভিউয়ার (শুধুমাত্র প্রদর্শন)',
+        role: 'viewer'
+      };
+      setUser(viewerUser);
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(viewerUser));
+      return { ok: true };
+    }
+
+    // 2. Admin Account (Nitish / Full Edit Access)
+    if (normalizedUser === 'nitish' || normalizedUser === 'admin') {
+      const adminUser = {
+        id: 'u-admin',
+        username: 'nitish',
+        name: 'নীতিশ রঞ্জন ভৌমিক (অ্যাডমিন)',
+        role: 'admin'
+      };
+      setUser(adminUser);
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(adminUser));
+      return { ok: true };
+    }
+
+    // 3. Check any custom saved user in database
     const foundUser = (allUsers || []).find((u) => u.username?.toLowerCase() === normalizedUser);
-    
-    if (normalizedUser === 'nitish' && (password === '123456' || password === 'admin' || !password || foundUser)) {
-      const authUser = foundUser || { username: 'nitish', name: 'নীতিশ রঞ্জন ভৌমিক' };
+    if (foundUser) {
+      const authUser = {
+        ...foundUser,
+        role: foundUser.role || 'viewer'
+      };
       setUser(authUser);
       localStorage.setItem(STORAGE_KEY, JSON.stringify(authUser));
       return { ok: true };
     }
 
-    if (foundUser) {
-      // সিম্পল ডেমো পাসওয়ার্ড ম্যাচ অথবা ডিফল্ট এক্সেস
-      setUser(foundUser);
-      localStorage.setItem(STORAGE_KEY, JSON.stringify(foundUser));
-      return { ok: true };
-    }
-
-    return { ok: false, error: 'ইউজারনেম বা পাসওয়ার্ড সঠিক নয়।' };
+    return { ok: false, error: 'ইউজারনেম সঠিক নয়। অ্যাডমিনের জন্য "nitish" বা ভিউ মুডের জন্য "viewer" দিন।' };
   };
 
   const logout = () => {
@@ -43,8 +62,19 @@ export function AuthProvider({ children }) {
     localStorage.removeItem(STORAGE_KEY);
   };
 
+  const isReadOnly = user?.role === 'viewer';
+
   return (
-    <AuthContext.Provider value={{ user, login, logout, isAuthenticated: !!user }}>
+    <AuthContext.Provider
+      value={{
+        user,
+        login,
+        logout,
+        isAuthenticated: !!user,
+        isReadOnly,
+        isAdmin: !isReadOnly
+      }}
+    >
       {children}
     </AuthContext.Provider>
   );

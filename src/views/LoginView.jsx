@@ -215,16 +215,52 @@ export function LoginView() {
           </button>
         </form>
 
-        <div
-          style={{
-            marginTop: '26px',
-            paddingTop: '20px',
-            borderTop: '1px solid #e2e8f0',
-            fontSize: '13.5px',
-            color: '#64748b'
-          }}
-        >
-          ডিফল্ট ইউজারনেম: <b style={{ color: '#0284c7', fontWeight: 800 }}>nitish</b> &nbsp;|&nbsp; ডেমো এক্সেস সচল
+        {/* Quick Role Selection Buttons */}
+        <div style={{ marginTop: '24px', paddingTop: '18px', borderTop: '1px solid #e2e8f0' }}>
+          <div style={{ fontSize: '13px', color: '#64748b', marginBottom: '10px', fontWeight: 600 }}>
+            এক ক্লিকে ইউজার নির্বাচন করুন:
+          </div>
+          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '10px' }}>
+            <button
+              type="button"
+              onClick={() => {
+                setUsername('nitish');
+                setPassword('');
+              }}
+              style={{
+                padding: '10px 8px',
+                borderRadius: '10px',
+                border: username === 'nitish' ? '2px solid #0284c7' : '1px solid #cbd5e1',
+                background: username === 'nitish' ? '#f0f9ff' : '#fff',
+                cursor: 'pointer',
+                textAlign: 'center',
+                transition: 'all 0.15s ease'
+              }}
+            >
+              <div style={{ fontWeight: 800, color: '#0f172a', fontSize: '14px' }}>👑 অ্যাডমিন (Admin)</div>
+              <div style={{ fontSize: '12px', color: '#0284c7', marginTop: '2px' }}>ইউজার: nitish (সম্পূর্ণ নিয়ন্ত্রণ)</div>
+            </button>
+
+            <button
+              type="button"
+              onClick={() => {
+                setUsername('viewer');
+                setPassword('');
+              }}
+              style={{
+                padding: '10px 8px',
+                borderRadius: '10px',
+                border: username === 'viewer' ? '2px solid #10b981' : '1px solid #cbd5e1',
+                background: username === 'viewer' ? '#ecfdf5' : '#fff',
+                cursor: 'pointer',
+                textAlign: 'center',
+                transition: 'all 0.15s ease'
+              }}
+            >
+              <div style={{ fontWeight: 800, color: '#0f172a', fontSize: '14px' }}>👁️ ভিউ মুড (View Only)</div>
+              <div style={{ fontSize: '12px', color: '#059669', marginTop: '2px' }}>ইউজার: viewer (শুধু দেখার সুবিধা)</div>
+            </button>
+          </div>
         </div>
       </div>
     </div>
