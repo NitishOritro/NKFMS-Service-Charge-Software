@@ -1,4 +1,4 @@
-import React, { useState, useMemo } from 'react';
+import React, { useState, useMemo, useEffect, useRef } from 'react';
 import { useData } from '../context/DataContext';
 import * as Calc from '../utils/calc';
 import * as U from '../utils/format';
@@ -25,9 +25,18 @@ export function SingleFlatEntryView({ onOpenLedger }) {
   });
   const [monthFilter, setMonthFilter] = useState('all');
   const [currentPage, setCurrentPage] = useState(1);
-  const [pageSize, setPageSize] = useState(10);
+  const [pageSize, setPageSize] = useState('all');
   const [bulkCollectorModalOpen, setBulkCollectorModalOpen] = useState(false);
   const [selectedCollectorId, setSelectedCollectorId] = useState('');
+  const tableContainerRef = useRef(null);
+
+  // Reset page and scroll to top when filter or flat changes
+  useEffect(() => {
+    setCurrentPage(1);
+    if (tableContainerRef.current) {
+      tableContainerRef.current.scrollTop = 0;
+    }
+  }, [selectedFlatId, monthFilter]);
 
   // Local draft inputs so users can type smoothly before committing
   const [localRows, setLocalRows] = useState({});
@@ -58,8 +67,11 @@ export function SingleFlatEntryView({ onOpenLedger }) {
 
   const paginatedMonths = useMemo(() => {
     if (pageSize === 'all') return displayMonths;
-    const start = (currentPage - 1) * pageSize;
-    return displayMonths.slice(start, start + pageSize);
+    const numPageSize = Number(pageSize) || 10;
+    const maxPages = Math.ceil(displayMonths.length / numPageSize) || 1;
+    const safePage = Math.min(Math.max(1, currentPage), maxPages);
+    const start = (safePage - 1) * numPageSize;
+    return displayMonths.slice(start, start + numPageSize);
   }, [displayMonths, currentPage, pageSize]);
 
   if (!currentFlat) {
@@ -299,7 +311,7 @@ export function SingleFlatEntryView({ onOpenLedger }) {
         </div>
 
         <div className="card-body flush">
-          <div className="table-container">
+          <div className="table-container" ref={tableContainerRef}>
             <table className="data-table">
               <thead>
                 <tr>
