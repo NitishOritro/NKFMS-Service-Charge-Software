@@ -59,6 +59,11 @@
   box-sizing: border-box;
 }
 
+html, body {
+  height: 100%;
+  overflow: hidden;
+}
+
 body {
   font-family: var(--font-family);
   background-color: var(--bg-main);
@@ -66,7 +71,6 @@ body {
   font-size: 14px;
   line-height: 1.5;
   -webkit-font-smoothing: antialiased;
-  min-height: 100vh;
 }
 
 button, input, select, textarea {
@@ -74,19 +78,23 @@ button, input, select, textarea {
   font-size: inherit;
 }
 
-/* Layout */
+/* Layout - 100vh Window Viewport Fit */
 .app-container {
   display: flex;
-  min-height: 100vh;
+  height: 100vh;
+  width: 100vw;
+  overflow: hidden;
 }
 
 .sidebar {
   width: 260px;
+  height: 100vh;
   background-color: var(--bg-sidebar);
   color: #f8fafc;
   display: flex;
   flex-direction: column;
   flex-shrink: 0;
+  overflow: hidden;
   transition: all 0.3s ease;
   z-index: 50;
 }
@@ -205,23 +213,23 @@ button, input, select, textarea {
 
 .main-content {
   flex-grow: 1;
+  height: 100vh;
   display: flex;
   flex-direction: column;
   min-width: 0;
-  overflow-x: hidden;
+  overflow: hidden;
 }
 
 /* Navbar */
 .navbar {
-  height: 64px;
+  height: 60px;
+  flex-shrink: 0;
   background: var(--bg-card);
   border-bottom: 1px solid var(--border);
   padding: 0 24px;
   display: flex;
   align-items: center;
   justify-content: space-between;
-  position: sticky;
-  top: 0;
   z-index: 40;
   box-shadow: var(--shadow-sm);
 }
@@ -270,11 +278,15 @@ button, input, select, textarea {
 
 /* Content Body */
 .page-body {
-  padding: 24px;
+  padding: 18px 22px;
   flex-grow: 1;
-  max-width: 1400px;
+  max-width: 1600px;
   width: 100%;
   margin: 0 auto;
+  overflow-y: auto;
+  display: flex;
+  flex-direction: column;
+  min-height: 0;
 }
 
 /* Cards */
@@ -376,7 +388,8 @@ button, input, select, textarea {
 .table-container {
   overflow-x: auto;
   overflow-y: auto;
-  max-height: 680px;
+  max-height: calc(100vh - 290px);
+  min-height: 220px;
   width: 100%;
   position: relative;
 }
