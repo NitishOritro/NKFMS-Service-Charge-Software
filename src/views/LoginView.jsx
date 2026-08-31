@@ -76,16 +76,15 @@ export function LoginView() {
           zIndex: 10
         }}
       >
-        {/* Large Crisp Logo */}
-        <div style={{ display: 'flex', justifyContent: 'center', marginBottom: '20px' }}>
+        <div style={{ display: 'flex', justifyContent: 'center', marginBottom: '16px' }}>
           <img
             src={LOGO_BASE64}
             alt="NKFMS Official Logo"
             style={{
-              width: '128px',
-              height: '128px',
+              width: '124px',
+              height: '124px',
               objectFit: 'contain',
-              filter: 'drop-shadow(0 6px 14px rgba(0, 0, 0, 0.16))'
+              mixBlendMode: 'multiply'
             }}
           />
         </div>
