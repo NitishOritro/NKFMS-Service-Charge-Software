@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { useAuth } from '../context/AuthContext';
 import { useData } from '../context/DataContext';
 import { Lock, User, KeyRound, ShieldCheck } from 'lucide-react';
-import logoImg from '../assets/logo.jpg';
+import { LOGO_BASE64 } from '../assets/logoData';
 
 export function LoginView() {
   const [username, setUsername] = useState('nitish');
@@ -44,7 +44,7 @@ export function LoginView() {
       >
         <div style={{ display: 'flex', justifyContent: 'center', marginBottom: '16px' }}>
           <img
-            src={logoImg}
+            src={LOGO_BASE64}
             alt="NKFMS Logo"
             style={{
               width: '96px',
