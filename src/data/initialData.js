@@ -1,4 +1,4 @@
-﻿export const INITIAL_DATA = {
+export const INITIAL_DATA = {
     "version":  1,
     "settings":  {
                      "societyName":  "নীলকণ্ঠ ফ্ল্যাট মালিক সমিতি",
@@ -196,7 +196,7 @@
                       "id":  "fA-5",
                       "serial":  13,
                       "flatNo":  "A-5",
-                      "ownerName":  "জ্যোতি রানী বিশ্বাস",
+                      "ownerName":  "ষষ্ঠী রাণী বিশ্বাস",
                       "openingDue":  14000,
                       "phone":  "",
                       "note":  "",

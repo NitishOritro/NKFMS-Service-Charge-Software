@@ -12,6 +12,13 @@ export function DataProvider({ children }) {
       if (saved) {
         const parsed = JSON.parse(saved);
         if (parsed && Array.isArray(parsed.flats) && Array.isArray(parsed.payments)) {
+          // Data correction migration
+          parsed.flats = parsed.flats.map((f) => {
+            if (f.flatNo === 'A-5' || f.ownerName === 'জ্যোতি রানী বিশ্বাস') {
+              return { ...f, ownerName: 'ষষ্ঠী রাণী বিশ্বাস' };
+            }
+            return f;
+          });
           return parsed;
         }
       }
