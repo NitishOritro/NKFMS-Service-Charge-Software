@@ -24,41 +24,93 @@ export function LoginView() {
     <div
       style={{
         minHeight: '100vh',
+        width: '100%',
         display: 'flex',
         alignItems: 'center',
         justifyContent: 'center',
-        background: 'linear-gradient(135deg, #0f172a 0%, #1e293b 100%)',
-        padding: '20px'
+        background: 'radial-gradient(circle at 50% 20%, #1e293b 0%, #0f172a 60%, #020617 100%)',
+        padding: '30px 20px',
+        position: 'relative',
+        overflow: 'hidden'
       }}
     >
+      {/* Ambient background glow accents */}
+      <div
+        style={{
+          position: 'absolute',
+          width: '500px',
+          height: '500px',
+          borderRadius: '50%',
+          background: 'rgba(2, 132, 199, 0.15)',
+          filter: 'blur(100px)',
+          top: '-100px',
+          left: '20%',
+          pointerEvents: 'none'
+        }}
+      />
+      <div
+        style={{
+          position: 'absolute',
+          width: '400px',
+          height: '400px',
+          borderRadius: '50%',
+          background: 'rgba(16, 185, 129, 0.1)',
+          filter: 'blur(90px)',
+          bottom: '-50px',
+          right: '25%',
+          pointerEvents: 'none'
+        }}
+      />
+
+      {/* Main Spacious Login Card */}
       <div
         style={{
           background: '#ffffff',
-          borderRadius: 'var(--radius-lg)',
-          boxShadow: 'var(--shadow-xl)',
+          borderRadius: '24px',
+          boxShadow: '0 25px 60px -15px rgba(0, 0, 0, 0.5), 0 0 0 1px rgba(255, 255, 255, 0.1)',
           width: '100%',
-          maxWidth: '420px',
-          padding: '32px 28px',
-          textAlign: 'center'
+          maxWidth: '540px',
+          padding: '46px 42px',
+          textAlign: 'center',
+          position: 'relative',
+          zIndex: 10
         }}
       >
-        <div style={{ display: 'flex', justifyContent: 'center', marginBottom: '16px' }}>
+        {/* Large Crisp Logo */}
+        <div style={{ display: 'flex', justifyContent: 'center', marginBottom: '20px' }}>
           <img
             src={LOGO_BASE64}
-            alt="NKFMS Logo"
+            alt="NKFMS Official Logo"
             style={{
-              width: '96px',
-              height: '96px',
+              width: '128px',
+              height: '128px',
               objectFit: 'contain',
-              filter: 'drop-shadow(0 4px 10px rgba(0, 0, 0, 0.12))'
+              filter: 'drop-shadow(0 6px 14px rgba(0, 0, 0, 0.16))'
             }}
           />
         </div>
 
-        <h2 style={{ fontSize: '20px', fontWeight: 800, color: '#0f172a', marginBottom: '4px' }}>
+        {/* Big Bold Bengali Typography */}
+        <h2
+          style={{
+            fontSize: '26px',
+            fontWeight: 800,
+            color: '#0f172a',
+            marginBottom: '6px',
+            letterSpacing: '0.2px',
+            lineHeight: 1.3
+          }}
+        >
           {data.settings.societyName || 'নীলকণ্ঠ ফ্ল্যাট মালিক সমিতি'}
         </h2>
-        <p style={{ fontSize: '13px', color: '#64748b', marginBottom: '24px' }}>
+        <p
+          style={{
+            fontSize: '15.5px',
+            color: '#64748b',
+            fontWeight: 600,
+            marginBottom: '30px'
+          }}
+        >
           {data.settings.committeeName || 'ভবন ব্যবস্থাপনা ও সার্ভিস চার্জ কমিটি'}
         </p>
 
@@ -68,10 +120,11 @@ export function LoginView() {
               background: '#fef2f2',
               border: '1px solid #fecaca',
               color: '#991b1b',
-              padding: '10px 14px',
-              borderRadius: 'var(--radius-md)',
-              fontSize: '13px',
-              marginBottom: '18px',
+              padding: '12px 16px',
+              borderRadius: '12px',
+              fontSize: '14px',
+              fontWeight: 600,
+              marginBottom: '22px',
               textAlign: 'left'
             }}
           >
@@ -79,14 +132,33 @@ export function LoginView() {
           </div>
         )}
 
+        {/* Login Form with Enlarged Inputs */}
         <form onSubmit={handleSubmit} style={{ textAlign: 'left' }}>
-          <div className="form-group">
-            <label className="form-label" style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
-              <User size={15} color="#0284c7" /> ইউজারনেম
+          <div className="form-group" style={{ marginBottom: '20px' }}>
+            <label
+              className="form-label"
+              style={{
+                display: 'flex',
+                alignItems: 'center',
+                gap: '8px',
+                fontSize: '15px',
+                fontWeight: 700,
+                color: '#1e293b',
+                marginBottom: '8px'
+              }}
+            >
+              <User size={18} color="#0284c7" /> ইউজারনেম
             </label>
             <input
               type="text"
               className="form-input"
+              style={{
+                fontSize: '16px',
+                padding: '13px 18px',
+                borderRadius: '12px',
+                border: '1.5px solid #cbd5e1',
+                fontWeight: 600
+              }}
               value={username}
               onChange={(e) => setUsername(e.target.value)}
               placeholder="ইউজারনেম দিন"
@@ -94,31 +166,66 @@ export function LoginView() {
             />
           </div>
 
-          <div className="form-group" style={{ marginBottom: '22px' }}>
-            <label className="form-label" style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
-              <KeyRound size={15} color="#0284c7" /> পাসওয়ার্ড
+          <div className="form-group" style={{ marginBottom: '28px' }}>
+            <label
+              className="form-label"
+              style={{
+                display: 'flex',
+                alignItems: 'center',
+                gap: '8px',
+                fontSize: '15px',
+                fontWeight: 700,
+                color: '#1e293b',
+                marginBottom: '8px'
+              }}
+            >
+              <KeyRound size={18} color="#0284c7" /> পাসওয়ার্ড
             </label>
             <input
               type="password"
               className="form-input"
+              style={{
+                fontSize: '16px',
+                padding: '13px 18px',
+                borderRadius: '12px',
+                border: '1.5px solid #cbd5e1',
+                fontWeight: 600
+              }}
               value={password}
               onChange={(e) => setPassword(e.target.value)}
-              placeholder="পাসওয়ার্ড দিন"
+              placeholder="পাসওয়ার্ড দিন (ঐচ্ছিক)"
             />
           </div>
 
           <button
             type="submit"
             className="btn btn-primary"
-            style={{ width: '100%', padding: '12px', fontSize: '15px', fontWeight: 700 }}
+            style={{
+              width: '100%',
+              padding: '15px 24px',
+              fontSize: '17px',
+              fontWeight: 800,
+              borderRadius: '12px',
+              boxShadow: '0 8px 24px rgba(2, 132, 199, 0.4)',
+              letterSpacing: '0.3px',
+              cursor: 'pointer'
+            }}
           >
-            <ShieldCheck size={18} />
+            <ShieldCheck size={22} />
             <span>সফটওয়্যারে প্রবেশ করুন</span>
           </button>
         </form>
 
-        <div style={{ marginTop: '20px', paddingTop: '16px', borderTop: '1px solid #e2e8f0', fontSize: '12px', color: '#94a3b8' }}>
-          ডিফল্ট ইউজারনেম: <b style={{ color: '#0f172a' }}>nitish</b> &nbsp;|&nbsp; ডেমো এক্সেস সচল
+        <div
+          style={{
+            marginTop: '26px',
+            paddingTop: '20px',
+            borderTop: '1px solid #e2e8f0',
+            fontSize: '13.5px',
+            color: '#64748b'
+          }}
+        >
+          ডিফল্ট ইউজারনেম: <b style={{ color: '#0284c7', fontWeight: 800 }}>nitish</b> &nbsp;|&nbsp; ডেমো এক্সেস সচল
         </div>
       </div>
     </div>
