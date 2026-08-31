@@ -4,6 +4,7 @@ import * as Calc from '../utils/calc';
 import * as U from '../utils/format';
 import { Printer, FileText, ChevronLeft, Layers } from 'lucide-react';
 import { Watermark } from '../components/Watermark';
+import logoImg from '../assets/logo.jpg';
 
 export function ReportView({ defaultReport = 'monthly', selectiveFlatIds = null }) {
   const { data, selectedMonth } = useData();
@@ -110,12 +111,12 @@ export function ReportView({ defaultReport = 'monthly', selectiveFlatIds = null 
         }}
       >
         {/* Centered Watermark */}
-        <Watermark logoSrc="/logo.jpg" opacity={0.12} />
+        <Watermark logoSrc={logoImg} opacity={0.12} />
 
         {/* 3-Column Header */}
         <div className="print-head">
           <div className="head-logo">
-            <img src="/logo.jpg" alt="Logo" />
+            <img src={logoImg} alt="Logo" />
             <div className="logo-label">NKFMS</div>
           </div>
           <div className="head-center">

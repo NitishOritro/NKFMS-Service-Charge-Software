@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { useAuth } from '../context/AuthContext';
 import { useData } from '../context/DataContext';
 import { Lock, User, KeyRound, ShieldCheck } from 'lucide-react';
+import logoImg from '../assets/logo.jpg';
 
 export function LoginView() {
   const [username, setUsername] = useState('nitish');
@@ -43,7 +44,7 @@ export function LoginView() {
       >
         <div style={{ display: 'flex', justifyContent: 'center', marginBottom: '16px' }}>
           <img
-            src="/logo.jpg"
+            src={logoImg}
             alt="Logo"
             style={{
               width: '74px',

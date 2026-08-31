@@ -13,6 +13,7 @@ import {
 } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
 import { useData } from '../context/DataContext';
+import logoImg from '../assets/logo.jpg';
 
 export function Sidebar({ currentTab, setCurrentTab }) {
   const { user, logout } = useAuth();
@@ -33,7 +34,7 @@ export function Sidebar({ currentTab, setCurrentTab }) {
   return (
     <aside className="sidebar no-print">
       <div className="sidebar-header">
-        <img src="/logo.jpg" alt="NKFMS Logo" className="sidebar-logo" />
+        <img src={logoImg} alt="NKFMS Logo" className="sidebar-logo" />
         <div>
           <div className="sidebar-title">{data.settings.societyName || 'নীলকণ্ঠ ফ্ল্যাট সমিতি'}</div>
           <div className="sidebar-sub">সার্ভিস চার্জ সফটওয়্যার v2.0</div>
