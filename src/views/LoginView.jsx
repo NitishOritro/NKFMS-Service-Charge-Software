@@ -226,9 +226,10 @@ export function LoginView() {
               onClick={() => {
                 setUsername('nitish');
                 setPassword('');
+                setError('');
               }}
               style={{
-                padding: '10px 8px',
+                padding: '12px 8px',
                 borderRadius: '10px',
                 border: username === 'nitish' ? '2px solid #0284c7' : '1px solid #cbd5e1',
                 background: username === 'nitish' ? '#f0f9ff' : '#fff',
@@ -237,8 +238,7 @@ export function LoginView() {
                 transition: 'all 0.15s ease'
               }}
             >
-              <div style={{ fontWeight: 800, color: '#0f172a', fontSize: '14px' }}>👑 অ্যাডমিন (Admin)</div>
-              <div style={{ fontSize: '12px', color: '#0284c7', marginTop: '2px' }}>ইউজার: nitish (সম্পূর্ণ নিয়ন্ত্রণ)</div>
+              <div style={{ fontWeight: 800, color: '#0f172a', fontSize: '14.5px' }}>👑 অ্যাডমিন (Admin)</div>
             </button>
 
             <button
@@ -246,9 +246,10 @@ export function LoginView() {
               onClick={() => {
                 setUsername('viewer');
                 setPassword('');
+                setError('');
               }}
               style={{
-                padding: '10px 8px',
+                padding: '12px 8px',
                 borderRadius: '10px',
                 border: username === 'viewer' ? '2px solid #10b981' : '1px solid #cbd5e1',
                 background: username === 'viewer' ? '#ecfdf5' : '#fff',
@@ -257,8 +258,7 @@ export function LoginView() {
                 transition: 'all 0.15s ease'
               }}
             >
-              <div style={{ fontWeight: 800, color: '#0f172a', fontSize: '14px' }}>👁️ ভিউ মুড (View Only)</div>
-              <div style={{ fontSize: '12px', color: '#059669', marginTop: '2px' }}>ইউজার: viewer (শুধু দেখার সুবিধা)</div>
+              <div style={{ fontWeight: 800, color: '#0f172a', fontSize: '14.5px' }}>👁️ ভিউ মুড (View Only)</div>
             </button>
           </div>
         </div>
