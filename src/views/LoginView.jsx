@@ -11,10 +11,10 @@ export function LoginView() {
   const { login } = useAuth();
   const { data } = useData();
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
     setError('');
-    const res = login(username, password, data.users);
+    const res = await login(username, password, data.users);
     if (!res.ok) {
       setError(res.error || 'লগইন ব্যর্থ হয়েছে।');
     }
@@ -192,7 +192,7 @@ export function LoginView() {
               }}
               value={password}
               onChange={(e) => setPassword(e.target.value)}
-              placeholder="পাসওয়ার্ড দিন (ঐচ্ছিক)"
+              placeholder={username === 'nitish' ? 'পাসওয়ার্ড দিন' : 'পাসওয়ার্ড (ঐচ্ছিক)'}
             />
           </div>
 

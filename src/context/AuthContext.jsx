@@ -1,4 +1,5 @@
 import React, { createContext, useContext, useState } from 'react';
+import { verifyPassword, NITISH_SALTED_HASH, DEFAULT_SALT } from '../utils/crypto';
 
 const AuthContext = createContext();
 const STORAGE_KEY = 'nkfms_auth_user_v2';
@@ -13,10 +14,10 @@ export function AuthProvider({ children }) {
     }
   });
 
-  const login = (username, password, allUsers = []) => {
+  const login = async (username, password, allUsers = []) => {
     const normalizedUser = (username || '').trim().toLowerCase();
 
-    // 1. Viewer / View Mode Account (Read Only)
+    // 1. Viewer / View Mode Account (Read Only, No strict password needed)
     if (normalizedUser === 'viewer' || normalizedUser === 'view' || normalizedUser === 'guest') {
       const viewerUser = {
         id: 'u-viewer',
@@ -29,12 +30,25 @@ export function AuthProvider({ children }) {
       return { ok: true };
     }
 
-    // 2. Admin Account (Nitish / Full Edit Access)
+    // 2. Admin Account (Nitish / Hashed Password Verification: 'nitish123')
     if (normalizedUser === 'nitish' || normalizedUser === 'admin') {
+      if (!password || !password.trim()) {
+        return { ok: false, error: 'অ্যাডমিন এক্সেসের জন্য পাসওয়ার্ড দিন (nitish123)।' };
+      }
+
+      const nitishDbUser = (allUsers || []).find((u) => u.username?.toLowerCase() === 'nitish');
+      const targetHash = nitishDbUser?.hash || NITISH_SALTED_HASH;
+      const targetSalt = nitishDbUser?.salt || DEFAULT_SALT;
+
+      const isValid = await verifyPassword(password.trim(), targetHash, targetSalt);
+      if (!isValid) {
+        return { ok: false, error: 'ভুল পাসওয়ার্ড! অ্যাডমিনের সঠিক পাসওয়ার্ড দিন।' };
+      }
+
       const adminUser = {
-        id: 'u-admin',
+        id: nitishDbUser?.id || 'u-admin',
         username: 'nitish',
-        name: 'নীতিশ রঞ্জন ভৌমিক (অ্যাডমিন)',
+        name: nitishDbUser?.name || 'নীতিশ রঞ্জন ভৌমিক (অ্যাডমিন)',
         role: 'admin'
       };
       setUser(adminUser);
@@ -45,6 +59,12 @@ export function AuthProvider({ children }) {
     // 3. Check any custom saved user in database
     const foundUser = (allUsers || []).find((u) => u.username?.toLowerCase() === normalizedUser);
     if (foundUser) {
+      if (foundUser.hash) {
+        const isValid = await verifyPassword(password.trim(), foundUser.hash, foundUser.salt || DEFAULT_SALT);
+        if (!isValid) {
+          return { ok: false, error: 'ভুল পাসওয়ার্ড!' };
+        }
+      }
       const authUser = {
         ...foundUser,
         role: foundUser.role || 'viewer'

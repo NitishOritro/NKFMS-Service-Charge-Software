@@ -2295,6 +2295,8 @@ export const INITIAL_DATA = {
                       "username":  "nitish",
                       "name":  "নীতিশ রঞ্জন ভৌমিক (অ্যাডমিন)",
                       "role":  "admin",
+                      "salt":  "nkfms_salt_2026",
+                      "hash":  "d29b9d523c7e4cd84ead7b3414b8f0deab5479331ec9c691ebf3122ab820409c",
                       "createdAt":  "2026-08-30T05:23:49.773Z"
                   },
                   {
