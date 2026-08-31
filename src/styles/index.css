@@ -9,12 +9,17 @@
 
 :root {
   /* ---------- টাইপফেস ----------
-     পুরো সফটওয়্যারে একটিই টাইপফেস — Hind Siliguri। আগে হেডিং ও সংখ্যায়
+     লেখার মূল টাইপফেস Hind Siliguri। আগে হেডিং ও সংখ্যায়
      'Outfit' ব্যবহার হচ্ছিল, কিন্তু Outfit-এ বাংলা বর্ণ বা বাংলা অঙ্ক
      (০১২৩৪৫৬৭৮৯, ৳) কিছুই নেই — ফলে ঐ লেখাগুলো সিস্টেম ফলব্যাক ফন্টে
      চলে গিয়ে বাকি ইন্টারফেসের সাথে মিলত না। এখন সব এক ফন্টেই।           */
-  --font-family: 'Hind Siliguri', 'Inter', 'Nirmala UI', 'SolaimanLipi',
-    'Segoe UI', -apple-system, BlinkMacSystemFont, Roboto, sans-serif;
+  /* 'NKFMS Digits' সবার আগে — এটি কেবল বাংলা অঙ্ক (০-৯) ও ৳ কভার করে,
+     বাকি সব অক্ষর Hind Siliguri থেকেই আসে। কারণ Hind Siliguri-র ১ গ্লিফটি
+     খুব ছোট ও নিচু হুকের মতো আঁকা — কমার পাশে '১,৫০০' দেখতে '৳,৫০০'-এর
+     মতো লাগত। হিসাবের সফটওয়্যারে এটি মারাত্মক ভুল পড়ার ঝুঁকি তৈরি করে।  */
+  --font-family: 'NKFMS Digits', 'Hind Siliguri', 'Inter', 'Nirmala UI',
+    'SolaimanLipi', 'Segoe UI', -apple-system, BlinkMacSystemFont, Roboto,
+    sans-serif;
   --font-display: var(--font-family);
 
   /* বাংলা যুক্তাক্ষর ও মাত্রার জন্য প্রয়োজনীয় লাইন-হাইট */

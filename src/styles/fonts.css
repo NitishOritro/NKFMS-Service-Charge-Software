@@ -168,3 +168,53 @@
     U+1EF2-1EFF, U+2020, U+20A0-20AB, U+20AD-20C0, U+2113, U+2C60-2C7F,
     U+A720-A7FF;
 }
+
+/* ==========================================================================
+   NKFMS Digits — শুধু বাংলা অঙ্ক (০-৯) ও টাকার চিহ্ন (৳)
+   --------------------------------------------------------------------------
+   কেন দরকার: Hind Siliguri-তে বাংলা ১ (U+09E7) গ্লিফটি খুব ছোট ও নিচু
+   হুকের মতো আঁকা। ফলে কমার পাশে "১,৫০০" দেখতে "৳,৫০০"-এর মতো লাগে —
+   হিসাবের সফটওয়্যারে এটি টাকার অঙ্ক ভুল পড়ার মারাত্মক ঝুঁকি।
+
+   সমাধান: unicode-range দিয়ে কেবল অঙ্ক ও ৳ চিহ্নটুকু Noto Sans Bengali
+   থেকে নেওয়া হচ্ছে; বাকি সব বাংলা অক্ষর Hind Siliguri-তেই থাকছে। ফন্ট
+   স্ট্যাকে এটি Hind Siliguri-র *আগে* বসাতে হবে (index.css দেখুন)।
+
+   ⚠️ গুরুত্বপূর্ণ — এখানে ইচ্ছাকৃতভাবে Noto-র *স্ট্যাটিক* বিল্ড ব্যবহার
+   করা হয়েছে (@fontsource), ভেরিয়েবল বিল্ড নয়। কারণ Chromium ভেরিয়েবল
+   ফন্ট PDF-এ এম্বেড করতে পারে না — প্রিন্ট করলে অঙ্কগুলো Times New Roman-এ
+   পড়ে যেত। স্ট্যাটিক ফাইল দিয়ে প্রিন্টেও অঙ্ক ঠিক থাকে।
+   ========================================================================== */
+
+@font-face {
+  font-family: 'NKFMS Digits';
+  font-style: normal;
+  font-weight: 400;
+  font-display: swap;
+  src: url('/fonts/noto-sans-bengali-400-bengali.woff2') format('woff2');
+  unicode-range: U+09E6-09EF, U+09F2-09F3;
+}
+@font-face {
+  font-family: 'NKFMS Digits';
+  font-style: normal;
+  font-weight: 500;
+  font-display: swap;
+  src: url('/fonts/noto-sans-bengali-500-bengali.woff2') format('woff2');
+  unicode-range: U+09E6-09EF, U+09F2-09F3;
+}
+@font-face {
+  font-family: 'NKFMS Digits';
+  font-style: normal;
+  font-weight: 600;
+  font-display: swap;
+  src: url('/fonts/noto-sans-bengali-600-bengali.woff2') format('woff2');
+  unicode-range: U+09E6-09EF, U+09F2-09F3;
+}
+@font-face {
+  font-family: 'NKFMS Digits';
+  font-style: normal;
+  font-weight: 700 900;
+  font-display: swap;
+  src: url('/fonts/noto-sans-bengali-700-bengali.woff2') format('woff2');
+  unicode-range: U+09E6-09EF, U+09F2-09F3;
+}

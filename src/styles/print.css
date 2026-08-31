@@ -10,8 +10,8 @@
      লাইন-হাইট ১.৩ থেকে ১.৪৫ করা হয়েছে যাতে বাংলা মাত্রা ও যুক্তাক্ষরের
      উপর-নিচের অংশ কেটে না যায়।                                         */
   html, body {
-    font-family: 'Hind Siliguri', 'Nirmala UI', 'SolaimanLipi', 'Kalpurush',
-      'Vrinda', sans-serif !important;
+    font-family: 'NKFMS Digits', 'Hind Siliguri', 'Nirmala UI', 'SolaimanLipi',
+      'Kalpurush', 'Vrinda', sans-serif !important;
     background: #fff !important;
     color: #000 !important;
     font-size: 11px !important;
@@ -28,8 +28,8 @@
   table.print-table, table.print-table th, table.print-table td,
   .print-head, .print-head *, .print-totals, .print-totals *,
   .print-signs, .print-signs *, .print-foot {
-    font-family: 'Hind Siliguri', 'Nirmala UI', 'SolaimanLipi', 'Kalpurush',
-      'Vrinda', sans-serif !important;
+    font-family: 'NKFMS Digits', 'Hind Siliguri', 'Nirmala UI', 'SolaimanLipi',
+      'Kalpurush', 'Vrinda', sans-serif !important;
     font-synthesis: none !important;
     font-synthesis-weight: none !important;
   }
