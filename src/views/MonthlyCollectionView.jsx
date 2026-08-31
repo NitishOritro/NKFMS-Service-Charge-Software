@@ -295,7 +295,7 @@ export function MonthlyCollectionView() {
             </div>
 
             <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '10px', fontSize: '13px', marginBottom: '12px' }}>
-              <div>রসিদ নং: <b>{receiptModal.flat.flatNo}-{U.monthLabel(receiptModal.payment.month)}</b></div>
+              <div>রসিদ নং: <b>{receiptModal.flat.flatNo}-{U.monthLabelEn(receiptModal.payment.month)}</b></div>
               <div style={{ textAlign: 'right' }}>তারিখ: <b>{U.dateLabel(receiptModal.payment.receivedOn)}</b></div>
               <div>ফ্ল্যাট নং: <b>{receiptModal.flat.flatNo}</b></div>
               <div style={{ textAlign: 'right' }}>মালিকের নাম: <b>{receiptModal.flat.ownerName}</b></div>

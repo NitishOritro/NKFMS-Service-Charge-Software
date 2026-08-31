@@ -47,7 +47,7 @@ function ReceiptSheet({ payment, flat, settings }) {
       </div>
 
       <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '10px', fontSize: '13px', marginBottom: '12px' }}>
-        <div>রসিদ নং: <b>{flat.flatNo}-{U.monthLabel(payment.month)}</b></div>
+        <div>রসিদ নং: <b>{flat.flatNo}-{U.monthLabelEn(payment.month)}</b></div>
         <div style={{ textAlign: 'right' }}>তারিখ: <b>{U.dateLabel(payment.receivedOn)}</b></div>
         <div>ফ্ল্যাট নং: <b>{flat.flatNo}</b></div>
         <div style={{ textAlign: 'right' }}>মালিকের নাম: <b>{flat.ownerName}</b></div>

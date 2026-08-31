@@ -59,6 +59,18 @@ export function monthLabel(mStr) {
   return `${MONTH_NAMES_BN[m - 1]} ${bnDigits(y)}`;
 }
 
+const MONTH_NAMES_EN = [
+  'January', 'February', 'March', 'April', 'May', 'June',
+  'July', 'August', 'September', 'October', 'November', 'December'
+];
+
+export function monthLabelEn(mStr) {
+  if (!mStr) return '';
+  const [y, m] = mStr.split('-').map(Number);
+  if (!y || !m) return mStr;
+  return `${MONTH_NAMES_EN[m - 1]} ${y}`;
+}
+
 export function monthLabelShort(mStr) {
   if (!mStr) return '';
   const [y, m] = mStr.split('-').map(Number);
