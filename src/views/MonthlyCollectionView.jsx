@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { useData } from '../context/DataContext';
 import * as Calc from '../utils/calc';
 import * as U from '../utils/format';
-import { CalendarCheck, Receipt, Sparkles, Check, RotateCcw, Printer } from 'lucide-react';
+import { Receipt, Sparkles, Save, Eraser, Printer } from 'lucide-react';
 import { Modal } from '../components/Modal';
 import { Pagination } from '../components/Pagination';
 import { useAuth } from '../context/AuthContext';
@@ -35,15 +35,24 @@ export function MonthlyCollectionView() {
     }
   };
 
-  const handleQuickFill = (flat) => {
+  // এন্ট্রি সেভ করুন — ঘরে লেখা টাকাই সেভ হয়; ঘর খালি থাকলে ধার্যকৃত চার্জ বসে যায়।
+  const handleSaveEntry = (flat) => {
     const rate = Calc.rateForMonth(data.settings, selectedMonth, flat);
     const existing = data.payments.find((p) => p.flatId === flat.id && p.month === selectedMonth) || {};
+    const amount = Number(existing.amount) > 0 ? Number(existing.amount) : rate;
     setPayment(flat.id, selectedMonth, {
-      amount: rate,
+      amount,
       collectorId: existing.collectorId || (data.settings.collectors[0]?.id || ''),
-      receivedOn: existing.receivedOn || U.monthEndIso(selectedMonth)
+      receivedOn: existing.receivedOn || U.monthEndIso(selectedMonth),
+      note: existing.note || ''
     });
-    addToast(`${flat.flatNo} তে ${U.bnNumber(rate)}/- টাকা জমা লেখা হয়েছে।`);
+    addToast(`${flat.flatNo} — ${U.bnNumber(amount)}/- টাকার এন্ট্রি সেভ হয়েছে।`);
+  };
+
+  // ডাটা ক্লীয়ার করুন — এ মাসের এন্ট্রি মুছে ফেলে।
+  const handleClearEntry = (flat) => {
+    deletePayment(flat.id, selectedMonth);
+    addToast(`${flat.flatNo} — এ মাসের এন্ট্রি ক্লীয়ার করা হয়েছে।`, 'warning');
   };
 
   const handleBulkFillThisMonth = () => {
@@ -88,7 +97,8 @@ export function MonthlyCollectionView() {
           alignItems: 'center',
           flexWrap: 'wrap',
           gap: '12px',
-          marginBottom: '20px'
+          marginBottom: '20px',
+          overflow: 'visible'
         }}
       >
         <div>
@@ -123,7 +133,7 @@ export function MonthlyCollectionView() {
                   <th style={{ width: '170px' }}>আদায়কারী</th>
                   <th style={{ width: '150px' }}>জমার তারিখ</th>
                   <th style={{ width: '110px', textAlign: 'right' }}>নতুন বকেয়া</th>
-                  <th style={{ width: '150px', textAlign: 'center' }}>কার্যক্রম</th>
+                  <th style={{ width: '230px', textAlign: 'center' }}>কার্যক্রম</th>
                 </tr>
               </thead>
               <tbody>
@@ -184,41 +194,37 @@ export function MonthlyCollectionView() {
                         {r.due > 0 ? U.bnNumber(r.due) : '০'}
                       </td>
                       <td style={{ textAlign: 'center' }}>
-                        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '6px' }}>
-                          {!isReadOnly && (
-                            <button
-                              onClick={() => handleQuickFill(flat)}
-                              className="btn btn-outline btn-sm"
-                              style={{ padding: '2px 6px', fontSize: '12.5px' }}
-                              title="১,৫০০/- বসান"
-                            >
-                              {U.bnNumber(r.monthRate)}
-                            </button>
-                          )}
-                          {isPaid ? (
-                            <>
-                              <button
-                                onClick={() => handlePrintReceipt(flat, payment)}
-                                className="btn btn-icon"
-                                title="রসিদ দেখুন / প্রিন্ট"
-                                style={{ color: 'var(--primary)', padding: '4px' }}
-                              >
-                                <Receipt size={15} />
-                              </button>
-                              {!isReadOnly && (
-                                <button
-                                  onClick={() => deletePayment(flat.id, selectedMonth)}
-                                  className="btn btn-icon"
-                                  title="মুছে ফেলুন"
-                                  style={{ color: '#ef4444', padding: '4px' }}
-                                >
-                                  <RotateCcw size={14} />
-                                </button>
-                              )}
-                            </>
-                          ) : (
-                            isReadOnly && <span style={{ color: '#94a3b8', fontSize: '12px' }}>বকেয়া</span>
-                          )}
+                        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '5px', flexWrap: 'nowrap' }}>
+                          <button
+                            onClick={() => handleSaveEntry(flat)}
+                            disabled={isReadOnly}
+                            className="btn btn-outline btn-sm"
+                            title={`এন্ট্রি সেভ করুন (ধার্য ${U.bnNumber(r.monthRate)}/-)`}
+                            style={{ padding: '3px 7px', fontSize: '12px', color: isReadOnly ? undefined : 'var(--success)' }}
+                          >
+                            <Save size={13} />
+                            <span>সেভ</span>
+                          </button>
+                          <button
+                            onClick={() => handlePrintReceipt(flat, payment)}
+                            disabled={!isPaid}
+                            className="btn btn-outline btn-sm"
+                            title={isPaid ? 'রিসিট দেখুন' : 'জমা না থাকলে রিসিট দেখা যাবে না'}
+                            style={{ padding: '3px 7px', fontSize: '12px', color: isPaid ? 'var(--primary)' : undefined }}
+                          >
+                            <Receipt size={13} />
+                            <span>রিসিট</span>
+                          </button>
+                          <button
+                            onClick={() => handleClearEntry(flat)}
+                            disabled={isReadOnly || !isPaid}
+                            className="btn btn-outline btn-sm"
+                            title={isPaid ? 'ডাটা ক্লীয়ার করুন' : 'ক্লীয়ার করার মতো কোনো এন্ট্রি নেই'}
+                            style={{ padding: '3px 7px', fontSize: '12px', color: !isReadOnly && isPaid ? '#ef4444' : undefined }}
+                          >
+                            <Eraser size={13} />
+                            <span>ক্লীয়ার</span>
+                          </button>
                         </div>
                       </td>
                     </tr>
@@ -289,7 +295,7 @@ export function MonthlyCollectionView() {
             </div>
 
             <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '10px', fontSize: '13px', marginBottom: '12px' }}>
-              <div>রসিদ নং: <b>{receiptModal.payment.id}</b></div>
+              <div>রসিদ নং: <b>{receiptModal.flat.flatNo}-{U.monthLabel(receiptModal.payment.month)}</b></div>
               <div style={{ textAlign: 'right' }}>তারিখ: <b>{U.dateLabel(receiptModal.payment.receivedOn)}</b></div>
               <div>ফ্ল্যাট নং: <b>{receiptModal.flat.flatNo}</b></div>
               <div style={{ textAlign: 'right' }}>মালিকের নাম: <b>{receiptModal.flat.ownerName}</b></div>

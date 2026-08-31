@@ -1,94 +1,119 @@
-import React, { createContext, useContext, useState } from 'react';
-import { verifyPassword, NITISH_SALTED_HASH, NITISH_DIRECT_HASH, DEFAULT_SALT } from '../utils/crypto';
+import React, { createContext, useContext, useState, useEffect } from 'react';
+import { supabase } from '../lib/supabase';
 
 const AuthContext = createContext();
-const STORAGE_KEY = 'nkfms_auth_user_v2';
+const VIEWER_KEY = 'nkfms_viewer_mode';
+
+// ============================================================================
+//  লগইন এখন Supabase Auth দিয়ে হয়।
+//
+//  আগে পাসওয়ার্ড সরাসরি কোডে লেখা ছিল, যা ব্রাউজারে যে কেউ দেখতে পেত। এখন
+//  পাসওয়ার্ড কেবল Supabase-এ থাকে, আর হিসাব বদলানোর অনুমতিও ডাটাবেজেই যাচাই
+//  হয় (Row Level Security) — ব্রাউজারের কোড বদলে কেউ ফাঁকি দিতে পারবে না।
+//
+//  ভিউ মোড (viewer) পাসওয়ার্ড ছাড়াই চলে — শুধু দেখা যায়, বদলানো যায় না।
+// ============================================================================
+
+const VIEWER_USER = {
+  id: 'u-viewer',
+  username: 'viewer',
+  name: 'ভিউয়ার (শুধুমাত্র প্রদর্শন)',
+  role: 'viewer'
+};
+
+const VIEWER_NAMES = new Set(['viewer', 'view', 'guest', 'ভিউয়ার']);
 
 export function AuthProvider({ children }) {
-  const [user, setUser] = useState(() => {
+  const [session, setSession] = useState(null);
+  const [viewerMode, setViewerMode] = useState(() => {
     try {
-      const saved = localStorage.getItem(STORAGE_KEY);
-      return saved ? JSON.parse(saved) : null;
+      return localStorage.getItem(VIEWER_KEY) === '1';
     } catch {
-      return null;
+      return false;
     }
   });
+  const [ready, setReady] = useState(false);
 
-  const login = async (username, password, allUsers = []) => {
-    const normalizedUser = (username || '').trim().toLowerCase();
-    const cleanPass = (password || '').trim();
+  useEffect(() => {
+    supabase.auth.getSession().then(({ data }) => {
+      setSession(data.session);
+      setReady(true);
+    });
+    const { data: sub } = supabase.auth.onAuthStateChange((_event, s) => setSession(s));
+    return () => sub.subscription.unsubscribe();
+  }, []);
 
-    // 1. Viewer / View Mode Account (Read Only, No password needed)
-    if (normalizedUser === 'viewer' || normalizedUser === 'view' || normalizedUser === 'guest') {
-      const viewerUser = {
-        id: 'u-viewer',
-        username: 'viewer',
-        name: 'ভিউয়ার (শুধুমাত্র প্রদর্শন)',
-        role: 'viewer'
-      };
-      setUser(viewerUser);
-      localStorage.setItem(STORAGE_KEY, JSON.stringify(viewerUser));
+  const login = async (identifier, password) => {
+    const id = (identifier || '').trim();
+    const pass = (password || '').trim();
+
+    // ১. ভিউ মোড — পাসওয়ার্ড লাগে না
+    if (VIEWER_NAMES.has(id.toLowerCase())) {
+      try {
+        localStorage.setItem(VIEWER_KEY, '1');
+      } catch {
+        /* ব্রাউজার স্টোরেজ বন্ধ থাকলেও ভিউ মোড চলবে */
+      }
+      setViewerMode(true);
       return { ok: true };
     }
 
-    // 2. Admin Account (Nitish / Password: 'nitish123')
-    if (normalizedUser === 'nitish' || normalizedUser === 'admin') {
-      if (!cleanPass) {
-        return { ok: false, error: 'অ্যাডমিন এক্সেসের জন্য পাসওয়ার্ড দিন (nitish123)।' };
-      }
-
-      // Check direct password or cryptographic hash
-      const isPlainMatch = cleanPass === 'nitish123';
-      const isSaltedMatch = await verifyPassword(cleanPass, NITISH_SALTED_HASH, DEFAULT_SALT);
-      const isDirectHashMatch = await verifyPassword(cleanPass, NITISH_DIRECT_HASH, '');
-
-      if (isPlainMatch || isSaltedMatch || isDirectHashMatch) {
-        const adminUser = {
-          id: 'u-admin',
-          username: 'nitish',
-          name: 'নীতিশ রঞ্জন ভৌমিক (অ্যাডমিন)',
-          role: 'admin'
-        };
-        setUser(adminUser);
-        localStorage.setItem(STORAGE_KEY, JSON.stringify(adminUser));
-        return { ok: true };
-      }
-
-      return { ok: false, error: 'ভুল পাসওয়ার্ড! সঠিক পাসওয়ার্ড: nitish123' };
-    }
-
-    // 3. Check any custom saved user in database
-    const foundUser = (allUsers || []).find((u) => u.username?.toLowerCase() === normalizedUser);
-    if (foundUser) {
-      if (foundUser.hash) {
-        const isValid = await verifyPassword(cleanPass, foundUser.hash, foundUser.salt || DEFAULT_SALT);
-        if (!isValid && cleanPass !== 'nitish123') {
-          return { ok: false, error: 'ভুল পাসওয়ার্ড!' };
-        }
-      }
-      const authUser = {
-        ...foundUser,
-        role: foundUser.role || 'viewer'
+    // ২. অ্যাডমিন — Supabase Auth
+    if (!id.includes('@')) {
+      return {
+        ok: false,
+        error: 'অ্যাডমিন হিসেবে ঢুকতে আপনার ইমেইল দিন। শুধু দেখতে চাইলে "viewer" লিখুন।'
       };
-      setUser(authUser);
-      localStorage.setItem(STORAGE_KEY, JSON.stringify(authUser));
-      return { ok: true };
+    }
+    if (!pass) {
+      return { ok: false, error: 'পাসওয়ার্ড দিন।' };
     }
 
-    return { ok: false, error: 'ইউজারনেম সঠিক নয়। অ্যাডমিনের জন্য "nitish" বা ভিউ মুডের জন্য "viewer" দিন।' };
+    const { error } = await supabase.auth.signInWithPassword({ email: id, password: pass });
+    if (error) {
+      const msg = /invalid login credentials/i.test(error.message || '')
+        ? 'ইমেইল বা পাসওয়ার্ড ঠিক নেই।'
+        : error.message;
+      return { ok: false, error: msg };
+    }
+
+    try {
+      localStorage.removeItem(VIEWER_KEY);
+    } catch {
+      /* উপেক্ষা */
+    }
+    setViewerMode(false);
+    return { ok: true };
   };
 
-  const logout = () => {
-    setUser(null);
-    localStorage.removeItem(STORAGE_KEY);
+  const logout = async () => {
+    try {
+      localStorage.removeItem(VIEWER_KEY);
+    } catch {
+      /* উপেক্ষা */
+    }
+    setViewerMode(false);
+    await supabase.auth.signOut();
   };
 
-  const isReadOnly = user?.role === 'viewer';
+  const user = session
+    ? {
+        id: session.user.id,
+        username: session.user.email,
+        name: session.user.user_metadata?.name || session.user.email,
+        role: 'admin'
+      }
+    : viewerMode
+      ? VIEWER_USER
+      : null;
+
+  const isReadOnly = !session;
 
   return (
     <AuthContext.Provider
       value={{
         user,
+        ready,
         login,
         logout,
         isAuthenticated: !!user,

@@ -6,16 +6,84 @@ import {
   Layers,
   Save,
   Check,
-  RotateCcw,
+  Receipt,
+  Eraser,
   Sparkles,
   Users,
   Printer,
-  CheckCircle2,
-  AlertCircle
+  FileText
 } from 'lucide-react';
 import { Modal } from '../components/Modal';
 import { Pagination } from '../components/Pagination';
 import { useAuth } from '../context/AuthContext';
+
+// নিচের সারসংক্ষেপ সারির ঘরগুলো স্ক্রল বাক্সের তলায় আটকে থাকে
+const FOOT_CELL = {
+  position: 'sticky',
+  bottom: 0,
+  zIndex: 9,
+  background: 'var(--bg-muted)',
+  fontSize: '14px'
+};
+
+// একটি রসিদের মার্কআপ — পর্দার মডাল ও কাগজের প্রিন্ট দুই জায়গাতেই এটাই ব্যবহৃত হয়।
+function ReceiptSheet({ payment, flat, settings }) {
+  return (
+    <div
+      className="receipt-sheet"
+      style={{
+        border: '2px solid #0f172a',
+        borderRadius: 'var(--radius-md)',
+        padding: '16px 20px',
+        background: '#fafafa'
+      }}
+    >
+      <div style={{ textAlign: 'center', borderBottom: '1px solid #cbd5e1', paddingBottom: '10px', marginBottom: '12px' }}>
+        <h3 style={{ fontSize: '16px', fontWeight: 700 }}>{settings.societyName}</h3>
+        <p style={{ fontSize: '12px', color: '#64748b' }}>{settings.committeeName}</p>
+        <span style={{ display: 'inline-block', marginTop: '6px', background: '#0284c7', color: '#fff', padding: '2px 10px', borderRadius: '4px', fontSize: '12px', fontWeight: 700 }}>
+          সার্ভিস চার্জ আদায় রসিদ
+        </span>
+      </div>
+
+      <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '10px', fontSize: '13px', marginBottom: '12px' }}>
+        <div>রসিদ নং: <b>{flat.flatNo}-{U.monthLabel(payment.month)}</b></div>
+        <div style={{ textAlign: 'right' }}>তারিখ: <b>{U.dateLabel(payment.receivedOn)}</b></div>
+        <div>ফ্ল্যাট নং: <b>{flat.flatNo}</b></div>
+        <div style={{ textAlign: 'right' }}>মালিকের নাম: <b>{flat.ownerName}</b></div>
+        <div>হিসাব মাস: <b>{U.monthLabel(payment.month)}</b></div>
+        <div style={{ textAlign: 'right' }}>
+          আদায়কারী: <b>{(settings.collectors.find((c) => c.id === payment.collectorId)?.bn) || '—'}</b>
+        </div>
+      </div>
+
+      <div
+        style={{
+          background: '#ecfdf5',
+          border: '1px dashed #10b981',
+          borderRadius: 'var(--radius-md)',
+          padding: '12px',
+          textAlign: 'center',
+          fontSize: '18px',
+          fontWeight: 700,
+          color: '#065f46',
+          margin: '14px 0'
+        }}
+      >
+        জমাকৃত টাকা: {U.bnTaka(payment.amount)}/-
+      </div>
+
+      <div style={{ display: 'flex', justifyContent: 'space-between', marginTop: '30px', fontSize: '12px', color: '#475569' }}>
+        <div style={{ borderTop: '1px solid #64748b', width: '130px', textAlign: 'center', paddingTop: '4px' }}>
+          জমাদানকারীর স্বাক্ষর
+        </div>
+        <div style={{ borderTop: '1px solid #64748b', width: '130px', textAlign: 'center', paddingTop: '4px' }}>
+          আদায়কারীর স্বাক্ষর
+        </div>
+      </div>
+    </div>
+  );
+}
 
 export function SingleFlatEntryView({ onOpenLedger }) {
   const { data, setPayment, deletePayment, bulkSetPayments, addToast } = useData();
@@ -27,16 +95,71 @@ export function SingleFlatEntryView({ onOpenLedger }) {
   const [currentPage, setCurrentPage] = useState(1);
   const [pageSize, setPageSize] = useState('all');
   const [bulkCollectorModalOpen, setBulkCollectorModalOpen] = useState(false);
+  const [receiptModal, setReceiptModal] = useState({ isOpen: false, payment: null });
+  const [allReceiptsOpen, setAllReceiptsOpen] = useState(false);
+  const [printList, setPrintList] = useState([]);
   const [selectedCollectorId, setSelectedCollectorId] = useState('');
   const tableContainerRef = useRef(null);
 
   // Reset page and scroll to top when filter or flat changes
   useEffect(() => {
     setCurrentPage(1);
+    setLocalRows({}); // Clear local drafts on filter/flat change
     if (tableContainerRef.current) {
       tableContainerRef.current.scrollTop = 0;
     }
   }, [selectedFlatId, monthFilter]);
+
+  // টেবিলের উচ্চতা মেপে বসানো হয় — নইলে শেষ মাসগুলো, নিচের সারসংক্ষেপ ও
+  // পেজিনেশন কেটে যায়।
+  //  • window নয়, .page-body-ই আসল স্ক্রল বাক্স (.main-content এ overflow:hidden)
+  //  • কার্ডটি flex আইটেম, জায়গা না পেলে চেপে যায় — তাই কার্ডের মাপ ধরা যাবে না;
+  //    পেজিনেশনের নিজের offsetHeight নেওয়া হয়, যা চাপে বদলায় না।
+  useEffect(() => {
+    const fit = () => {
+      const el = tableContainerRef.current;
+      if (!el) return;
+      const scrollBox = el.closest('.page-body');
+      if (!scrollBox) return;
+
+      const pager = el.parentElement?.querySelector('.pagination-container');
+      const pagerH = pager ? pager.offsetHeight : 0;
+
+      const boxRect = scrollBox.getBoundingClientRect();
+      const elRect = el.getBoundingClientRect();
+
+      // স্ক্রল যেখানেই থাকুক, বাক্সের ভেতরে টেবিলের প্রকৃত অবস্থান
+      const topWithin = elRect.top - boxRect.top + scrollBox.scrollTop;
+      const bottomGap = 30; // .page-body এর নিচের প্যাডিং ও কার্ডের বর্ডার
+
+      const avail = scrollBox.clientHeight - topWithin - pagerH - bottomGap;
+      el.style.maxHeight = `${Math.max(200, Math.floor(avail))}px`;
+    };
+
+    fit();
+    // প্রথম মাপের পর লেআউট থিতু হলে আরেকবার — নইলে ফন্ট/কার্ড বসার আগের মাপ থেকে যেত
+    const raf = requestAnimationFrame(fit);
+    window.addEventListener('resize', fit);
+    return () => {
+      cancelAnimationFrame(raf);
+      window.removeEventListener('resize', fit);
+    };
+  });
+
+  // রসিদ প্রিন্ট — মডাল কাগজে ছাপা হয় না, তাই আলাদা প্রিন্ট-এরিয়া দেখিয়ে ছাপা হয়।
+  useEffect(() => {
+    if (!printList.length) return undefined;
+    document.body.classList.add('printing-receipts');
+    const t = setTimeout(() => {
+      window.print();
+      document.body.classList.remove('printing-receipts');
+      setPrintList([]);
+    }, 80);
+    return () => {
+      clearTimeout(t);
+      document.body.classList.remove('printing-receipts');
+    };
+  }, [printList]);
 
   // Local draft inputs so users can type smoothly before committing
   const [localRows, setLocalRows] = useState({});
@@ -102,34 +225,89 @@ export function SingleFlatEntryView({ onOpenLedger }) {
   const due = balance > 0 ? balance : 0;
   const advance = balance < 0 ? -balance : 0;
 
-  // Handle single row change & instant auto-save
+  // Handle single row change (local draft)
   const handleInputChange = (month, field, value) => {
-    const existing = paymentsMap[month] || {};
-    const updated = {
-      amount: field === 'amount' ? value : (existing.amount ?? ''),
-      collectorId: field === 'collectorId' ? value : (existing.collectorId || ''),
-      receivedOn: field === 'receivedOn' ? value : (existing.receivedOn || U.monthEndIso(month)),
-      note: field === 'note' ? value : (existing.note || '')
-    };
-
-    if (field === 'amount' && (value === '' || value == null)) {
-      // If cleared
-      deletePayment(currentFlat.id, month);
-    } else {
-      setPayment(currentFlat.id, month, updated);
-    }
+    setLocalRows((prev) => {
+      const existing = paymentsMap[month] || {};
+      const currentDraft = prev[month] || {
+        amount: existing.amount ?? '',
+        collectorId: existing.collectorId || '',
+        receivedOn: existing.receivedOn || U.monthEndIso(month),
+        note: existing.note || ''
+      };
+      
+      return {
+        ...prev,
+        [month]: {
+          ...currentDraft,
+          [field]: value
+        }
+      };
+    });
   };
 
-  // Quick button: Fill standard rate
-  const handleFillStandard = (month) => {
+  // প্রদর্শিত মাসগুলোর সারসংক্ষেপ (মাস ফিল্টার মানে)
+  const shownCharged = displayMonths.reduce(
+    (sum, m) => sum + Calc.rateForMonth(data.settings, m, currentFlat), 0
+  );
+  const shownPaid = displayMonths.reduce((sum, m) => {
+    const p = paymentsMap[m];
+    return sum + (p && Number(p.amount) > 0 ? Number(p.amount) : 0);
+  }, 0);
+  const shownPaidCount = displayMonths.filter(
+    (m) => paymentsMap[m] && Number(paymentsMap[m].amount) > 0
+  ).length;
+  const shownDueCount = displayMonths.length - shownPaidCount;
+  const shownDue = shownCharged - shownPaid;
+
+  // জমা আছে এমন সব মাসের রসিদ (ক্রম অনুযায়ী)
+  const paidReceipts = allMonths
+    .map((m) => paymentsMap[m])
+    .filter((p) => p && Number(p.amount) > 0);
+
+  // এন্ট্রি সেভ করুন
+  const handleSaveEntry = (month) => {
     const rate = Calc.rateForMonth(data.settings, month, currentFlat);
     const existing = paymentsMap[month] || {};
-    setPayment(currentFlat.id, month, {
-      amount: rate,
-      collectorId: existing.collectorId || (data.settings.collectors[0]?.id || ''),
-      receivedOn: existing.receivedOn || U.monthEndIso(month)
+    const draft = localRows[month];
+    
+    if (draft && (draft.amount === '' || draft.amount == null || Number(draft.amount) <= 0)) {
+      deletePayment(currentFlat.id, month);
+      addToast(`${U.monthLabel(month)} — এন্ট্রি মুছে ফেলা হয়েছে।`, 'warning');
+    } else {
+      const amountToSave = draft ? draft.amount : (Number(existing.amount) > 0 ? existing.amount : rate);
+      setPayment(currentFlat.id, month, {
+        amount: amountToSave,
+        collectorId: draft ? draft.collectorId : (existing.collectorId || data.settings.collectors[0]?.id || ''),
+        receivedOn: draft ? draft.receivedOn : (existing.receivedOn || U.monthEndIso(month)),
+        note: draft ? (draft.note || '') : (existing.note || '')
+      });
+      addToast(`${U.monthLabel(month)} — ${U.bnNumber(amountToSave)}/- টাকার এন্ট্রি সেভ হয়েছে।`);
+    }
+
+    setLocalRows((prev) => {
+      const next = { ...prev };
+      delete next[month];
+      return next;
     });
-    addToast(`${U.monthLabel(month)} এ ${U.bnNumber(rate)}/- টাকা বসানো হয়েছে।`);
+  };
+
+  // রিসিট দেখুন
+  const handlePrintReceipt = (month) => {
+    const payment = paymentsMap[month];
+    if (!payment || !(Number(payment.amount) > 0)) return;
+    setReceiptModal({ isOpen: true, payment });
+  };
+
+  // ডাটা ক্লীয়ার করুন
+  const handleClearEntry = (month) => {
+    deletePayment(currentFlat.id, month);
+    setLocalRows((prev) => {
+      const next = { ...prev };
+      delete next[month];
+      return next;
+    });
+    addToast(`${U.monthLabel(month)} — এন্ট্রি ক্লীয়ার করা হয়েছে।`, 'warning');
   };
 
   // Bulk button: Fill all empty months with 1,500/- (or specific flat rate)
@@ -192,7 +370,8 @@ export function SingleFlatEntryView({ onOpenLedger }) {
           alignItems: 'center',
           flexWrap: 'wrap',
           gap: '14px',
-          marginBottom: '20px'
+          marginBottom: '20px',
+          overflow: 'visible'
         }}
       >
         <div style={{ display: 'flex', alignItems: 'flex-end', gap: '18px', flexWrap: 'wrap' }}>
@@ -232,28 +411,45 @@ export function SingleFlatEntryView({ onOpenLedger }) {
           </div>
         </div>
 
-        {!isReadOnly && (
-          <div style={{ display: 'flex', alignItems: 'center', gap: '10px', flexWrap: 'wrap' }}>
-            <button
-              onClick={handleBulkFillUnpaid}
-              className="btn btn-primary"
-              title="যেসব মাস খালি আছে সেগুলোতে সার্ভিস চার্জ বসান"
-              style={{ padding: '9px 16px', fontSize: '15px' }}
-            >
-              <Sparkles size={16} />
-              <span>সব খালি ঘরে ১,৫০০/- বসান</span>
-            </button>
+        <div style={{ display: 'flex', alignItems: 'center', gap: '10px', flexWrap: 'wrap' }}>
+          {!isReadOnly && (
+            <>
+              <button
+                onClick={handleBulkFillUnpaid}
+                className="btn btn-primary"
+                title="যেসব মাস খালি আছে সেগুলোতে সার্ভিস চার্জ বসান"
+                style={{ padding: '9px 16px', fontSize: '15px' }}
+              >
+                <Sparkles size={16} />
+                <span>সব খালি ঘরে ১,৫০০/- বসান</span>
+              </button>
 
-            <button
-              onClick={() => setBulkCollectorModalOpen(true)}
-              className="btn btn-outline"
-              style={{ padding: '9px 16px', fontSize: '15px' }}
-            >
-              <Users size={16} />
-              <span>সবার জন্য একই আদায়কারী</span>
-            </button>
-          </div>
-        )}
+              <button
+                onClick={() => setBulkCollectorModalOpen(true)}
+                className="btn btn-outline"
+                style={{ padding: '9px 16px', fontSize: '15px' }}
+              >
+                <Users size={16} />
+                <span>সবার জন্য একই আদায়কারী</span>
+              </button>
+            </>
+          )}
+
+          <button
+            onClick={() => setAllReceiptsOpen(true)}
+            disabled={paidReceipts.length === 0}
+            className="btn btn-outline"
+            title={
+              paidReceipts.length
+                ? 'এই ফ্ল্যাটের সব মাসের রসিদ একসাথে দেখুন ও প্রিন্ট করুন'
+                : 'এই ফ্ল্যাটের কোনো মাসে জমা লেখা নেই'
+            }
+            style={{ padding: '9px 16px', fontSize: '15px' }}
+          >
+            <FileText size={16} />
+            <span>সব রিসিট একসাথে ({U.bnDigits(paidReceipts.length)})</span>
+          </button>
+        </div>
       </div>
 
       {/* Flat Financial Stats Cards */}
@@ -295,7 +491,9 @@ export function SingleFlatEntryView({ onOpenLedger }) {
       </div>
 
       {/* Multi-Month Entry Table */}
-      <div className="card">
+      {/* flexShrink: 0 — .card এ overflow:hidden থাকায় flex চাপে পড়লে কার্ডটি
+          নিজের পেজিনেশন কেটে ফেলত, আর স্ক্রল করেও সেখানে পৌঁছানো যেত না */}
+      <div className="card" style={{ flexShrink: 0 }}>
         <div className="card-header">
           <div className="card-title">
             <Layers size={18} color="var(--primary)" />
@@ -322,19 +520,25 @@ export function SingleFlatEntryView({ onOpenLedger }) {
                   <th style={{ width: '180px' }}>আদায়কারী</th>
                   <th style={{ width: '160px' }}>জমার তারিখ</th>
                   <th style={{ width: '130px', textAlign: 'center' }}>অবস্থা</th>
-                  <th style={{ width: '160px', textAlign: 'center' }}>কার্যক্রম</th>
+                  <th style={{ width: '230px', textAlign: 'center' }}>কার্যক্রম</th>
                 </tr>
               </thead>
               <tbody>
                 {paginatedMonths.map((m, idx) => {
                   const payment = paymentsMap[m];
                   const charge = Calc.rateForMonth(data.settings, m, currentFlat);
+                  
+                  const draft = localRows[m];
+                  const isDrafting = draft !== undefined;
+                  const currentVal = draft !== undefined ? draft : (payment || {});
+                  
                   const isPaid = payment && Number(payment.amount) > 0;
+                  const hasDraftAmount = currentVal.amount && Number(currentVal.amount) > 0;
 
                   return (
                     <tr
                       key={m}
-                      className={isPaid ? 'paid-row' : 'due-row'}
+                      className={isPaid || (isDrafting && hasDraftAmount) ? 'paid-row' : 'due-row'}
                     >
                       <td style={{ textAlign: 'center', color: '#64748b' }}>
                         {U.bnDigits(allMonths.indexOf(m) + 1)}
@@ -353,7 +557,7 @@ export function SingleFlatEntryView({ onOpenLedger }) {
                           disabled={isReadOnly}
                           className="table-input"
                           style={{ background: isReadOnly ? '#f8fafc' : '#fff', cursor: isReadOnly ? 'default' : 'auto' }}
-                          value={payment ? payment.amount : ''}
+                          value={currentVal.amount !== undefined ? currentVal.amount : ''}
                           placeholder={isReadOnly ? '—' : U.bnNumber(charge)}
                           onChange={(e) => handleInputChange(m, 'amount', e.target.value)}
                         />
@@ -363,7 +567,7 @@ export function SingleFlatEntryView({ onOpenLedger }) {
                           className="table-input"
                           disabled={isReadOnly}
                           style={{ background: isReadOnly ? '#f8fafc' : '#fff', cursor: isReadOnly ? 'default' : 'pointer' }}
-                          value={payment ? payment.collectorId : ''}
+                          value={currentVal.collectorId || ''}
                           onChange={(e) => handleInputChange(m, 'collectorId', e.target.value)}
                         >
                           <option value="">-- আদায়কারী --</option>
@@ -380,12 +584,18 @@ export function SingleFlatEntryView({ onOpenLedger }) {
                           disabled={isReadOnly}
                           className="table-input"
                           style={{ background: isReadOnly ? '#f8fafc' : '#fff', cursor: isReadOnly ? 'default' : 'auto' }}
-                          value={payment ? payment.receivedOn : ''}
+                          value={currentVal.receivedOn || ''}
                           onChange={(e) => handleInputChange(m, 'receivedOn', e.target.value)}
                         />
                       </td>
                       <td style={{ textAlign: 'center' }}>
-                        {isPaid ? (
+                        {isDrafting ? (
+                          hasDraftAmount ? (
+                            <span className="pill warning">জমা হচ্ছে...</span>
+                          ) : (
+                            <span className="pill due">বকেয়া</span>
+                          )
+                        ) : isPaid ? (
                           <span className="pill ok">
                             <Check size={12} /> জমা {U.bnNumber(payment.amount)}
                           </span>
@@ -394,37 +604,61 @@ export function SingleFlatEntryView({ onOpenLedger }) {
                         )}
                       </td>
                       <td style={{ textAlign: 'center' }}>
-                        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '6px' }}>
-                          {!isReadOnly ? (
-                            <>
-                              <button
-                                onClick={() => handleFillStandard(m)}
-                                className="btn btn-outline btn-sm"
-                                title="ধার্যকৃত টাকা বসান"
-                                style={{ padding: '2px 8px', fontSize: '12.5px' }}
-                              >
-                                {U.bnNumber(charge)}
-                              </button>
-                              {isPaid && (
-                                <button
-                                  onClick={() => deletePayment(currentFlat.id, m)}
-                                  className="btn btn-icon"
-                                  title="রিসেট / মুছে ফেলুন"
-                                  style={{ color: '#ef4444', padding: '3px' }}
-                                >
-                                  <RotateCcw size={14} />
-                                </button>
-                              )}
-                            </>
-                          ) : (
-                            <span style={{ color: '#94a3b8', fontSize: '13px' }}>—</span>
-                          )}
+                        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '5px', flexWrap: 'nowrap' }}>
+                          <button
+                            onClick={() => handleSaveEntry(m)}
+                            disabled={isReadOnly}
+                            className="btn btn-outline btn-sm"
+                            title={`এন্ট্রি সেভ করুন (ধার্য ${U.bnNumber(charge)}/-)`}
+                            style={{ padding: '3px 7px', fontSize: '12px', color: isReadOnly ? undefined : 'var(--success)' }}
+                          >
+                            <Save size={13} />
+                            <span>সেভ</span>
+                          </button>
+                          <button
+                            onClick={() => handlePrintReceipt(m)}
+                            disabled={!isPaid}
+                            className="btn btn-outline btn-sm"
+                            title={isPaid ? 'রিসিট দেখুন' : 'জমা না থাকলে রিসিট দেখা যাবে না'}
+                            style={{ padding: '3px 7px', fontSize: '12px', color: isPaid ? 'var(--primary)' : undefined }}
+                          >
+                            <Receipt size={13} />
+                            <span>রিসিট</span>
+                          </button>
+                          <button
+                            onClick={() => handleClearEntry(m)}
+                            disabled={isReadOnly || (!isPaid && !isDrafting)}
+                            className="btn btn-outline btn-sm"
+                            title={(isPaid || isDrafting) ? 'ডাটা ক্লীয়ার করুন' : 'ক্লীয়ার করার মতো কোনো এন্ট্রি নেই'}
+                            style={{ padding: '3px 7px', fontSize: '12px', color: !isReadOnly && (isPaid || isDrafting) ? '#ef4444' : undefined }}
+                          >
+                            <Eraser size={13} />
+                            <span>ক্লীয়ার</span>
+                          </button>
                         </div>
                       </td>
                     </tr>
                   );
                 })}
               </tbody>
+
+              {/* নিচের সারসংক্ষেপ — স্ক্রল করলেও নিচে আটকে থাকে */}
+              <tfoot>
+                <tr>
+                  <td colSpan={2} style={FOOT_CELL}>
+                    প্রদর্শিত {U.bnDigits(displayMonths.length)} মাসের সারসংক্ষেপ
+                  </td>
+                  <td style={{ ...FOOT_CELL, textAlign: 'right' }}>{U.bnTaka(shownCharged)}</td>
+                  <td style={{ ...FOOT_CELL, color: 'var(--primary)' }}>{U.bnTaka(shownPaid)}</td>
+                  <td colSpan={2} style={{ ...FOOT_CELL, color: '#64748b', fontWeight: 600 }}>
+                    {U.bnDigits(shownPaidCount)} মাস জমা &nbsp;•&nbsp; {U.bnDigits(shownDueCount)} মাস বাকি
+                  </td>
+                  <td style={{ ...FOOT_CELL, textAlign: 'center', color: shownDue > 0 ? 'var(--danger)' : 'var(--success)' }}>
+                    {shownDue > 0 ? `বকেয়া ${U.bnTaka(shownDue)}` : 'পরিশোধিত'}
+                  </td>
+                  <td style={FOOT_CELL}></td>
+                </tr>
+              </tfoot>
             </table>
           </div>
           <Pagination
@@ -476,6 +710,66 @@ export function SingleFlatEntryView({ onOpenLedger }) {
           </p>
         </div>
       </Modal>
+
+      {/* সব রসিদ একসাথে */}
+      <Modal
+        isOpen={allReceiptsOpen}
+        onClose={() => setAllReceiptsOpen(false)}
+        maxWidth="760px"
+        title={`${currentFlat.flatNo} — সব মাসের রসিদ (${U.bnDigits(paidReceipts.length)} টি)`}
+        footer={
+          <>
+            <button onClick={() => setPrintList(paidReceipts)} className="btn btn-primary">
+              <Printer size={15} />
+              <span>সব রসিদ প্রিন্ট করুন</span>
+            </button>
+            <button onClick={() => setAllReceiptsOpen(false)} className="btn btn-outline">
+              বন্ধ করুন
+            </button>
+          </>
+        }
+      >
+        <p style={{ fontSize: '12.5px', color: '#64748b', marginBottom: '12px' }}>
+          যেসব মাসে টাকা জমা লেখা আছে কেবল সেগুলোর রসিদ এখানে দেখানো হচ্ছে। প্রিন্ট করলে
+          প্রতিটি রসিদ আলাদা পাতায় ছাপা হবে।
+        </p>
+        <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
+          {paidReceipts.map((p) => (
+            <ReceiptSheet key={p.month} payment={p} flat={currentFlat} settings={data.settings} />
+          ))}
+        </div>
+      </Modal>
+
+      {/* কাগজে ছাপার জন্য — পর্দায় কখনো দেখা যায় না */}
+      {printList.length > 0 && (
+        <div className="receipt-print-area">
+          {printList.map((p) => (
+            <ReceiptSheet key={p.month} payment={p} flat={currentFlat} settings={data.settings} />
+          ))}
+        </div>
+      )}
+
+      {/* Money Receipt Modal */}
+      {receiptModal.isOpen && receiptModal.payment && (
+        <Modal
+          isOpen={receiptModal.isOpen}
+          onClose={() => setReceiptModal({ isOpen: false, payment: null })}
+          title="সার্ভিস চার্জ আদায়ের মানি রসিদ"
+          footer={
+            <>
+              <button onClick={() => setPrintList([receiptModal.payment])} className="btn btn-primary">
+                <Printer size={15} />
+                <span>রসিদ প্রিন্ট করুন</span>
+              </button>
+              <button onClick={() => setReceiptModal({ isOpen: false, payment: null })} className="btn btn-outline">
+                বন্ধ করুন
+              </button>
+            </>
+          }
+        >
+          <ReceiptSheet payment={receiptModal.payment} flat={currentFlat} settings={data.settings} />
+        </Modal>
+      )}
     </div>
   );
 }

@@ -49,7 +49,8 @@ export function DefaultersView({ onOpenSelectivePrint }) {
           alignItems: 'center',
           flexWrap: 'wrap',
           gap: '12px',
-          marginBottom: '20px'
+          marginBottom: '20px',
+          overflow: 'visible'
         }}
       >
         <div>

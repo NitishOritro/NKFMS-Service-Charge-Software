@@ -1,22 +1,30 @@
 import React, { useState } from 'react';
 import { useAuth } from '../context/AuthContext';
 import { useData } from '../context/DataContext';
-import { User, KeyRound, ShieldCheck, AlertCircle } from 'lucide-react';
+import { Mail, KeyRound, ShieldCheck, AlertCircle, Eye } from 'lucide-react';
 import { LOGO_BASE64 } from '../assets/logoData';
 
 export function LoginView() {
-  const [username, setUsername] = useState('nitish');
+  const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
   const [error, setError] = useState('');
+  const [busy, setBusy] = useState(false);
   const { login } = useAuth();
   const { data } = useData();
+
+  const isViewer = username.trim().toLowerCase() === 'viewer';
 
   const handleSubmit = async (e) => {
     e.preventDefault();
     setError('');
-    const res = await login(username, password, data.users);
-    if (!res.ok) {
-      setError(res.error || 'লগইন ব্যর্থ হয়েছে।');
+    setBusy(true);
+    try {
+      const res = await login(username, password);
+      if (!res.ok) {
+        setError(res.error || 'লগইন ব্যর্থ হয়েছে।');
+      }
+    } finally {
+      setBusy(false);
     }
   };
 
@@ -75,7 +83,7 @@ export function LoginView() {
           <div className="form-group" style={{ marginBottom: '16px' }}>
             <label className="form-label" htmlFor="login-username">
               <span style={{ display: 'inline-flex', alignItems: 'center', gap: '7px' }}>
-                <User size={16} color="var(--primary)" /> ইউজারনেম
+                <Mail size={16} color="var(--primary)" /> ইমেইল
               </span>
             </label>
             <input
@@ -84,7 +92,7 @@ export function LoginView() {
               className="form-input"
               value={username}
               onChange={(e) => setUsername(e.target.value)}
-              placeholder="ইউজারনেম দিন"
+              placeholder="অ্যাডমিনের ইমেইল — শুধু দেখতে চাইলে viewer"
               autoComplete="username"
               required
             />
@@ -102,14 +110,15 @@ export function LoginView() {
               className="form-input"
               value={password}
               onChange={(e) => setPassword(e.target.value)}
-              placeholder={username === 'nitish' ? 'পাসওয়ার্ড দিন' : 'পাসওয়ার্ড (ঐচ্ছিক)'}
+              placeholder={isViewer ? 'ভিউ মোডে পাসওয়ার্ড লাগে না' : 'পাসওয়ার্ড দিন'}
               autoComplete="current-password"
+              disabled={isViewer}
             />
           </div>
 
-          <button type="submit" className="btn btn-primary btn-lg btn-block">
+          <button type="submit" className="btn btn-primary btn-lg btn-block" disabled={busy}>
             <ShieldCheck size={20} />
-            <span>সফটওয়্যারে প্রবেশ করুন</span>
+            <span>{busy ? 'যাচাই করা হচ্ছে…' : 'সফটওয়্যারে প্রবেশ করুন'}</span>
           </button>
         </form>
 
@@ -118,18 +127,13 @@ export function LoginView() {
         <div className="auth-role-grid">
           <button
             type="button"
-            onClick={() => pickRole('nitish')}
-            className={`auth-role-btn ${username === 'nitish' ? 'selected-admin' : ''}`}
-          >
-            অ্যাডমিন (Admin)
-          </button>
-
-          <button
-            type="button"
             onClick={() => pickRole('viewer')}
-            className={`auth-role-btn ${username === 'viewer' ? 'selected-viewer' : ''}`}
+            className={`auth-role-btn ${isViewer ? 'selected-viewer' : ''}`}
+            style={{ gridColumn: '1 / -1' }}
           >
-            ভিউ মুড (View Only)
+            <span style={{ display: 'inline-flex', alignItems: 'center', gap: '7px' }}>
+              <Eye size={15} /> পাসওয়ার্ড ছাড়া দেখুন (View Only)
+            </span>
           </button>
         </div>
 

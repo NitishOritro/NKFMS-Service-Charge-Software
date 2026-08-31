@@ -1,130 +1,215 @@
-import React, { createContext, useContext, useState, useEffect } from 'react';
-import { INITIAL_DATA } from '../data/initialData';
+import React, { createContext, useContext, useState, useEffect, useCallback } from 'react';
 import * as U from '../utils/format';
+import {
+  supabase,
+  hasSupabaseConfig,
+  flatFromRow,
+  flatToRow,
+  paymentFromRow,
+  paymentToRow
+} from '../lib/supabase';
 
 const DataContext = createContext();
-const STORAGE_KEY = 'nkfms_database_v2';
+
+// ============================================================================
+//  ডাটার একমাত্র উৎস — Supabase (PostgreSQL)
+//  ব্রাউজারের localStorage বা ক্যাশে কোনো হিসাব রাখা হয় না, তাই Chrome, Edge,
+//  Firefox — যে কম্পিউটার বা ফোন থেকেই খুলুন, সবসময় একই ডাটা দেখা যায়।
+//
+//  পড়া  : সবাই পারে (ভিউ মোড)
+//  লেখা : কেবল লগইন করা ব্যবহারকারী — সুরক্ষা ডাটাবেজেই (Row Level Security),
+//         তাই ব্রাউজারের কোড বদলেও কেউ হিসাব পাল্টাতে পারবে না।
+// ============================================================================
+
+const SCREEN_STYLE = {
+  display: 'flex',
+  alignItems: 'center',
+  justifyContent: 'center',
+  minHeight: '100vh',
+  padding: '24px',
+  background: '#f1f5f9'
+};
+
+const newId = (prefix) =>
+  `${prefix}-${Date.now().toString(36)}-${Math.random().toString(36).slice(2, 6)}`;
 
 export function DataProvider({ children }) {
-  const [data, setData] = useState(() => {
-    try {
-      const saved = localStorage.getItem(STORAGE_KEY);
-      if (saved) {
-        const parsed = JSON.parse(saved);
-        if (parsed && Array.isArray(parsed.flats) && Array.isArray(parsed.payments)) {
-          // Data correction migration
-          parsed.flats = (parsed.flats || []).map((f) => {
-            if (f.flatNo === 'A-5' || f.ownerName === 'জ্যোতি রানী বিশ্বাস') {
-              return { ...f, ownerName: 'ষষ্ঠী রাণী বিশ্বাস' };
-            }
-            return f;
-          });
-          parsed.users = INITIAL_DATA.users;
-          return parsed;
-        }
-      }
-    } catch (e) {
-      console.error('Failed to parse saved database:', e);
-    }
-    return INITIAL_DATA;
-  });
-
-  const [selectedMonth, setSelectedMonth] = useState('2026-08');
+  const [data, setData] = useState(null);
+  const [loadError, setLoadError] = useState(null);
+  const [session, setSession] = useState(null);
   const [toasts, setToasts] = useState([]);
+  const [selectedMonth, setSelectedMonth] = useState('2026-08');
 
-  // Auto-save to localStorage whenever data changes
-  useEffect(() => {
-    try {
-      localStorage.setItem(STORAGE_KEY, JSON.stringify(data));
-    } catch (e) {
-      console.error('Failed to save to localStorage:', e);
-    }
-  }, [data]);
+  const canWrite = Boolean(session);
 
-  const addToast = (message, type = 'success') => {
+  const addToast = useCallback((message, type = 'success') => {
     const id = Date.now() + Math.random();
     setToasts((prev) => [...prev, { id, message, type }]);
     setTimeout(() => {
       setToasts((prev) => prev.filter((t) => t.id !== id));
     }, 3500);
+  }, []);
+
+  const removeToast = (id) => setToasts((prev) => prev.filter((t) => t.id !== id));
+
+  // ---- ডাটাবেজ থেকে সব পড়া ------------------------------------------------
+  const loadAll = useCallback(async () => {
+    if (!hasSupabaseConfig) {
+      setLoadError('Supabase সংযোগের তথ্য (.env) পাওয়া যায়নি।');
+      return;
+    }
+    try {
+      const [settingsRes, flatsRes, paymentsRes] = await Promise.all([
+        supabase.from('app_settings').select('data').eq('id', 1).single(),
+        supabase.from('flats').select('*').order('serial', { ascending: true }),
+        // ১০০০ সারির ডিফল্ট সীমা ছাড়িয়ে যাওয়া ঠেকাতে সুস্পষ্ট range
+        supabase.from('payments').select('*').range(0, 99999)
+      ]);
+
+      if (settingsRes.error) throw settingsRes.error;
+      if (flatsRes.error) throw flatsRes.error;
+      if (paymentsRes.error) throw paymentsRes.error;
+
+      setData({
+        version: 1,
+        settings: settingsRes.data.data,
+        flats: (flatsRes.data || []).map(flatFromRow),
+        payments: (paymentsRes.data || []).map(paymentFromRow)
+      });
+      setLoadError(null);
+    } catch (e) {
+      console.error('ডাটাবেজ থেকে ডাটা আনা যায়নি:', e);
+      setLoadError(e.message || String(e));
+    }
+  }, []);
+
+  useEffect(() => {
+    loadAll();
+  }, [loadAll]);
+
+  // ---- লগইনের অবস্থা ------------------------------------------------------
+  useEffect(() => {
+    supabase.auth.getSession().then(({ data: d }) => setSession(d.session));
+    const { data: sub } = supabase.auth.onAuthStateChange((_event, s) => setSession(s));
+    return () => sub.subscription.unsubscribe();
+  }, []);
+
+  // ---- লেখার সাধারণ মোড়ক ---------------------------------------------------
+  // স্থানীয় অবস্থা সাথে সাথে বদলায় (পর্দা দ্রুত সাড়া দেয়), তারপর ডাটাবেজে লেখা
+  // হয়। ব্যর্থ হলে জানিয়ে দিয়ে ডাটাবেজ থেকে আবার পড়া হয়, যাতে পর্দায় কখনো ভুল
+  // হিসাব থেকে না যায়।
+  const guard = () => {
+    if (!canWrite) {
+      addToast('পরিবর্তন সংরক্ষণ করতে লগইন করুন।', 'error');
+      return false;
+    }
+    return true;
   };
 
-  const removeToast = (id) => {
-    setToasts((prev) => prev.filter((t) => t.id !== id));
+  const runWrite = async (task, failMessage) => {
+    try {
+      const { error } = await task();
+      if (error) throw error;
+      return true;
+    } catch (e) {
+      console.error(failMessage, e);
+      addToast(`${failMessage} (${e.message || e})`, 'error');
+      loadAll();
+      return false;
+    }
   };
 
-  // Payment CRUD
-  const getPayment = (flatId, month) => {
-    return data.payments.find((p) => p.flatId === flatId && p.month === month) || null;
-  };
+  // ---- জমার এন্ট্রি --------------------------------------------------------
+  const getPayment = (flatId, month) =>
+    data.payments.find((p) => p.flatId === flatId && p.month === month) || null;
 
   const setPayment = (flatId, month, paymentObj) => {
+    if (!guard()) return;
+    const existing = data.payments.find((p) => p.flatId === flatId && p.month === month);
+    const record = {
+      id: existing ? existing.id : newId('p'),
+      flatId,
+      month,
+      amount: Number(paymentObj.amount) || 0,
+      collectorId: paymentObj.collectorId || '',
+      receivedOn: paymentObj.receivedOn || U.monthEndIso(month),
+      note: paymentObj.note || ''
+    };
+
     setData((prev) => {
-      const existingIdx = prev.payments.findIndex((p) => p.flatId === flatId && p.month === month);
-      const updatedPayments = [...prev.payments];
-      
-      const newRecord = {
-        id: existingIdx >= 0 ? prev.payments[existingIdx].id : `p-${Date.now().toString(36)}-${Math.random().toString(36).slice(2, 6)}`,
-        flatId,
-        month,
-        amount: Number(paymentObj.amount) || 0,
-        collectorId: paymentObj.collectorId || '',
-        receivedOn: paymentObj.receivedOn || U.monthEndIso(month),
-        note: paymentObj.note || ''
-      };
-
-      if (existingIdx >= 0) {
-        updatedPayments[existingIdx] = newRecord;
-      } else {
-        updatedPayments.push(newRecord);
-      }
-
-      return { ...prev, payments: updatedPayments };
+      const idx = prev.payments.findIndex((p) => p.flatId === flatId && p.month === month);
+      const list = [...prev.payments];
+      if (idx >= 0) list[idx] = record;
+      else list.push(record);
+      return { ...prev, payments: list };
     });
+
+    runWrite(
+      () => supabase.from('payments').upsert(paymentToRow(record), { onConflict: 'flat_id,month' }),
+      'এন্ট্রি সংরক্ষণ করা যায়নি'
+    );
   };
 
   const deletePayment = (flatId, month) => {
+    if (!guard()) return;
     setData((prev) => ({
       ...prev,
       payments: prev.payments.filter((p) => !(p.flatId === flatId && p.month === month))
     }));
-    addToast('এন্ট্রি মুছে ফেলা হয়েছে।', 'warning');
+    runWrite(
+      () => supabase.from('payments').delete().eq('flat_id', flatId).eq('month', month),
+      'এন্ট্রি মুছে ফেলা যায়নি'
+    ).then((ok) => ok && addToast('এন্ট্রি মুছে ফেলা হয়েছে।', 'warning'));
   };
 
   const bulkSetPayments = (newPaymentsList) => {
-    setData((prev) => {
-      const map = new Map(prev.payments.map((p) => [`${p.flatId}_${p.month}`, p]));
-      newPaymentsList.forEach((np) => {
-        const key = `${np.flatId}_${np.month}`;
-        const existing = map.get(key);
-        map.set(key, {
-          id: existing ? existing.id : `p-${Date.now().toString(36)}-${Math.random().toString(36).slice(2, 6)}`,
-          flatId: np.flatId,
-          month: np.month,
-          amount: Number(np.amount) || 0,
-          collectorId: np.collectorId || (existing ? existing.collectorId : ''),
-          receivedOn: np.receivedOn || U.monthEndIso(np.month),
-          note: np.note || ''
-        });
-      });
-      return { ...prev, payments: Array.from(map.values()) };
+    if (!guard()) return;
+    const map = new Map(data.payments.map((p) => [`${p.flatId}_${p.month}`, p]));
+    const records = newPaymentsList.map((np) => {
+      const existing = map.get(`${np.flatId}_${np.month}`);
+      return {
+        id: existing ? existing.id : newId('p'),
+        flatId: np.flatId,
+        month: np.month,
+        amount: Number(np.amount) || 0,
+        collectorId: np.collectorId || (existing ? existing.collectorId : ''),
+        receivedOn: np.receivedOn || U.monthEndIso(np.month),
+        note: np.note || ''
+      };
     });
-    addToast('সকল এন্ট্রি সফলভাবে সংরক্ষিত হয়েছে।', 'success');
+
+    setData((prev) => {
+      const m = new Map(prev.payments.map((p) => [`${p.flatId}_${p.month}`, p]));
+      records.forEach((r) => m.set(`${r.flatId}_${r.month}`, r));
+      return { ...prev, payments: Array.from(m.values()) };
+    });
+
+    runWrite(
+      () =>
+        supabase.from('payments').upsert(records.map(paymentToRow), { onConflict: 'flat_id,month' }),
+      'এন্ট্রিগুলো সংরক্ষণ করা যায়নি'
+    ).then((ok) => ok && addToast('সকল এন্ট্রি সফলভাবে সংরক্ষিত হয়েছে।', 'success'));
   };
 
-  // Flat CRUD
+  // ---- ফ্ল্যাট -------------------------------------------------------------
   const updateFlat = (flatId, flatData) => {
+    if (!guard()) return;
+    const merged = { ...data.flats.find((f) => f.id === flatId), ...flatData, id: flatId };
     setData((prev) => ({
       ...prev,
-      flats: prev.flats.map((f) => (f.id === flatId ? { ...f, ...flatData } : f))
+      flats: prev.flats.map((f) => (f.id === flatId ? merged : f))
     }));
-    addToast('ফ্ল্যাটের তথ্য হালনাগাদ করা হয়েছে।', 'success');
+    runWrite(
+      () => supabase.from('flats').upsert(flatToRow(merged), { onConflict: 'id' }),
+      'ফ্ল্যাটের তথ্য সংরক্ষণ করা যায়নি'
+    ).then((ok) => ok && addToast('ফ্ল্যাটের তথ্য হালনাগাদ করা হয়েছে।', 'success'));
   };
 
   const addFlat = (flatData) => {
+    if (!guard()) return;
     const newFlat = {
-      id: `f-${Date.now().toString(36)}`,
-      serial: Number(flatData.serial) || (data.flats.length + 1),
+      id: newId('f'),
+      serial: Number(flatData.serial) || data.flats.length + 1,
       flatNo: flatData.flatNo || '',
       ownerName: flatData.ownerName || '',
       openingDue: Number(flatData.openingDue) || 0,
@@ -132,46 +217,42 @@ export function DataProvider({ children }) {
       note: flatData.note || '',
       active: flatData.active !== false
     };
-    setData((prev) => ({
-      ...prev,
-      flats: [...prev.flats, newFlat]
-    }));
-    addToast('নতুন ফ্ল্যাট যুক্ত করা হয়েছে।', 'success');
+    setData((prev) => ({ ...prev, flats: [...prev.flats, newFlat] }));
+    runWrite(
+      () => supabase.from('flats').insert(flatToRow(newFlat)),
+      'নতুন ফ্ল্যাট যোগ করা যায়নি'
+    ).then((ok) => ok && addToast('নতুন ফ্ল্যাট যুক্ত করা হয়েছে।', 'success'));
   };
 
-  // Settings & Collectors & Signatories
-  const updateSettings = (newSettings) => {
-    setData((prev) => ({
-      ...prev,
-      settings: { ...prev.settings, ...newSettings }
-    }));
-    addToast('সেটিংস সংরক্ষণ করা হয়েছে।', 'success');
+  // ---- সেটিংস / আদায়কারী / স্বাক্ষরকারী -------------------------------------
+  const saveSettings = (nextSettings, successMessage) => {
+    if (!guard()) return;
+    setData((prev) => ({ ...prev, settings: nextSettings }));
+    runWrite(
+      () => supabase.from('app_settings').update({ data: nextSettings }).eq('id', 1),
+      'সেটিংস সংরক্ষণ করা যায়নি'
+    ).then((ok) => ok && addToast(successMessage, 'success'));
   };
 
-  const updateCollectors = (collectors) => {
-    setData((prev) => ({
-      ...prev,
-      settings: { ...prev.settings, collectors }
-    }));
-    addToast('আদায়কারী তালিকা সংরক্ষিত হয়েছে।', 'success');
-  };
+  const updateSettings = (newSettings) =>
+    saveSettings({ ...data.settings, ...newSettings }, 'সেটিংস সংরক্ষণ করা হয়েছে।');
 
-  const updateSignatories = (signatories) => {
-    setData((prev) => ({
-      ...prev,
-      settings: { ...prev.settings, signatories }
-    }));
-    addToast('স্বাক্ষরকারী তালিকা সংরক্ষিত হয়েছে।', 'success');
-  };
+  const updateCollectors = (collectors) =>
+    saveSettings({ ...data.settings, collectors }, 'আদায়কারী তালিকা সংরক্ষিত হয়েছে।');
 
-  // Backup & Restore
+  const updateSignatories = (signatories) =>
+    saveSettings({ ...data.settings, signatories }, 'স্বাক্ষরকারী তালিকা সংরক্ষিত হয়েছে।');
+
+  // ---- ব্যাকআপ -------------------------------------------------------------
   const exportBackupJson = () => {
     const jsonStr = JSON.stringify(data, null, 2);
     const blob = new Blob([jsonStr], { type: 'application/json' });
     const url = URL.createObjectURL(blob);
     const a = document.createElement('a');
     const d = new Date();
-    const stamp = `${d.getFullYear()}${String(d.getMonth() + 1).padStart(2, '0')}${String(d.getDate()).padStart(2, '0')}`;
+    const stamp = `${d.getFullYear()}${String(d.getMonth() + 1).padStart(2, '0')}${String(
+      d.getDate()
+    ).padStart(2, '0')}`;
     a.href = url;
     a.download = `nkfms-backup-${stamp}.json`;
     a.click();
@@ -179,25 +260,91 @@ export function DataProvider({ children }) {
     addToast('ব্যাকআপ JSON ফাইল ডাউনলোড হয়েছে।', 'success');
   };
 
-  const importBackupJson = (jsonObj) => {
-    if (jsonObj && Array.isArray(jsonObj.flats) && Array.isArray(jsonObj.payments)) {
-      setData(jsonObj);
-      addToast('ব্যাকআপ ফাইল থেকে সকল ডেটা সফলভাবে লোড করা হয়েছে।', 'success');
-      return true;
+  const importBackupJson = async (jsonObj) => {
+    if (!guard()) return false;
+    if (!jsonObj || !Array.isArray(jsonObj.flats) || !Array.isArray(jsonObj.payments)) {
+      addToast('ভুল ফাইল ফরম্যাট। সঠিক JSON ব্যাকআপ ফাইল নির্বাচন করুন।', 'error');
+      return false;
     }
-    addToast('ভুল ফাইল ফরম্যাট। সঠিক JSON ব্যাকআপ ফাইল নির্বাচন করুন।', 'error');
-    return false;
+    try {
+      if (jsonObj.settings) {
+        const { error } = await supabase
+          .from('app_settings')
+          .update({ data: jsonObj.settings })
+          .eq('id', 1);
+        if (error) throw error;
+      }
+      const { error: fErr } = await supabase
+        .from('flats')
+        .upsert(jsonObj.flats.map(flatToRow), { onConflict: 'id' });
+      if (fErr) throw fErr;
+
+      // বড় তালিকা ভাগে ভাগে পাঠানো হয়
+      const rows = jsonObj.payments.map(paymentToRow);
+      for (let i = 0; i < rows.length; i += 200) {
+        const { error: pErr } = await supabase
+          .from('payments')
+          .upsert(rows.slice(i, i + 200), { onConflict: 'flat_id,month' });
+        if (pErr) throw pErr;
+      }
+      await loadAll();
+      addToast('ব্যাকআপ ফাইল থেকে সকল ডেটা ডাটাবেজে তোলা হয়েছে।', 'success');
+      return true;
+    } catch (e) {
+      console.error('ব্যাকআপ থেকে তোলা যায়নি:', e);
+      addToast(`ব্যাকআপ তোলা যায়নি (${e.message || e})`, 'error');
+      return false;
+    }
   };
 
-  const resetToDefault = () => {
-    setData(INITIAL_DATA);
-    addToast('ডিফল্ট ডেটাবেজ রিসেট করা হয়েছে।', 'warning');
+  // আগে এটি ডিফল্ট ডাটা বসাত; এখন ডাটাবেজই একমাত্র উৎস, তাই আবার পড়ে নেয়
+  const resetToDefault = async () => {
+    await loadAll();
+    addToast('ডাটাবেজ থেকে সর্বশেষ ডেটা আবার লোড করা হয়েছে।', 'success');
   };
+
+  // ---- পর্দা ---------------------------------------------------------------
+  if (loadError) {
+    return (
+      <div style={SCREEN_STYLE}>
+        <div style={{ maxWidth: '540px', textAlign: 'center' }}>
+          <h2 style={{ fontSize: '18px', fontWeight: 700, color: '#b91c1c', marginBottom: '10px' }}>
+            ডাটাবেজ থেকে ডাটা আনা যায়নি
+          </h2>
+          <p style={{ fontSize: '14px', color: '#475569', lineHeight: 1.6 }}>
+            ইন্টারনেট সংযোগ আছে কিনা দেখুন। সমস্যা থাকলে Supabase প্রজেক্টটি চালু আছে কিনা
+            যাচাই করুন।
+          </p>
+          <pre
+            style={{ marginTop: '12px', fontSize: '12px', color: '#64748b', whiteSpace: 'pre-wrap' }}
+          >
+            {loadError}
+          </pre>
+          <button onClick={loadAll} className="btn btn-primary" style={{ marginTop: '16px' }}>
+            আবার চেষ্টা করুন
+          </button>
+        </div>
+      </div>
+    );
+  }
+
+  if (!data) {
+    return (
+      <div style={SCREEN_STYLE}>
+        <div style={{ textAlign: 'center', color: '#475569' }}>
+          <div style={{ fontSize: '15px', fontWeight: 600 }}>ডাটা লোড হচ্ছে…</div>
+          <div style={{ fontSize: '12.5px', marginTop: '6px' }}>ডাটাবেজ থেকে আনা হচ্ছে</div>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <DataContext.Provider
       value={{
         data,
+        canWrite,
+        reload: loadAll,
         selectedMonth,
         setSelectedMonth,
         getPayment,

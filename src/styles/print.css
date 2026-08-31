@@ -1,3 +1,8 @@
+/* রসিদ প্রিন্টের এলাকা — পর্দায় কখনো দেখা যায় না, কেবল কাগজে */
+.receipt-print-area {
+  display: none;
+}
+
 /* A4 প্রিন্ট ও PDF স্টাইলশিট */
 
 @media print {
@@ -233,5 +238,36 @@
     font-size: 9.5px !important;
     text-align: center !important;
     color: #444 !important;
+  }
+}
+
+/* ---------------------------------------------------------------
+   রসিদ প্রিন্ট
+   মডাল (.modal-overlay) কাগজে ছাপা হয় না, তাই রসিদ ছাপার সময়
+   পাতার বাকি সব লুকিয়ে কেবল .receipt-print-area দেখানো হয়।
+   --------------------------------------------------------------- */
+@media print {
+  body.printing-receipts .sidebar,
+  body.printing-receipts .navbar,
+  body.printing-receipts .page-body > *:not(.receipt-print-area) {
+    display: none !important;
+  }
+
+  body.printing-receipts .receipt-print-area {
+    display: block !important;
+  }
+
+  body.printing-receipts .receipt-sheet {
+    border: 2px solid #000 !important;
+    background: #fff !important;
+    padding: 10mm !important;
+    margin: 0 !important;
+    page-break-after: always;
+    break-after: page;
+  }
+
+  body.printing-receipts .receipt-sheet:last-child {
+    page-break-after: auto;
+    break-after: auto;
   }
 }
