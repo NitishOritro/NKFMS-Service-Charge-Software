@@ -45,14 +45,12 @@ export function LoginView() {
         <div style={{ display: 'flex', justifyContent: 'center', marginBottom: '16px' }}>
           <img
             src={logoImg}
-            alt="Logo"
+            alt="NKFMS Logo"
             style={{
-              width: '74px',
-              height: '74px',
-              borderRadius: '50%',
-              objectFit: 'cover',
-              border: '3px solid #0284c7',
-              boxShadow: '0 4px 12px rgba(2, 132, 199, 0.3)'
+              width: '96px',
+              height: '96px',
+              objectFit: 'contain',
+              filter: 'drop-shadow(0 4px 10px rgba(0, 0, 0, 0.12))'
             }}
           />
         </div>

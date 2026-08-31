@@ -102,10 +102,7 @@ button, input, select, textarea {
 .sidebar-logo {
   width: 44px;
   height: 44px;
-  border-radius: 50%;
-  object-fit: cover;
-  border: 2px solid #38bdf8;
-  background: #fff;
+  object-fit: contain;
 }
 
 .sidebar-title {
