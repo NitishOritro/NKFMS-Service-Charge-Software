@@ -53,7 +53,7 @@ export function DefaultersView({ onOpenSelectivePrint }) {
         }}
       >
         <div>
-          <h2 style={{ fontSize: '18px', fontWeight: 800, color: 'var(--danger-dark)' }}>
+          <h2 style={{ fontSize: '18px', fontWeight: 700, color: 'var(--danger-dark)' }}>
             বকেয়া ফ্ল্যাটের তালিকা ও বিবরণী ({U.monthLabel(selectedMonth)} পর্যন্ত)
           </h2>
           <p style={{ fontSize: '12.5px', color: '#64748b', marginTop: '2px' }}>
@@ -129,7 +129,7 @@ export function DefaultersView({ onOpenSelectivePrint }) {
                       <td style={{ textAlign: 'right' }}>{s.opening ? U.bnNumber(s.opening) : '০'}</td>
                       <td style={{ textAlign: 'right' }}>{U.bnNumber(s.charged)}</td>
                       <td style={{ textAlign: 'right', color: 'var(--success-dark)' }}>{U.bnNumber(s.paid)}</td>
-                      <td style={{ textAlign: 'right', fontWeight: 800, color: s.due > 0 ? 'var(--danger)' : 'var(--success)' }}>
+                      <td style={{ textAlign: 'right', fontWeight: 700, color: s.due > 0 ? 'var(--danger)' : 'var(--success)' }}>
                         {s.due > 0 ? U.bnTaka(s.due) : '০'}
                       </td>
                       <td style={{ textAlign: 'center' }}>
@@ -149,7 +149,7 @@ export function DefaultersView({ onOpenSelectivePrint }) {
                 })}
               </tbody>
               <tfoot>
-                <tr style={{ background: '#f1f5f9', fontWeight: 800 }}>
+                <tr style={{ background: '#f1f5f9', fontWeight: 700 }}>
                   <td colSpan="8" style={{ textAlign: 'right' }}>সর্বমোট বকেয়া পাওনা:</td>
                   <td style={{ textAlign: 'right', color: 'var(--danger)', fontSize: '15px' }}>
                     {U.bnTaka(statuses.reduce((acc, s) => acc + s.due, 0))}

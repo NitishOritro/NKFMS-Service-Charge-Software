@@ -74,7 +74,7 @@ export function FlatManagementView() {
         }}
       >
         <div>
-          <h2 style={{ fontSize: '18px', fontWeight: 800 }}>ফ্ল্যাট ও মালিকদের তালিকা ব্যবস্থাপনা</h2>
+          <h2 style={{ fontSize: '18px', fontWeight: 700 }}>ফ্ল্যাট ও মালিকদের তালিকা ব্যবস্থাপনা</h2>
           <p style={{ fontSize: '12.5px', color: '#64748b', marginTop: '2px' }}>
             মোট সক্রিয় ফ্ল্যাট: <b>{U.bnDigits(flats.length)} টি</b>
           </p>
@@ -212,7 +212,7 @@ export function FlatManagementView() {
                 value={formData.openingDue}
                 onChange={(e) => setFormData({ ...formData, openingDue: e.target.value })}
               />
-              <span style={{ fontSize: '11.5px', color: '#64748b' }}>জুলাই ২০২৪ পর্যন্ত যা বাকি ছিল</span>
+              <span style={{ fontSize: '12.5px', color: '#64748b' }}>জুলাই ২০২৪ পর্যন্ত যা বাকি ছিল</span>
             </div>
 
             <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '10px', marginTop: '20px' }}>

@@ -31,7 +31,7 @@ export function MonthlySummaryView({ onOpenPrint }) {
         }}
       >
         <div>
-          <h2 style={{ fontSize: '18px', fontWeight: 800 }}>
+          <h2 style={{ fontSize: '18px', fontWeight: 700 }}>
             {U.monthLabel(selectedMonth)} — মাসিক হিসাবায়ন ও সারসংক্ষেপ
           </h2>
           <p style={{ fontSize: '12.5px', color: '#64748b', marginTop: '2px' }}>
@@ -92,7 +92,7 @@ export function MonthlySummaryView({ onOpenPrint }) {
                 })}
               </tbody>
               <tfoot>
-                <tr style={{ background: '#f1f5f9', fontWeight: 800, fontSize: '14px' }}>
+                <tr style={{ background: '#f1f5f9', fontWeight: 700, fontSize: '14px' }}>
                   <td colSpan="3" style={{ textAlign: 'right' }}>সর্বমোট:</td>
                   <td style={{ textAlign: 'right', color: 'var(--primary)' }}>{U.bnTaka(totals.monthCollected)}</td>
                   <td style={{ textAlign: 'right', color: 'var(--danger)' }}>{U.bnTaka(totals.totalDue)}</td>

@@ -15,58 +15,80 @@ import { useAuth } from '../context/AuthContext';
 import { useData } from '../context/DataContext';
 import { LOGO_BASE64 } from '../assets/logoData';
 
+// মেনু তিনটি যৌক্তিক ভাগে সাজানো — এতে নেভিগেশন দ্রুত ও পেশাদার দেখায়।
+const NAV_GROUPS = [
+  {
+    label: 'আদায় ও এন্ট্রি',
+    items: [
+      { id: 'dashboard', label: 'ড্যাশবোর্ড', icon: LayoutDashboard },
+      { id: 'collection', label: 'মাসিক আদায় এন্ট্রি', icon: CalendarCheck },
+      { id: 'flat-entry', label: 'একক ফ্ল্যাট এন্ট্রি (২৫ মাস)', icon: Layers, highlight: true }
+    ]
+  },
+  {
+    label: 'হিসাব ও প্রতিবেদন',
+    items: [
+      { id: 'summary', label: 'মাসিক হিসাব সারসংক্ষেপ', icon: FileSpreadsheet },
+      { id: 'defaulters', label: 'বকেয়া তালিকা', icon: AlertTriangle },
+      { id: 'reports', label: 'প্রিন্ট ও PDF রিপোর্ট', icon: Printer }
+    ]
+  },
+  {
+    label: 'ব্যবস্থাপনা',
+    items: [
+      { id: 'flats', label: 'ফ্ল্যাট ব্যবস্থাপনা', icon: Building2 },
+      { id: 'collectors', label: 'আদায়কারী ও স্বাক্ষরকারী', icon: Users },
+      { id: 'settings', label: 'সেটিংস ও ব্যাকআপ', icon: Settings }
+    ]
+  }
+];
+
 export function Sidebar({ currentTab, setCurrentTab }) {
   const { user, logout } = useAuth();
   const { data } = useData();
-
-  const navItems = [
-    { id: 'dashboard', label: 'ড্যাশবোর্ড', icon: LayoutDashboard },
-    { id: 'collection', label: 'মাসিক আদায় এন্ট্রি', icon: CalendarCheck },
-    { id: 'flat-entry', label: 'একক ফ্ল্যাট এন্ট্রি (২৫ মাস)', icon: Layers, highlight: true },
-    { id: 'summary', label: 'মাসিক হিসাব সারসংক্ষেপ', icon: FileSpreadsheet },
-    { id: 'defaulters', label: 'বকেয়া তালিকা', icon: AlertTriangle },
-    { id: 'reports', label: 'প্রিন্ট ও PDF রিপোর্ট', icon: Printer },
-    { id: 'flats', label: 'ফ্ল্যাট ব্যবস্থাপনা', icon: Building2 },
-    { id: 'collectors', label: 'আদায়কারী ও স্বাক্ষরকারী', icon: Users },
-    { id: 'settings', label: 'সেটিংস ও ব্যাকআপ', icon: Settings }
-  ];
 
   return (
     <aside className="sidebar no-print">
       <div className="sidebar-header">
         <img src={LOGO_BASE64} alt="NKFMS Logo" className="sidebar-logo" />
-        <div>
+        <div style={{ minWidth: 0 }}>
           <div className="sidebar-title">{data.settings.societyName || 'নীলকণ্ঠ ফ্ল্যাট সমিতি'}</div>
-          <div className="sidebar-sub">সার্ভিস চার্জ সফটওয়্যার v2.0</div>
+          <div className="sidebar-sub">সার্ভিস চার্জ সফটওয়্যার v২.০</div>
         </div>
       </div>
 
       <nav className="sidebar-nav">
-        {navItems.map((item) => {
-          const Icon = item.icon;
-          const isActive = currentTab === item.id;
-          return (
-            <button
-              key={item.id}
-              className={`nav-item ${isActive ? 'active' : ''} ${item.highlight && !isActive ? 'highlight-tab' : ''}`}
-              onClick={() => setCurrentTab(item.id)}
-            >
-              <Icon size={18} />
-              <span>{item.label}</span>
-            </button>
-          );
-        })}
+        {NAV_GROUPS.map((group) => (
+          <React.Fragment key={group.label}>
+            <div className="nav-group-label">{group.label}</div>
+            {group.items.map((item) => {
+              const Icon = item.icon;
+              const isActive = currentTab === item.id;
+              return (
+                <button
+                  key={item.id}
+                  className={`nav-item ${isActive ? 'active' : ''} ${item.highlight && !isActive ? 'highlight-tab' : ''}`}
+                  onClick={() => setCurrentTab(item.id)}
+                  aria-current={isActive ? 'page' : undefined}
+                >
+                  <Icon size={18} />
+                  <span>{item.label}</span>
+                </button>
+              );
+            })}
+          </React.Fragment>
+        ))}
       </nav>
 
       <div className="sidebar-footer">
         <div className="user-info">
           <div
             className="user-avatar"
-            style={{ background: user?.role === 'viewer' ? '#10b981' : '#0284c7' }}
+            style={{ background: user?.role === 'viewer' ? 'var(--success)' : 'var(--primary)' }}
           >
-            {user?.role === 'viewer' ? '👁️' : (user?.name ? user.name.charAt(0) : 'U')}
+            {user?.role === 'viewer' ? '👁' : (user?.name ? user.name.charAt(0) : 'U')}
           </div>
-          <div>
+          <div style={{ minWidth: 0 }}>
             <div className="user-name">{user?.name || 'ব্যবহারকারী'}</div>
             <div className="user-role">
               {user?.role === 'viewer' ? 'ভিউ মুড (প্রদর্শন মাত্র)' : 'অ্যাডমিন প্যানেল'}
@@ -77,7 +99,8 @@ export function Sidebar({ currentTab, setCurrentTab }) {
           onClick={logout}
           className="btn-icon"
           title="লগআউট"
-          style={{ color: '#ef4444' }}
+          aria-label="লগআউট"
+          style={{ color: '#fca5a5' }}
         >
           <LogOut size={16} />
         </button>

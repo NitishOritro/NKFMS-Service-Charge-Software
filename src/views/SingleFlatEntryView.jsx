@@ -401,7 +401,7 @@ export function SingleFlatEntryView({ onOpenLedger }) {
                                 onClick={() => handleFillStandard(m)}
                                 className="btn btn-outline btn-sm"
                                 title="ধার্যকৃত টাকা বসান"
-                                style={{ padding: '2px 8px', fontSize: '11.5px' }}
+                                style={{ padding: '2px 8px', fontSize: '12.5px' }}
                               >
                                 {U.bnNumber(charge)}
                               </button>

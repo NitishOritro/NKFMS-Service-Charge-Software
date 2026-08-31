@@ -3,6 +3,7 @@ import ReactDOM from 'react-dom/client';
 import { AuthProvider } from './context/AuthContext';
 import { DataProvider } from './context/DataContext';
 import App from './App';
+import './styles/fonts.css';
 import './styles/index.css';
 import './styles/print.css';
 

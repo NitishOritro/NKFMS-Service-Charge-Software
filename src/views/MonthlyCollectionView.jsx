@@ -92,7 +92,7 @@ export function MonthlyCollectionView() {
         }}
       >
         <div>
-          <h2 style={{ fontSize: '18px', fontWeight: 800, color: 'var(--text-main)' }}>
+          <h2 style={{ fontSize: '18px', fontWeight: 700, color: 'var(--text-main)' }}>
             {U.monthLabel(selectedMonth)} — মাসিক আদায় এন্ট্রি
           </h2>
           <p style={{ fontSize: '12.5px', color: '#64748b', marginTop: '2px' }}>
@@ -189,7 +189,7 @@ export function MonthlyCollectionView() {
                             <button
                               onClick={() => handleQuickFill(flat)}
                               className="btn btn-outline btn-sm"
-                              style={{ padding: '2px 6px', fontSize: '11px' }}
+                              style={{ padding: '2px 6px', fontSize: '12.5px' }}
                               title="১,৫০০/- বসান"
                             >
                               {U.bnNumber(r.monthRate)}
@@ -281,9 +281,9 @@ export function MonthlyCollectionView() {
             }}
           >
             <div style={{ textAlign: 'center', borderBottom: '1px solid #cbd5e1', paddingBottom: '10px', marginBottom: '12px' }}>
-              <h3 style={{ fontSize: '16px', fontWeight: 800 }}>{data.settings.societyName}</h3>
+              <h3 style={{ fontSize: '16px', fontWeight: 700 }}>{data.settings.societyName}</h3>
               <p style={{ fontSize: '12px', color: '#64748b' }}>{data.settings.committeeName}</p>
-              <span style={{ display: 'inline-block', marginTop: '6px', background: '#0284c7', color: '#fff', padding: '2px 10px', borderRadius: '4px', fontSize: '11px', fontWeight: 700 }}>
+              <span style={{ display: 'inline-block', marginTop: '6px', background: '#0284c7', color: '#fff', padding: '2px 10px', borderRadius: '4px', fontSize: '12px', fontWeight: 700 }}>
                 সার্ভিস চার্জ আদায় রসিদ
               </span>
             </div>
@@ -307,7 +307,7 @@ export function MonthlyCollectionView() {
                 padding: '12px',
                 textAlign: 'center',
                 fontSize: '18px',
-                fontWeight: 800,
+                fontWeight: 700,
                 color: '#065f46',
                 margin: '14px 0'
               }}

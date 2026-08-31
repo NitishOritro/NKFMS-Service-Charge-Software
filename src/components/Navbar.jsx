@@ -26,10 +26,7 @@ export function Navbar({ pageTitle }) {
       <div className="navbar-left">
         <h1 className="page-heading">{pageTitle}</h1>
         {isReadOnly && (
-          <span
-            className="pill warning"
-            style={{ fontSize: '13px', padding: '4px 10px', display: 'inline-flex', alignItems: 'center', gap: '5px' }}
-          >
+          <span className="pill warning">
             <Eye size={14} /> ভিউ মুড (View Only)
           </span>
         )}
@@ -41,6 +38,7 @@ export function Navbar({ pageTitle }) {
           <select
             value={selectedMonth}
             onChange={(e) => setSelectedMonth(e.target.value)}
+            aria-label="হিসাব মাস নির্বাচন"
           >
             {monthsList.map((m) => (
               <option key={m} value={m}>
@@ -50,17 +48,8 @@ export function Navbar({ pageTitle }) {
           </select>
         </div>
 
-        <div
-          style={{
-            background: '#f1f5f9',
-            padding: '6px 12px',
-            borderRadius: 'var(--radius-md)',
-            fontSize: '13px',
-            fontWeight: 600,
-            color: '#475569'
-          }}
-        >
-          মাসিক চার্জ: <span style={{ color: 'var(--primary)', fontWeight: 700 }}>{U.bnTaka(currentRate)}</span>
+        <div className="navbar-chip">
+          মাসিক চার্জ: <b>{U.bnTaka(currentRate)}</b>
         </div>
 
         {!isReadOnly && (

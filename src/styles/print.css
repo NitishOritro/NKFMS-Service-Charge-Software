@@ -6,13 +6,32 @@
     margin: 8mm;
   }
 
-  body {
+  /* প্রিন্টেও একই বাংলা টাইপফেস — নইলে কাগজে ভিন্ন ফন্টে ছাপা হতো।
+     লাইন-হাইট ১.৩ থেকে ১.৪৫ করা হয়েছে যাতে বাংলা মাত্রা ও যুক্তাক্ষরের
+     উপর-নিচের অংশ কেটে না যায়।                                         */
+  html, body {
+    font-family: 'Hind Siliguri', 'Nirmala UI', 'SolaimanLipi', 'Kalpurush',
+      'Vrinda', sans-serif !important;
     background: #fff !important;
     color: #000 !important;
     font-size: 11px !important;
-    line-height: 1.3 !important;
+    line-height: 1.45 !important;
+    font-synthesis: none !important;
+    font-synthesis-weight: none !important;
+    -webkit-font-smoothing: auto !important;
     -webkit-print-color-adjust: exact !important;
     print-color-adjust: exact !important;
+  }
+
+  /* প্রিন্ট শিটের ভেতরের প্রতিটি উপাদান একই ফন্টে থাকবে */
+  .print-sheet, .print-sheet *,
+  table.print-table, table.print-table th, table.print-table td,
+  .print-head, .print-head *, .print-totals, .print-totals *,
+  .print-signs, .print-signs *, .print-foot {
+    font-family: 'Hind Siliguri', 'Nirmala UI', 'SolaimanLipi', 'Kalpurush',
+      'Vrinda', sans-serif !important;
+    font-synthesis: none !important;
+    font-synthesis-weight: none !important;
   }
 
   .no-print, .sidebar, .navbar, .btn, .modal-overlay, .toast-container {
@@ -147,8 +166,9 @@
 
   table.print-table th, table.print-table td {
     border: 1px solid #000 !important;
-    padding: 2.5px 4px !important;
+    padding: 3.5px 5px !important;
     font-size: 11px !important;
+    line-height: 1.4 !important;
     background: transparent !important;
   }
 
