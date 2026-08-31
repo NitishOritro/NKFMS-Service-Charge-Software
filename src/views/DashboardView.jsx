@@ -191,7 +191,7 @@ export function DashboardView({ setCurrentTab }) {
             <table className="data-table">
               <thead>
                 <tr>
-                  <th style="width: 50px">ক্রম</th>
+                  <th style={{ width: '50px' }}>ক্রম</th>
                   <th>আদায়কারীর নাম</th>
                   <th style={{ textAlign: 'center' }}>জমাকৃত ফ্ল্যাট সংখ্যা</th>
                   <th style={{ textAlign: 'right' }}>মোট আদায়কৃত টাকা</th>
