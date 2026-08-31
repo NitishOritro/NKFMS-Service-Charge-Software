@@ -18,7 +18,7 @@ export function FlatManagementView() {
     serial: '',
     flatNo: '',
     ownerName: '',
-    openingDue: 0,
+    joinMonth: '',
     phone: '',
     note: ''
   });
@@ -31,7 +31,7 @@ export function FlatManagementView() {
       serial: flat.serial || '',
       flatNo: flat.flatNo || '',
       ownerName: flat.ownerName || '',
-      openingDue: flat.openingDue || 0,
+      joinMonth: flat.joinMonth || '',
       phone: flat.phone || '',
       note: flat.note || ''
     });
@@ -45,7 +45,7 @@ export function FlatManagementView() {
         serial: Number(formData.serial),
         flatNo: formData.flatNo,
         ownerName: formData.ownerName,
-        openingDue: Number(formData.openingDue),
+        joinMonth: formData.joinMonth || '',
         phone: formData.phone,
         note: formData.note
       });
@@ -83,7 +83,7 @@ export function FlatManagementView() {
         {!isReadOnly && (
           <button
             onClick={() => {
-              setFormData({ serial: flats.length + 1, flatNo: '', ownerName: '', openingDue: 0, phone: '', note: '' });
+              setFormData({ serial: flats.length + 1, flatNo: '', ownerName: '', joinMonth: '', phone: '', note: '' });
               setAddModal(true);
             }}
             className="btn btn-primary btn-sm"
@@ -104,7 +104,6 @@ export function FlatManagementView() {
                   <th style={{ width: '80px', textAlign: 'center' }}>ফ্ল্যাট নং</th>
                   <th>মালিকের নাম</th>
                   <th style={{ width: '130px' }}>মোবাইল নং</th>
-                  <th style={{ width: '130px', textAlign: 'right' }}>প্রারম্ভিক বকেয়া</th>
                   <th style={{ width: '80px', textAlign: 'center' }}>অবস্থা</th>
                   {!isReadOnly && <th style={{ width: '90px', textAlign: 'center' }}>কার্যক্রম</th>}
                 </tr>
@@ -116,9 +115,6 @@ export function FlatManagementView() {
                     <td style={{ textAlign: 'center' }}><b>{f.flatNo}</b></td>
                     <td><b>{f.ownerName}</b></td>
                     <td style={{ color: '#64748b' }}>{f.phone || '—'}</td>
-                    <td style={{ textAlign: 'right', fontWeight: 600, color: f.openingDue > 0 ? 'var(--danger)' : '#64748b' }}>
-                      {f.openingDue ? U.bnTaka(f.openingDue) : '০'}
-                    </td>
                     <td style={{ textAlign: 'center' }}>
                       <span className="pill ok">সক্রিয়</span>
                     </td>
@@ -204,15 +200,19 @@ export function FlatManagementView() {
               />
             </div>
 
+
             <div className="form-group">
-              <label className="form-label">প্রারম্ভিক বকেয়া (টাকা):</label>
+              <label className="form-label">চার্জ গণনা শুরুর মাস (ঐচ্ছিক):</label>
               <input
-                type="number"
+                type="month"
                 className="form-input"
-                value={formData.openingDue}
-                onChange={(e) => setFormData({ ...formData, openingDue: e.target.value })}
+                value={formData.joinMonth}
+                onChange={(e) => setFormData({ ...formData, joinMonth: e.target.value })}
               />
-              <span style={{ fontSize: '12.5px', color: '#64748b' }}>জুলাই ২০২৪ পর্যন্ত যা বাকি ছিল</span>
+              <span style={{ fontSize: '12.5px', color: '#64748b' }}>
+                খালি রাখলে আগস্ট ২০২৪ থেকে চার্জ ধরা হবে। কেউ পরে যুক্ত হলে সেই মাসটি দিন —
+                তার আগের মাসে আর বকেয়া দেখাবে না।
+              </span>
             </div>
 
             <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '10px', marginTop: '20px' }}>
@@ -275,14 +275,19 @@ export function FlatManagementView() {
               />
             </div>
 
+
             <div className="form-group">
-              <label className="form-label">প্রারম্ভিক বকেয়া (টাকা):</label>
+              <label className="form-label">চার্জ গণনা শুরুর মাস (ঐচ্ছিক):</label>
               <input
-                type="number"
+                type="month"
                 className="form-input"
-                value={formData.openingDue}
-                onChange={(e) => setFormData({ ...formData, openingDue: e.target.value })}
+                value={formData.joinMonth}
+                onChange={(e) => setFormData({ ...formData, joinMonth: e.target.value })}
               />
+              <span style={{ fontSize: '12.5px', color: '#64748b' }}>
+                খালি রাখলে আগস্ট ২০২৪ থেকে চার্জ ধরা হবে। কেউ পরে যুক্ত হলে সেই মাসটি দিন —
+                তার আগের মাসে আর বকেয়া দেখাবে না।
+              </span>
             </div>
 
             <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '10px', marginTop: '20px' }}>

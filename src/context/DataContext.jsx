@@ -215,7 +215,9 @@ export function DataProvider({ children }) {
       openingDue: Number(flatData.openingDue) || 0,
       phone: flatData.phone || '',
       note: flatData.note || '',
-      active: flatData.active !== false
+      active: flatData.active !== false,
+      joinMonth: flatData.joinMonth || '',
+      closedFrom: flatData.closedFrom || ''
     };
     setData((prev) => ({ ...prev, flats: [...prev.flats, newFlat] }));
     runWrite(

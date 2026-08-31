@@ -201,9 +201,18 @@ export function SingleFlatEntryView({ onOpenLedger }) {
     return <div className="page-body">কোনো ফ্ল্যাট পাওয়া যায়নি।</div>;
   }
 
-  // Financial Stats Calculation across ALL 25 months
+  // এই ফ্ল্যাটে কোন মাস থেকে কোন মাস পর্যন্ত চার্জ ধরা হবে।
+  // কেউ পরে যুক্ত হলে (joinMonth) তার আগের মাসে কোনো চার্জ ধরা হয় না —
+  // ড্যাশবোর্ড ও বকেয়া তালিকা যেভাবে হিসাব করে, এখানেও ঠিক সেভাবেই।
+  const chargeStart = Calc.flatStartMonth(currentFlat, data.settings);
+  const chargeEnd = Calc.flatEndMonth(currentFlat, allMonths[allMonths.length - 1]);
+  const isChargeable = (m) =>
+    U.monthIndex(m) >= U.monthIndex(chargeStart) && U.monthIndex(m) <= U.monthIndex(chargeEnd);
+  const chargeFor = (m) => (isChargeable(m) ? Calc.rateForMonth(data.settings, m, currentFlat) : 0);
+
   const opening = Number(currentFlat.openingDue) || 0;
-  const chargedTotal = allMonths.reduce((sum, m) => sum + Calc.rateForMonth(data.settings, m, currentFlat), 0);
+  const chargedTotal = allMonths.reduce((sum, m) => sum + chargeFor(m), 0);
+  const chargeableCount = allMonths.filter(isChargeable).length;
   
   const paymentsMap = useMemo(() => {
     const map = {};
@@ -247,9 +256,7 @@ export function SingleFlatEntryView({ onOpenLedger }) {
   };
 
   // প্রদর্শিত মাসগুলোর সারসংক্ষেপ (মাস ফিল্টার মানে)
-  const shownCharged = displayMonths.reduce(
-    (sum, m) => sum + Calc.rateForMonth(data.settings, m, currentFlat), 0
-  );
+  const shownCharged = displayMonths.reduce((sum, m) => sum + chargeFor(m), 0);
   const shownPaid = displayMonths.reduce((sum, m) => {
     const p = paymentsMap[m];
     return sum + (p && Number(p.amount) > 0 ? Number(p.amount) : 0);
@@ -257,7 +264,9 @@ export function SingleFlatEntryView({ onOpenLedger }) {
   const shownPaidCount = displayMonths.filter(
     (m) => paymentsMap[m] && Number(paymentsMap[m].amount) > 0
   ).length;
-  const shownDueCount = displayMonths.length - shownPaidCount;
+  // চার্জই ধরা হয়নি এমন মাস "বাকি" হিসেবে গোনা হয় না
+  const shownChargeableCount = displayMonths.filter(isChargeable).length;
+  const shownDueCount = Math.max(0, shownChargeableCount - shownPaidCount);
   const shownDue = shownCharged - shownPaid;
 
   // জমা আছে এমন সব মাসের রসিদ (ক্রম অনুযায়ী)
@@ -267,7 +276,8 @@ export function SingleFlatEntryView({ onOpenLedger }) {
 
   // এন্ট্রি সেভ করুন
   const handleSaveEntry = (month) => {
-    const rate = Calc.rateForMonth(data.settings, month, currentFlat);
+    // চার্জহীন মাসে (ফ্ল্যাটটি যুক্ত হওয়ার আগে) ধার্যকৃত টাকা বসানো হয় না
+    const rate = chargeFor(month);
     const existing = paymentsMap[month] || {};
     const draft = localRows[month];
     
@@ -276,6 +286,13 @@ export function SingleFlatEntryView({ onOpenLedger }) {
       addToast(`${U.monthLabel(month)} — এন্ট্রি মুছে ফেলা হয়েছে।`, 'warning');
     } else {
       const amountToSave = draft ? draft.amount : (Number(existing.amount) > 0 ? existing.amount : rate);
+      if (!(Number(amountToSave) > 0)) {
+        addToast(
+          `${U.monthLabel(month)} — এই ফ্ল্যাটে ${U.monthLabel(chargeStart)} থেকে চার্জ ধরা শুরু, তাই এই মাসে ধার্যকৃত টাকা নেই।`,
+          'warning'
+        );
+        return;
+      }
       setPayment(currentFlat.id, month, {
         amount: amountToSave,
         collectorId: draft ? draft.collectorId : (existing.collectorId || data.settings.collectors[0]?.id || ''),
@@ -454,16 +471,13 @@ export function SingleFlatEntryView({ onOpenLedger }) {
 
       {/* Flat Financial Stats Cards */}
       <div className="metrics-grid" style={{ marginBottom: '20px' }}>
-        <div className="metric-card">
-          <div className="metric-label">প্রারম্ভিক বকেয়া</div>
-          <div className="metric-value">{U.bnTaka(opening)}</div>
-          <div className="metric-sub">জুলাই ২০২৪ পর্যন্ত বকেয়া</div>
-        </div>
-
         <div className="metric-card primary">
           <div className="metric-label">মোট ধার্যকৃত চার্জ</div>
           <div className="metric-value" style={{ color: 'var(--primary)' }}>{U.bnTaka(chargedTotal)}</div>
-          <div className="metric-sub">২৫ মাসের মোট চার্জ</div>
+          <div className="metric-sub">
+            {U.bnDigits(chargeableCount)} মাসের মোট চার্জ
+            {chargeableCount < allMonths.length && ` (${U.monthLabel(chargeStart)} থেকে)`}
+          </div>
         </div>
 
         <div className="metric-card success">
@@ -526,7 +540,8 @@ export function SingleFlatEntryView({ onOpenLedger }) {
               <tbody>
                 {paginatedMonths.map((m, idx) => {
                   const payment = paymentsMap[m];
-                  const charge = Calc.rateForMonth(data.settings, m, currentFlat);
+                  const charge = chargeFor(m);
+                  const chargeable = isChargeable(m);
                   
                   const draft = localRows[m];
                   const isDrafting = draft !== undefined;
@@ -547,7 +562,7 @@ export function SingleFlatEntryView({ onOpenLedger }) {
                         <b>{U.monthLabel(m)}</b>
                       </td>
                       <td style={{ textAlign: 'right', color: '#64748b', fontWeight: 600 }}>
-                        {U.bnNumber(charge)}/-
+                        {chargeable ? `${U.bnNumber(charge)}/-` : '—'}
                       </td>
                       <td>
                         <input
@@ -599,17 +614,25 @@ export function SingleFlatEntryView({ onOpenLedger }) {
                           <span className="pill ok">
                             <Check size={12} /> জমা {U.bnNumber(payment.amount)}
                           </span>
-                        ) : (
+                        ) : chargeable ? (
                           <span className="pill due">বকেয়া</span>
+                        ) : (
+                          <span className="pill" style={{ background: '#f1f5f9', color: '#64748b' }}>
+                            প্রযোজ্য নয়
+                          </span>
                         )}
                       </td>
                       <td style={{ textAlign: 'center' }}>
                         <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '5px', flexWrap: 'nowrap' }}>
                           <button
                             onClick={() => handleSaveEntry(m)}
-                            disabled={isReadOnly}
+                            disabled={isReadOnly || (!chargeable && !isPaid)}
                             className="btn btn-outline btn-sm"
-                            title={`এন্ট্রি সেভ করুন (ধার্য ${U.bnNumber(charge)}/-)`}
+                            title={
+                              chargeable
+                                ? `এন্ট্রি সেভ করুন (ধার্য ${U.bnNumber(charge)}/-)`
+                                : `এই ফ্ল্যাটে ${U.monthLabel(chargeStart)} থেকে চার্জ ধরা শুরু`
+                            }
                             style={{ padding: '3px 7px', fontSize: '12px', color: isReadOnly ? undefined : 'var(--success)' }}
                           >
                             <Save size={13} />

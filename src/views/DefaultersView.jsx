@@ -91,7 +91,6 @@ export function DefaultersView({ onOpenSelectivePrint }) {
                   <th style={{ width: '70px', textAlign: 'center' }}>ফ্ল্যাট</th>
                   <th>মালিকের নাম</th>
                   <th style={{ width: '120px' }}>মোবাইল</th>
-                  <th style={{ width: '110px', textAlign: 'right' }}>প্রারম্ভিক বকেয়া</th>
                   <th style={{ width: '110px', textAlign: 'right' }}>ধার্য চার্জ</th>
                   <th style={{ width: '110px', textAlign: 'right' }}>মোট জমা</th>
                   <th style={{ width: '120px', textAlign: 'right' }}>বর্তমান বকেয়া</th>
@@ -127,7 +126,6 @@ export function DefaultersView({ onOpenSelectivePrint }) {
                       <td style={{ textAlign: 'center' }}><b>{s.flat.flatNo}</b></td>
                       <td><b>{s.flat.ownerName}</b></td>
                       <td style={{ color: '#64748b', fontSize: '12px' }}>{s.flat.phone || '—'}</td>
-                      <td style={{ textAlign: 'right' }}>{s.opening ? U.bnNumber(s.opening) : '০'}</td>
                       <td style={{ textAlign: 'right' }}>{U.bnNumber(s.charged)}</td>
                       <td style={{ textAlign: 'right', color: 'var(--success-dark)' }}>{U.bnNumber(s.paid)}</td>
                       <td style={{ textAlign: 'right', fontWeight: 700, color: s.due > 0 ? 'var(--danger)' : 'var(--success)' }}>
@@ -151,7 +149,7 @@ export function DefaultersView({ onOpenSelectivePrint }) {
               </tbody>
               <tfoot>
                 <tr style={{ background: '#f1f5f9', fontWeight: 700 }}>
-                  <td colSpan="8" style={{ textAlign: 'right' }}>সর্বমোট বকেয়া পাওনা:</td>
+                  <td colSpan="7" style={{ textAlign: 'right' }}>সর্বমোট বকেয়া পাওনা:</td>
                   <td style={{ textAlign: 'right', color: 'var(--danger)', fontSize: '15px' }}>
                     {U.bnTaka(statuses.reduce((acc, s) => acc + s.due, 0))}
                   </td>

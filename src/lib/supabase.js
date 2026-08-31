@@ -32,7 +32,9 @@ export const flatFromRow = (r) => ({
   openingDue: Number(r.opening_due) || 0,
   phone: r.phone || '',
   note: r.note || '',
-  active: r.active !== false
+  active: r.active !== false,
+  joinMonth: r.join_month || '',
+  closedFrom: r.closed_from || ''
 });
 
 export const flatToRow = (f) => ({
@@ -43,7 +45,9 @@ export const flatToRow = (f) => ({
   opening_due: Number(f.openingDue) || 0,
   phone: f.phone || '',
   note: f.note || '',
-  active: f.active !== false
+  active: f.active !== false,
+  join_month: f.joinMonth || null,
+  closed_from: f.closedFrom || null
 });
 
 export const paymentFromRow = (r) => ({

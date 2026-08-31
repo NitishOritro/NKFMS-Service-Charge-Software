@@ -228,7 +228,6 @@ export function ReportView({ defaultReport = 'monthly', selectiveFlatIds = null 
                   <th style={{ width: '8%' }}>ফ্ল্যাট</th>
                   <th style={{ width: '20%', textAlign: 'left' }}>মালিকের নাম</th>
                   <th style={{ width: '12%' }}>মোবাইল</th>
-                  <th style={{ width: '11%', textAlign: 'right' }}>প্রারম্ভিক<br />বকেয়া</th>
                   <th style={{ width: '11%', textAlign: 'right' }}>ধার্যকৃত<br />চার্জ</th>
                   <th style={{ width: '11%', textAlign: 'right' }}>মোট<br />জমা</th>
                   <th style={{ width: '11%', textAlign: 'right' }}>বর্তমান<br />বকেয়া</th>
@@ -244,7 +243,6 @@ export function ReportView({ defaultReport = 'monthly', selectiveFlatIds = null 
                       <td style={{ textAlign: 'center' }}><b>{st.flat.flatNo}</b></td>
                       <td style={{ textAlign: 'left' }}><b>{st.flat.ownerName}</b></td>
                       <td style={{ textAlign: 'center', fontSize: '10px' }}>{st.flat.phone || '—'}</td>
-                      <td style={{ textAlign: 'right' }}>{st.opening ? U.bnNumber(st.opening) : '০'}</td>
                       <td style={{ textAlign: 'right' }}>{U.bnNumber(st.charged)}</td>
                       <td style={{ textAlign: 'right' }}>{U.bnNumber(st.paid)}</td>
                       <td style={{ textAlign: 'right', fontWeight: 700 }}>{st.due ? U.bnNumber(st.due) : '০'}</td>
@@ -256,7 +254,6 @@ export function ReportView({ defaultReport = 'monthly', selectiveFlatIds = null 
               <tfoot>
                 <tr>
                   <td colSpan="4" style={{ textAlign: 'right' }}>সর্বমোট</td>
-                  <td style={{ textAlign: 'right' }}>{U.bnNumber(selectiveStatuses.reduce((a, b) => a + b.opening, 0))}</td>
                   <td style={{ textAlign: 'right' }}>{U.bnNumber(selectiveStatuses.reduce((a, b) => a + b.charged, 0))}</td>
                   <td style={{ textAlign: 'right' }}>{U.bnNumber(selectiveStatuses.reduce((a, b) => a + b.paid, 0))}</td>
                   <td style={{ textAlign: 'right' }}>{U.bnNumber(selectiveStatuses.reduce((a, b) => a + b.due, 0))}</td>
@@ -323,7 +320,6 @@ export function ReportView({ defaultReport = 'monthly', selectiveFlatIds = null 
             </table>
 
             <div className="print-totals" style={{ marginTop: '12px' }}>
-              <div className="box">মোট প্রারম্ভিক বকেয়া: <b>{U.bnNumber(ledgerStatus.opening)}/-</b></div>
               <div className="box">মোট পরিশোধিত: <b>{U.bnNumber(ledgerStatus.paid)}/-</b></div>
               <div className="box" style={{ border: '2px solid #000' }}>
                 বর্তমান বকেয়া পাওনা: <b style={{ color: '#b91c1c' }}>{U.bnNumber(ledgerStatus.due)}/-</b>
