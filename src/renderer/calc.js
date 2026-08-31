@@ -5,8 +5,18 @@
 (function () {
   const U = window.U;
 
-  /** নির্দিষ্ট মাসে প্রযোজ্য মাসিক হার */
-  function rateForMonth(settings, month) {
+  const SPECIAL_3500_FLATS = new Set(['fA-1', 'fB-2', 'fB-5', 'fB-7', 'fC-3', 'fC-8']);
+
+  /** নির্দিষ্ট ফ্ল্যাট ও মাসে প্রযোজ্য মাসিক ধার্য হার */
+  function rateForMonth(settings, month, flat) {
+    if (flat) {
+      if (flat.customRates && flat.customRates[month] != null) {
+        return Number(flat.customRates[month]) || 0;
+      }
+      if (SPECIAL_3500_FLATS.has(flat.id) && (month === '2024-08' || month === '2024-09')) {
+        return 3500;
+      }
+    }
     const history = Array.isArray(settings.rateHistory) ? settings.rateHistory : [];
     let rate = Number(settings.monthlyRate) || 0;
     const idx = U.monthIndex(month);
@@ -21,9 +31,10 @@
 
   /** কোন মাস থেকে এই ফ্ল্যাটে চার্জ ধরা শুরু হবে */
   function flatStartMonth(flat, settings) {
-    const start = settings.startMonth;
-    if (flat.joinMonth && U.monthIndex(flat.joinMonth) > U.monthIndex(start)) return flat.joinMonth;
-    return start;
+    const start = settings.startMonth || '2024-08';
+    const minStart = U.monthIndex(start) < U.monthIndex('2024-08') ? start : '2024-08';
+    if (flat.joinMonth && U.monthIndex(flat.joinMonth) > U.monthIndex(minStart)) return flat.joinMonth;
+    return minStart;
   }
 
   /** কোন মাস পর্যন্ত চার্জ ধরা হবে (ফ্ল্যাট বন্ধ হলে তার আগ পর্যন্ত) */
@@ -42,7 +53,7 @@
     const to = U.monthIndex(end);
     let total = 0;
     for (let i = from; i <= to; i += 1) {
-      total += rateForMonth(settings, U.indexToMonth(i));
+      total += rateForMonth(settings, U.indexToMonth(i), flat);
     }
     return total;
   }
@@ -74,7 +85,7 @@
     const balance = opening + charged - paid;
     const monthPayments = paymentsInMonth(data.payments, flat.id, asOfMonth);
     const monthPaid = monthPayments.reduce((s, p) => s + (Number(p.amount) || 0), 0);
-    const monthRate = rateForMonth(data.settings, asOfMonth);
+    const monthRate = rateForMonth(data.settings, asOfMonth, flat);
     return {
       flat,
       opening,
@@ -155,7 +166,7 @@
     for (let i = from; i <= to; i += 1) {
       const month = U.indexToMonth(i);
       const endMonth = flatEndMonth(flat, month);
-      const charge = U.monthIndex(endMonth) >= i ? rateForMonth(data.settings, month) : 0;
+      const charge = U.monthIndex(endMonth) >= i ? rateForMonth(data.settings, month, flat) : 0;
       const monthPayments = paymentsInMonth(data.payments, flat.id, month);
       const paid = monthPayments.reduce((s, p) => s + (Number(p.amount) || 0), 0);
       running += charge - paid;

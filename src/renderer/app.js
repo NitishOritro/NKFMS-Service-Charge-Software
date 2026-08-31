@@ -12,7 +12,11 @@
     paths: null,
     month: null,
     tab: 'dashboard',
+    selectedEntryFlatId: null,
+    feMonthFilter: 'all',
     duesOnlyUnpaid: false,
+    duesOnlySelected: false,
+    duesSelectedFlats: new Set(),
     duesSort: 'serial',
     monthlyOnlyUnpaid: false,
     reportNextColumn: true
@@ -110,15 +114,16 @@
   /* ---------- মাস তালিকা ---------- */
 
   function availableMonths() {
-    const start = state.data.settings.startMonth;
+    const start = state.data.settings.startMonth || '2024-08';
+    const minStart = U.monthIndex(start) < U.monthIndex('2024-08') ? start : '2024-08';
     const paymentMonths = state.data.payments.map((p) => U.monthIndex(p.month));
     const maxSeen = Math.max(
-      U.monthIndex(start),
+      U.monthIndex('2026-08'),
       U.monthIndex(U.currentMonth()),
       paymentMonths.length ? Math.max.apply(null, paymentMonths) : 0
     );
     const months = [];
-    for (let i = U.monthIndex(start); i <= maxSeen + 12; i += 1) {
+    for (let i = U.monthIndex(minStart); i <= maxSeen; i += 1) {
       months.push(U.indexToMonth(i));
     }
     return months;
@@ -136,6 +141,7 @@
     dashboard: { title: 'ড্যাশবোর্ড', sub: 'সমিতির সার্বিক আর্থিক চিত্র' },
     monthly: { title: 'মাসিক হিসাব', sub: 'মাস ও সাল বেছে নিয়ে ঐ মাসের সব জমা ও বকেয়ার তালিকা' },
     collection: { title: 'মাসিক আদায় এন্ট্রি', sub: 'প্রতি ফ্ল্যাটের জমা ও আদায়কারীর তথ্য লিখুন' },
+    flatEntry: { title: 'একক ফ্ল্যাটের বিগত মাসের এন্ট্রি', sub: 'নির্দিষ্ট ফ্ল্যাট বেছে নিয়ে আগস্ট ২০২৪ থেকে বর্তমান পর্যন্ত সকল মাসের হিসাব একসাথে লিখুন' },
     dues: { title: 'বকেয়া তালিকা', sub: 'ফ্ল্যাটভিত্তিক বকেয়ার পূর্ণ হিসাব' },
     flats: { title: 'ফ্ল্যাট ও মালিক', sub: 'মালিকের নাম, ফ্ল্যাট নম্বর ও প্রারম্ভিক বকেয়া' },
     report: { title: 'রিপোর্ট', sub: 'মাসিক সারসংক্ষেপ প্রিন্ট বা PDF হিসেবে সংরক্ষণ' },
@@ -156,7 +162,7 @@
 
     renderMonthPicker();
     $('#monthPicker').style.visibility =
-      state.tab === 'settings' || state.tab === 'flats' ? 'hidden' : 'visible';
+      state.tab === 'settings' || state.tab === 'flats' || state.tab === 'flatEntry' ? 'hidden' : 'visible';
   }
 
   /** উপরের ডানদিকের "মাসের নাম" ও "সাল" — দুটি আলাদা ঘর */
@@ -197,6 +203,7 @@
       case 'dashboard': content.innerHTML = viewDashboard(); break;
       case 'monthly': content.innerHTML = viewMonthly(); break;
       case 'collection': content.innerHTML = viewCollection(); break;
+      case 'flatEntry': content.innerHTML = viewFlatEntry(); break;
       case 'dues': content.innerHTML = viewDues(); break;
       case 'flats': content.innerHTML = viewFlats(); break;
       case 'report': content.innerHTML = viewReport(); break;
@@ -228,6 +235,18 @@
     const trendMax = Math.max(1, ...trend.map((t) => t.amount));
 
     return `
+      <div class="card" style="background: linear-gradient(135deg, #1d5c53 0%, #14433c 100%); color: #fff; margin-bottom: 18px; border: none;">
+        <div class="card-body" style="padding: 16px 20px; display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 12px;">
+          <div>
+            <h2 style="color: #fff; font-size: 16px; margin: 0 0 4px;">⚡ একক ফ্ল্যাটের বিগত মাসের দ্রুত এন্ট্রি (Backlog Entry)</h2>
+            <p style="color: rgba(255,255,255,0.85); font-size: 12.5px; margin: 0;">একটি নির্দিষ্ট ফ্ল্যাট নির্বাচন করে আগস্ট ২০২৪ থেকে বর্তমান পর্যন্ত সকল মাসের হিসাব একসাথে লিখুন বা সংশোধন করুন।</p>
+          </div>
+          <button class="btn primary" style="background: #fff; color: #14433c; font-weight: 700; border: none; padding: 8px 18px; font-size: 13px;" data-goto="flatEntry">
+            📑 একক ফ্ল্যাট এন্ট্রি খুলুন ›
+          </button>
+        </div>
+      </div>
+
       <div class="stats">
         <div class="stat ok">
           <div class="label">${U.monthLabel(state.month)} মাসে আদায়</div>
@@ -500,13 +519,11 @@
           </td>
           <td class="entry"><select data-field="collectorId">${collectorOptions(payment ? payment.collectorId : '')}</select></td>
           <td class="entry"><input type="date" data-field="receivedOn" value="${payment ? payment.receivedOn : ''}"></td>
-          <td class="num">${r.due > 0 ? `<span class="pill due">${U.bnNumber(r.due)}</span>` : (r.advance > 0 ? `<span class="pill warn">অগ্রীম ${U.bnNumber(r.advance)}</span>` : '<span class="pill ok">নেই</span>')}</td>
+          <td class="num">${r.due > 0 ? `<span class="pill due">বকেয়া ${U.bnNumber(r.due)}</span>` : (r.advance > 0 ? `<span class="pill warn">অগ্রীম ${U.bnNumber(r.advance)}</span>` : '<span class="pill ok">পরিশোধিত</span>')}</td>
           <td class="c">
-            <div class="quick">
-              <button class="submit" data-submit="1" title="এই সারিতে লেখা তথ্য সংরক্ষণ করুন">✓ জমা দিন</button>
-              <button data-quick="${rate}" title="${U.bnNumber(rate)}/- বসিয়ে সংরক্ষণ করুন">${U.bnNumber(rate)}</button>
-              <button data-quick="0" title="জমা মুছে ফেলুন">✕</button>
-              ${payment ? '<button data-receipt="1" title="রসিদ ছাপুন">🧾</button>' : ''}
+            <div class="row" style="gap:4px;justify-content:center">
+              <button class="btn sm" data-goto-flat-entry="${r.flat.id}" title="এই ফ্ল্যাটের সব মাসের এন্ট্রি">এন্ট্রি</button>
+              <button class="btn sm" data-ledger="${r.flat.id}">লেজার</button>
             </div>
           </td>
         </tr>`;
@@ -520,6 +537,7 @@
             <p class="hint">প্রতি ফ্ল্যাটের মাসিক চার্জ ${U.bnNumber(rate)}/- । টাকার ঘর খালি রাখলে ঐ মাসের জমা হয়নি ধরা হবে এবং তা বকেয়ায় যোগ হবে।</p>
           </div>
           <div class="row">
+            <button class="btn sm primary" data-goto="flatEntry">📑 একক ফ্ল্যাট এন্ট্রি</button>
             <button class="btn sm" id="bulkFill">খালি ঘরে ${U.bnNumber(rate)}/- বসান</button>
             <button class="btn sm" id="bulkCollector">সবার আদায়কারী নির্ধারণ</button>
           </div>
@@ -556,14 +574,178 @@
       </div>`;
   }
 
+  /* ---------- ৩. একক ফ্ল্যাটের বিগত মাসের এন্ট্রি ---------- */
+
+  function viewFlatEntry() {
+    const flats = sortedFlats();
+    if (!flats.length) return '<div class="empty">কোনো ফ্ল্যাট যুক্ত করা নেই।</div>';
+
+    if (!state.selectedEntryFlatId || !flatById(state.selectedEntryFlatId)) {
+      state.selectedEntryFlatId = flats[0].id;
+    }
+    const currentFlat = flatById(state.selectedEntryFlatId);
+    const start = '2024-08';
+    const now = '2026-08';
+    const allMonths = availableMonths().filter((m) => U.monthIndex(m) <= U.monthIndex(now));
+
+    let displayMonths = allMonths;
+    if (state.feMonthFilter && state.feMonthFilter !== 'all') {
+      if (state.feMonthFilter.startsWith('year-')) {
+        const yr = state.feMonthFilter.replace('year-', '');
+        displayMonths = allMonths.filter((m) => m.startsWith(yr));
+      } else {
+        displayMonths = allMonths.filter((m) => m === state.feMonthFilter);
+      }
+    }
+
+    const opening = Number(currentFlat.openingDue) || 0;
+    const charged = allMonths.reduce((sum, m) => sum + Calc.rateForMonth(state.data.settings, m, currentFlat), 0);
+    const paid = allMonths.reduce((sum, m) => {
+      const p = getPayment(currentFlat.id, m);
+      return sum + (p && Number(p.amount) > 0 ? Number(p.amount) : 0);
+    }, 0);
+    const paidCount = allMonths.filter((m) => {
+      const p = getPayment(currentFlat.id, m);
+      return p && Number(p.amount) > 0;
+    }).length;
+    const balance = opening + charged - paid;
+    const due = balance > 0 ? balance : 0;
+    const advance = balance < 0 ? -balance : 0;
+    const currentRate = Calc.rateForMonth(state.data.settings, now, currentFlat) || 1500;
+    const dueMonths = Math.round(due / currentRate);
+
+    const monthRows = displayMonths.map((m, idx) => {
+      const payment = getPayment(currentFlat.id, m);
+      const charge = Calc.rateForMonth(state.data.settings, m, currentFlat);
+      const isPaid = payment && payment.amount > 0;
+
+      return `
+        <tr data-flat-month="${m}" class="${isPaid ? 'paid-row' : 'due-row'}">
+          <td class="c muted">${U.bnDigits(allMonths.indexOf(m) + 1)}</td>
+          <td><b>${U.monthLabel(m)}</b></td>
+          <td class="num muted">${U.bnNumber(charge)}/-</td>
+          <td class="entry">
+            <input type="number" min="0" step="100" data-fe-field="amount" value="${payment ? payment.amount : ''}" placeholder="${U.bnNumber(charge)}">
+          </td>
+          <td class="entry">
+            <select data-fe-field="collectorId">${collectorOptions(payment ? payment.collectorId : '')}</select>
+          </td>
+          <td class="entry">
+            <input type="date" data-fe-field="receivedOn" value="${payment ? payment.receivedOn : ''}">
+          </td>
+          <td class="c">
+            ${isPaid ? `<span class="pill ok">জমা ${U.bnNumber(payment.amount)}</span>` : '<span class="pill due">বকেয়া</span>'}
+          </td>
+          <td class="c">
+            <div class="quick">
+              <button class="submit" data-fe-save="${m}" title="এই মাসের তথ্য সংরক্ষণ করুন">✓ সেভ</button>
+              <button data-fe-quick="${m}" data-amount="${charge}" title="${U.bnNumber(charge)}/- বসিয়ে সংরক্ষণ করুন">${U.bnNumber(charge)}</button>
+              <button data-fe-clear="${m}" title="জমা মুছে দিন">✕</button>
+              ${payment ? `<button data-fe-receipt="${m}" title="রসিদ ছাপুন">🧾</button>` : ''}
+            </div>
+          </td>
+        </tr>`;
+    }).join('');
+
+    return `
+      <div class="card" style="margin-bottom:14px">
+        <div class="card-head" style="flex-wrap:wrap;gap:12px">
+          <div class="row" style="gap:14px;flex-wrap:wrap">
+            <div class="row" style="gap:8px">
+              <label style="font-weight:700;font-size:13.5px">ফ্ল্যাট:</label>
+              <select id="feFlatSelect" style="padding:6px 12px;font-size:13.5px;font-weight:600;min-width:240px">
+                ${flats.map((f) => `<option value="${f.id}" ${f.id === currentFlat.id ? 'selected' : ''}>${U.escapeHtml(f.flatNo)} — ${U.escapeHtml(f.ownerName)}</option>`).join('')}
+              </select>
+            </div>
+            <div class="row" style="gap:8px">
+              <label style="font-weight:700;font-size:13.5px">মাস / সাল নির্বাচন:</label>
+              <select id="feMonthFilter" style="padding:6px 12px;font-size:13.5px;font-weight:600;min-width:240px">
+                <option value="all" ${state.feMonthFilter === 'all' ? 'selected' : ''}>সব মাস (আগস্ট ২০২৪ — আগস্ট ২০২৬)</option>
+                <optgroup label="সাল অনুযায়ী">
+                  <option value="year-2024" ${state.feMonthFilter === 'year-2024' ? 'selected' : ''}>২০২৪ সাল (আগস্ট — ডিসেম্বর)</option>
+                  <option value="year-2025" ${state.feMonthFilter === 'year-2025' ? 'selected' : ''}>২০২৫ সাল (জানুয়ারি — ডিসেম্বর)</option>
+                  <option value="year-2026" ${state.feMonthFilter === 'year-2026' ? 'selected' : ''}>২০২৬ সাল (জানুয়ারি — আগস্ট)</option>
+                </optgroup>
+                <optgroup label="নির্দিষ্ট একক মাস">
+                  ${allMonths.map((m) => `<option value="${m}" ${state.feMonthFilter === m ? 'selected' : ''}>${U.monthLabel(m)}</option>`).join('')}
+                </optgroup>
+              </select>
+            </div>
+          </div>
+          <div class="row" style="gap:8px;flex-wrap:wrap">
+            <button class="btn sm primary" id="feBulkFill">সব খালি ঘরে ১,৫০০/- বসান</button>
+            <button class="btn sm" id="feBulkCollector">সবার জন্য একই আদায়কারী</button>
+            <button class="btn sm" id="feSaveAll">💾 সব এন্ট্রি সংরক্ষণ</button>
+            <button class="btn sm" data-ledger="${currentFlat.id}">📊 লেজার বিবরণী</button>
+          </div>
+        </div>
+      </div>
+
+      <div class="stats" style="grid-template-columns:repeat(4,1fr);margin-bottom:14px">
+        <div class="stat">
+          <div class="label">প্রারম্ভিক বকেয়া</div>
+          <div class="value">${U.bnTaka(opening)}</div>
+          <div class="sub">জুলাই ২০২৪ পর্যন্ত বকেয়া</div>
+        </div>
+        <div class="stat">
+          <div class="label">মোট ধার্যকৃত চার্জ</div>
+          <div class="value">${U.bnTaka(charged)}</div>
+          <div class="sub">${U.bnDigits(allMonths.length)} মাসের মোট চার্জ</div>
+        </div>
+        <div class="stat ok">
+          <div class="label">মোট জমা হয়েছে</div>
+          <div class="value">${U.bnTaka(paid)}</div>
+          <div class="sub">${U.bnDigits(paidCount)} টি মাসে জমা</div>
+        </div>
+        <div class="stat ${due > 0 ? 'due' : 'ok'}">
+          <div class="label">বর্তমান স্থিতি / বকেয়া</div>
+          <div class="value">${due > 0 ? U.bnTaka(due) : (advance > 0 ? 'অগ্রীম ' + U.bnTaka(advance) : 'পরিশোধিত')}</div>
+          <div class="sub">${due > 0 ? U.bnDigits(dueMonths) + ' মাসের বকেয়া' : (advance > 0 ? 'অগ্রীম জমা রয়েছে' : 'কোনো বকেয়া নেই')}</div>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="card-head">
+          <div>
+            <h2>${U.escapeHtml(currentFlat.flatNo)} (${U.escapeHtml(currentFlat.ownerName)}) — মাসভিত্তিক সার্ভিস চার্জ এন্ট্রি</h2>
+            <p class="hint">আগস্ট ২০২৪ থেকে আগস্ট ২০২৬ পর্যন্ত সকল মাসের তালিকা নিচে দেওয়া হলো (প্রদর্শিত: ${U.bnDigits(displayMonths.length)} টি মাস)।</p>
+          </div>
+        </div>
+        <div class="card-body flush">
+          <div class="table-wrap">
+            <table class="grid" id="flatEntryTable">
+              <thead>
+                <tr>
+                  <th style="width:46px">ক্রম</th>
+                  <th style="width:140px">মাস ও সাল</th>
+                  <th class="num" style="width:110px">ধার্য চার্জ</th>
+                  <th style="width:130px">এ মাসের জমা</th>
+                  <th style="width:180px">আদায়কারী</th>
+                  <th style="width:140px">জমার তারিখ</th>
+                  <th class="c" style="width:100px">অবস্থা</th>
+                  <th class="c" style="width:190px">কার্যক্রম</th>
+                </tr>
+              </thead>
+              <tbody>
+                ${monthRows}
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>`;
+  }
+
   /* ---------- ৩. বকেয়া তালিকা ---------- */
 
   function viewDues() {
     let rows = Calc.allStatuses(state.data, state.month);
     if (state.duesOnlyUnpaid) rows = rows.filter((r) => r.due > 0);
+    if (state.duesOnlySelected) rows = rows.filter((r) => state.duesSelectedFlats.has(r.flat.id));
     if (state.duesSort === 'due') rows = rows.slice().sort((a, b) => b.due - a.due);
 
     const totalDue = rows.reduce((s, r) => s + r.due, 0);
+    const selectedCount = state.duesSelectedFlats.size;
+    const allRowsSelected = rows.length > 0 && rows.every((r) => state.duesSelectedFlats.has(r.flat.id));
 
     return `
       <div class="card">
@@ -572,7 +754,16 @@
             <h2>${U.monthLabel(state.month)} পর্যন্ত বকেয়ার হিসাব</h2>
             <p class="hint">প্রারম্ভিক বকেয়া + ধার্যকৃত মাসিক চার্জ − মোট জমা = বকেয়া</p>
           </div>
-          <div class="row">
+          <div class="row" style="gap:8px;flex-wrap:wrap">
+            <button class="btn sm ${selectedCount > 0 ? 'primary' : ''}" id="selectiveDuesPdf" ${selectedCount === 0 ? 'disabled' : ''} title="নির্বাচিত ফ্ল্যাটগুলোর বকেয়া বিবরণী PDF তৈরি করুন">
+              📋 নির্বাচিতদের বকেয়া রিপোর্ট ${selectedCount > 0 ? `(${U.bnDigits(selectedCount)} টি)` : ''}
+            </button>
+            <button class="btn sm" id="selectiveDuesPrint" ${selectedCount === 0 ? 'disabled' : ''} title="নির্বাচিত ফ্ল্যাটগুলোর বকেয়া বিবরণী প্রিন্ট করুন">
+              🖨 প্রিন্ট
+            </button>
+            <label class="row" style="gap:5px;font-size:12.5px">
+              <input type="checkbox" id="onlySelected" ${state.duesOnlySelected ? 'checked' : ''}> শুধু নির্বাচিতদের দেখান
+            </label>
             <label class="row" style="gap:5px;font-size:12.5px">
               <input type="checkbox" id="onlyUnpaid" ${state.duesOnlyUnpaid ? 'checked' : ''}> শুধু বকেয়াদার
             </label>
@@ -587,20 +778,26 @@
             <table class="grid">
               <thead>
                 <tr>
-                  <th style="width:52px">ক্রম</th>
-                  <th style="width:78px">ফ্ল্যাট</th>
+                  <th style="width:38px;text-align:center">
+                    <input type="checkbox" id="selectAllDues" title="সব নির্বাচন / বাতিল" ${allRowsSelected ? 'checked' : ''}>
+                  </th>
+                  <th style="width:48px">ক্রম</th>
+                  <th style="width:72px">ফ্ল্যাট</th>
                   <th>মালিকের নাম</th>
                   <th class="num">প্রারম্ভিক বকেয়া</th>
                   <th class="num">ধার্যকৃত চার্জ</th>
                   <th class="num">মোট জমা</th>
-                  <th class="num" style="width:130px">এ মাসের জমা</th>
+                  <th class="num" style="width:120px">এ মাসের জমা</th>
                   <th class="num">বর্তমান অবস্থা</th>
-                  <th class="c" style="width:150px">বিস্তারিত</th>
+                  <th class="c" style="width:130px">বিস্তারিত</th>
                 </tr>
               </thead>
               <tbody>
                 ${rows.length ? rows.map((r) => `
-                  <tr class="${r.due > 0 ? 'due-row' : 'paid-row'}">
+                  <tr class="${r.due > 0 ? 'due-row' : 'paid-row'} ${state.duesSelectedFlats.has(r.flat.id) ? 'selected-row' : ''}">
+                    <td class="c">
+                      <input type="checkbox" class="dues-cb" data-flat-select="${r.flat.id}" ${state.duesSelectedFlats.has(r.flat.id) ? 'checked' : ''}>
+                    </td>
                     <td class="c muted">${U.bnDigits(r.flat.serial)}</td>
                     <td><span class="pill flat">${U.escapeHtml(r.flat.flatNo)}</span></td>
                     <td>${U.escapeHtml(r.flat.ownerName)}</td>
@@ -610,11 +807,11 @@
                     <td class="num">${r.monthPaid > 0 ? U.bnNumber(r.monthPaid) : '<span class="pill due">দেননি</span>'}</td>
                     <td class="num">${r.due > 0 ? `<span class="pill due">বকেয়া ${U.bnNumber(r.due)}</span>` : (r.advance > 0 ? `<span class="pill warn">অগ্রীম ${U.bnNumber(r.advance)}</span>` : '<span class="pill ok">পরিশোধিত</span>')}</td>
                     <td class="c"><button class="btn sm" data-ledger="${r.flat.id}">লেজার দেখুন</button></td>
-                  </tr>`).join('') : '<tr><td colspan="9"><div class="empty">কোনো তথ্য নেই।</div></td></tr>'}
+                  </tr>`).join('') : '<tr><td colspan="10"><div class="empty">কোনো তথ্য নেই।</div></td></tr>'}
               </tbody>
               <tfoot>
                 <tr>
-                  <td colspan="7" class="num">সর্বমোট বকেয়া</td>
+                  <td colspan="8" class="num">সর্বমোট বকেয়া ${state.duesOnlySelected ? '(নির্বাচিত)' : ''}</td>
                   <td class="num">${U.bnTaka(totalDue)}</td>
                   <td></td>
                 </tr>
@@ -662,6 +859,7 @@
                     <td class="num">${U.bnNumber(f.openingDue || 0)}</td>
                     <td>${f.active === false ? '<span class="pill warn">নিষ্ক্রিয়</span>' : '<span class="pill ok">সক্রিয়</span>'}</td>
                     <td class="c">
+                      <button class="btn sm primary" data-goto-flat-entry="${f.id}" title="এই ফ্ল্যাটের সকল মাসের এন্ট্রি">এন্ট্রি</button>
                       <button class="btn sm" data-edit-flat="${f.id}">সম্পাদনা</button>
                       <button class="btn sm danger" data-del-flat="${f.id}">মুছুন</button>
                     </td>
@@ -1008,6 +1206,116 @@
     const goto = target.closest('[data-goto]');
     if (goto) { state.tab = goto.dataset.goto; render(); return; }
 
+    const gfe = target.closest('[data-goto-flat-entry]');
+    if (gfe) {
+      state.selectedEntryFlatId = gfe.dataset.gotoFlatEntry;
+      state.tab = 'flatEntry';
+      render();
+      return;
+    }
+
+    const feSave = target.closest('[data-fe-save]');
+    if (feSave) {
+      const m = feSave.dataset.feSave;
+      const tr = feSave.closest('tr[data-flat-month]');
+      const amount = Number($('input[data-fe-field="amount"]', tr).value) || 0;
+      const collectorId = $('select[data-fe-field="collectorId"]', tr).value;
+      const receivedOn = $('input[data-fe-field="receivedOn"]', tr).value || (amount > 0 ? U.todayIso() : '');
+      setPayment(state.selectedEntryFlatId, m, { amount, collectorId, receivedOn });
+      await persist(amount > 0 ? `${U.monthLabel(m)} মাসের জমা সংরক্ষিত হয়েছে।` : `${U.monthLabel(m)} মাসের জমা মুছে ফেলা হয়েছে।`);
+      render();
+      return;
+    }
+
+    const feQuick = target.closest('[data-fe-quick]');
+    if (feQuick) {
+      const m = feQuick.dataset.feQuick;
+      const amount = Number(feQuick.dataset.amount) || 0;
+      const tr = feQuick.closest('tr[data-flat-month]');
+      const collectorId = $('select[data-fe-field="collectorId"]', tr).value;
+      const receivedOn = $('input[data-fe-field="receivedOn"]', tr).value || U.todayIso();
+      setPayment(state.selectedEntryFlatId, m, { amount, collectorId, receivedOn });
+      await persist(`${U.monthLabel(m)}: ${U.bnNumber(amount)}/- জমা লেখা হয়েছে।`);
+      render();
+      return;
+    }
+
+    const feClear = target.closest('[data-fe-clear]');
+    if (feClear) {
+      const m = feClear.dataset.feClear;
+      setPayment(state.selectedEntryFlatId, m, { amount: 0 });
+      await persist(`${U.monthLabel(m)} মাসের জমা মুছে ফেলা হয়েছে।`);
+      render();
+      return;
+    }
+
+    const feRcpt = target.closest('[data-fe-receipt]');
+    if (feRcpt) {
+      const m = feRcpt.dataset.feReceipt;
+      const flat = flatById(state.selectedEntryFlatId);
+      const payment = getPayment(flat.id, m);
+      if (payment) doSavePdf(Report.buildReceiptHtml(state.data, flat, payment), `receipt-${flat.flatNo}-${m}.pdf`);
+      return;
+    }
+
+    if (target.closest('#feBulkFill')) {
+      const flat = flatById(state.selectedEntryFlatId);
+      const now = U.currentMonth();
+      const months = availableMonths().filter((m) => U.monthIndex(m) <= U.monthIndex(now));
+      let count = 0;
+      months.forEach((m) => {
+        const existing = getPayment(flat.id, m);
+        if (!existing || existing.amount <= 0) {
+          const rate = Calc.rateForMonth(state.data.settings, m, flat);
+          setPayment(flat.id, m, { amount: rate, collectorId: '', receivedOn: U.monthEndIso(m) });
+          count += 1;
+        }
+      });
+      if (count > 0) {
+        await persist(`${U.bnDigits(count)} টি মাসের জমা ১,৫০০/- করে পূরণ ও সংরক্ষণ করা হয়েছে।`);
+        render();
+      } else {
+        toast('সব মাসের জমা ইতিমধ্যেই লেখা আছে।');
+      }
+      return;
+    }
+
+    if (target.closest('#feBulkCollector')) {
+      openModal('এই ফ্ল্যাটের সবার আদায়কারী নির্ধারণ', `
+        <div class="field">
+          <label>আদায়কারী</label>
+          <select id="feBulkCollectorSelect">${collectorOptions('')}</select>
+          <span class="help">এই ফ্ল্যাটের যেসব মাসে টাকা জমা লেখা আছে অথচ আদায়কারী খালি আছে, সেগুলোতে এই নাম বসানো হবে।</span>
+        </div>`,
+        `<button class="btn primary" id="applyFeBulkCollector">প্রয়োগ করুন</button>
+         <button class="btn" data-close="1">বাতিল</button>`);
+
+      $('#applyFeBulkCollector').addEventListener('click', async () => {
+        const colId = $('#feBulkCollectorSelect').value;
+        if (!colId) { toast('আদায়কারী নির্বাচন করুন।', true); return; }
+        const payments = state.data.payments.filter((p) => p.flatId === state.selectedEntryFlatId);
+        payments.forEach((p) => { if (!p.collectorId) p.collectorId = colId; });
+        await persist('আদায়কারী হালনাগাদ করা হয়েছে।');
+        closeModal();
+        render();
+      });
+      return;
+    }
+
+    if (target.closest('#feSaveAll')) {
+      const trs = $$('#flatEntryTable tbody tr[data-flat-month]');
+      trs.forEach((tr) => {
+        const m = tr.dataset.flatMonth;
+        const amount = Number($('input[data-fe-field="amount"]', tr).value) || 0;
+        const collectorId = $('select[data-fe-field="collectorId"]', tr).value;
+        const receivedOn = $('input[data-fe-field="receivedOn"]', tr).value || (amount > 0 ? U.todayIso() : '');
+        setPayment(state.selectedEntryFlatId, m, { amount, collectorId, receivedOn });
+      });
+      await persist('এই ফ্ল্যাটের সকল মাসের এন্ট্রি সফলভাবে সংরক্ষিত হয়েছে।');
+      render();
+      return;
+    }
+
     const step = target.closest('[data-month-step]');
     if (step) {
       const months = availableMonths();
@@ -1094,6 +1402,23 @@
         Report.buildReportHtml(state.data, state.month, { nextMonthColumn: state.reportNextColumn }),
         `service-charge-${state.month}.pdf`
       );
+      return;
+    }
+
+    if (target.closest('#selectiveDuesPdf')) {
+      const selectedList = Array.from(state.duesSelectedFlats);
+      if (!selectedList.length) { toast('আগে অন্তত একটি ফ্ল্যাট নির্বাচন করুন।', true); return; }
+      doSavePdf(
+        Report.buildSelectiveDuesReportHtml(state.data, selectedList, state.month),
+        `selective-dues-${state.month}.pdf`
+      );
+      return;
+    }
+
+    if (target.closest('#selectiveDuesPrint')) {
+      const selectedList = Array.from(state.duesSelectedFlats);
+      if (!selectedList.length) { toast('আগে অন্তত একটি ফ্ল্যাট নির্বাচন করুন।', true); return; }
+      doPrint(Report.buildSelectiveDuesReportHtml(state.data, selectedList, state.month));
       return;
     }
 
@@ -1204,6 +1529,26 @@
       return;
     }
 
+    // একক ফ্ল্যাট এন্ট্রি স্বয়ংক্রিয় সংরক্ষণ
+    const feField = target.dataset.feField;
+    const feTr = target.closest('tr[data-flat-month]');
+    if (feField && feTr) {
+      const month = feTr.dataset.flatMonth;
+      const amountInput = $('input[data-fe-field="amount"]', feTr);
+      const amount = Number(amountInput.value) || 0;
+      const collectorId = $('select[data-fe-field="collectorId"]', feTr).value;
+      const dateInput = $('input[data-fe-field="receivedOn"]', feTr);
+      let receivedOn = dateInput.value;
+      if (amount > 0 && !receivedOn) {
+        receivedOn = U.todayIso();
+        dateInput.value = receivedOn;
+      }
+      setPayment(state.selectedEntryFlatId, month, { amount, collectorId, receivedOn });
+      await persist();
+      render();
+      return;
+    }
+
     // আদায়কারীর নাম সম্পাদনা
     const collectorId = target.dataset.collector;
     if (collectorId) {
@@ -1220,8 +1565,40 @@
       return;
     }
 
+    if (target.id === 'feFlatSelect') {
+      state.selectedEntryFlatId = target.value;
+      render();
+      return;
+    }
+    if (target.id === 'feMonthFilter') {
+      state.feMonthFilter = target.value;
+      render();
+      return;
+    }
     if (target.id === 'monthlyOnlyUnpaid') { state.monthlyOnlyUnpaid = target.checked; render(); return; }
     if (target.id === 'onlyUnpaid') { state.duesOnlyUnpaid = target.checked; render(); return; }
+    if (target.id === 'onlySelected') { state.duesOnlySelected = target.checked; render(); return; }
+    if (target.id === 'selectAllDues') {
+      let currentRows = Calc.allStatuses(state.data, state.month);
+      if (state.duesOnlyUnpaid) currentRows = currentRows.filter((r) => r.due > 0);
+      if (target.checked) {
+        currentRows.forEach((r) => state.duesSelectedFlats.add(r.flat.id));
+      } else {
+        currentRows.forEach((r) => state.duesSelectedFlats.delete(r.flat.id));
+      }
+      render();
+      return;
+    }
+    const flatSelect = target.dataset.flatSelect;
+    if (flatSelect) {
+      if (target.checked) {
+        state.duesSelectedFlats.add(flatSelect);
+      } else {
+        state.duesSelectedFlats.delete(flatSelect);
+      }
+      render();
+      return;
+    }
     if (target.id === 'duesSort') { state.duesSort = target.value; render(); return; }
     if (target.id === 'nextCol') { state.reportNextColumn = target.checked; refreshPreview(); }
   }
@@ -1344,10 +1721,13 @@
   async function boot(user) {
     state.user = user;
     state.data = await api.load();
-    if (!state.data.settings.rateHistory) {
+    if (!state.data.settings.startMonth || U.monthIndex(state.data.settings.startMonth) > U.monthIndex('2024-08')) {
+      state.data.settings.startMonth = '2024-08';
+    }
+    if (!state.data.settings.rateHistory || !state.data.settings.rateHistory.length) {
       state.data.settings.rateHistory = [{
         fromMonth: state.data.settings.startMonth,
-        rate: state.data.settings.monthlyRate
+        rate: state.data.settings.monthlyRate || 1500
       }];
     }
     state.month = defaultMonth();

@@ -1,4 +1,4 @@
-﻿{
+﻿export const INITIAL_DATA = {
     "version":  1,
     "settings":  {
                      "societyName":  "নীলকণ্ঠ ফ্ল্যাট মালিক সমিতি",
@@ -2299,4 +2299,4 @@
                       "createdAt":  "2026-08-30T05:23:49.773Z"
                   }
               ]
-}
+};

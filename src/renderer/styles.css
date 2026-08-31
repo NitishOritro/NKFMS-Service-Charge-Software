@@ -291,9 +291,58 @@ table.grid td {
   vertical-align: middle;
 }
 
-table.grid tbody tr:hover { background: #fafbfd; }
-table.grid tr.paid-row { background: #fbfefc; }
-table.grid tr.due-row { background: #fffcfb; }
+table.grid tbody tr {
+  transition: background 0.15s ease, box-shadow 0.15s ease;
+}
+table.grid tbody tr:hover { background: #f8fafc; }
+
+/* ১. যেসব সারিতে ডাটা এন্ট্রি / জমা হয়েছে (Paid / Entered Rows) - স্পষ্ট মার্জিত সবুজ হাইলাইট */
+table.grid tr.paid-row,
+table.grid tr.entered {
+  background: #ecfdf5 !important;
+}
+table.grid tr.paid-row td,
+table.grid tr.entered td {
+  border-bottom-color: #d1fae5 !important;
+}
+table.grid tr.paid-row td.entry input,
+table.grid tr.paid-row td.entry select,
+table.grid tr.entered td.entry input,
+table.grid tr.entered td.entry select {
+  border-color: #86efac;
+  background: #f0fdf4;
+}
+
+/* ২. যেসব সারিতে এখনো এন্ট্রি হয়নি / বকেয়া আছে */
+table.grid tr.due-row {
+  background: #ffffff;
+}
+
+table.grid tr.selected-row { background: #edf7f5 !important; }
+
+/* ৩. যখন যেকোনো সারিতে ডাটা এন্ট্রি / টাইপ / সিলেক্ট করা হবে তখন ডাইনামিক হলুদ কালার হাইলাইট */
+table.grid tbody tr:focus-within {
+  background: #fef08a !important; /* স্পষ্ট আকর্ষণীয় হলুদ ব্যাকগ্রাউন্ড */
+  box-shadow: inset 6px 0 0 #eab308, 0 3px 12px rgba(234, 179, 8, 0.28) !important;
+  position: relative;
+  z-index: 3;
+}
+
+table.grid tbody tr:focus-within td {
+  border-bottom-color: #fde047 !important;
+  color: #0f172a;
+}
+
+table.grid tbody tr:focus-within td.entry input,
+table.grid tbody tr:focus-within td.entry select {
+  border-color: #ca8a04 !important;
+  box-shadow: 0 0 0 3px rgba(234, 179, 8, 0.35) !important;
+  background: #ffffff !important;
+  font-weight: 700 !important;
+  color: #0f172a !important;
+}
+
+.dues-cb, #selectAllDues { cursor: pointer; width: 16px; height: 16px; accent-color: var(--brand); vertical-align: middle; }
 table.grid tfoot td {
   font-weight: 700;
   background: #f4f7fb;

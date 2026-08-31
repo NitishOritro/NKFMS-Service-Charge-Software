@@ -23,23 +23,47 @@ let splashWindow = null;
 /*
  * ডেটা কোথায় রাখা হবে।
  *
- * সোর্স থেকে চালালে প্রজেক্ট ফোল্ডারের `data` — কারণ সেটি git-এ থাকে, ফলে
- * অন্য কম্পিউটারে `git pull` করলেই হালনাগাদ হিসাব পাওয়া যায়। প্যাকেজ করা
- * .exe-র ক্ষেত্রে .exe ফাইলটির পাশের `data` ফোল্ডার — গোটা ফোল্ডারটি
- * পেনড্রাইভে নিলে ডেটাও সঙ্গে যায়। কোনোটিতেই লেখা না গেলে (যেমন Program
- * Files-এ বসানো থাকলে) আগের মতো উইন্ডোজের userData ফোল্ডার ব্যবহৃত হয়।
+ * সোর্স থেকে চালালে প্রজেক্ট ফোল্ডারের `data`,
+ * প্যাকেজ করা .exe থেকে চালালে exe-এর পাশের `data` ফোল্ডার।
+ * উভয় ক্ষেত্রেই একটিমাত্র নির্দিষ্ট স্থান ব্যবহৃত হয় যাতে
+ * সোর্স ও বিল্ড উভয় থেকে একই ডেটা ফাইল পড়া-লেখা হয়।
+ * শুধুমাত্র সেই ফোল্ডারে লেখা একেবারেই সম্ভব না হলে
+ * উইন্ডোজের userData ফোল্ডার ব্যবহৃত হয় (ফলব্যাক)।
  */
 function resolveDataDir() {
-  const base = app.isPackaged ? path.dirname(app.getPath('exe')) : __dirname;
-  const dir = path.join(base, 'data');
-  try {
-    fs.mkdirSync(dir, { recursive: true });
-    fs.accessSync(dir, fs.constants.W_OK);
-    return dir;
-  } catch (err) {
-    return app.getPath('userData');
+  const candidates = [];
+
+  if (app.isPackaged) {
+    // প্যাকেজড .exe: exe-এর পাশের `data` ফোল্ডার
+    // dist/NKFMS Service Charge-win32-x64/data
+    candidates.push(path.join(path.dirname(app.getPath('exe')), 'data'));
+    // সোর্স প্রজেক্টের `data` — exe দুই স্তর উপরে গেলে সোর্স মিলতে পারে
+    // dist/<platform>/  → ../ → dist/ → ../ → project root
+    candidates.push(path.join(path.dirname(app.getPath('exe')), '..', '..', 'data'));
+  } else {
+    // সোর্স রান: __dirname = প্রজেক্ট রুট
+    candidates.push(path.join(__dirname, 'data'));
   }
+
+  // সর্বশেষ ফলব্যাক: userData
+  candidates.push(app.getPath('userData'));
+
+  for (const dir of candidates) {
+    try {
+      fs.mkdirSync(dir, { recursive: true });
+      const testFile = path.join(dir, '.write-test');
+      fs.writeFileSync(testFile, 'ok', 'utf8');
+      fs.unlinkSync(testFile);
+      return dir;
+    } catch (e) {
+      // এই ফোল্ডারে লেখা যায়নি, পরেরটা চেষ্টা করা হবে
+    }
+  }
+
+  return app.getPath('userData');
 }
+
+
 
 function createSplash() {
   splashWindow = new BrowserWindow({
