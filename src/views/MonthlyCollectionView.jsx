@@ -4,13 +4,18 @@ import * as Calc from '../utils/calc';
 import * as U from '../utils/format';
 import { CalendarCheck, Receipt, Sparkles, Check, RotateCcw, Printer } from 'lucide-react';
 import { Modal } from '../components/Modal';
+import { Pagination } from '../components/Pagination';
 
 export function MonthlyCollectionView() {
   const { data, selectedMonth, setPayment, deletePayment, bulkSetPayments, addToast } = useData();
   const [receiptModal, setReceiptModal] = useState({ isOpen: false, flat: null, payment: null });
+  const [currentPage, setCurrentPage] = useState(1);
+  const [pageSize, setPageSize] = useState('all');
 
   const flats = [...data.flats].sort((a, b) => (a.serial || 0) - (b.serial || 0));
   const { rows, totals } = Calc.summary(data, selectedMonth);
+
+  const paginatedRows = pageSize === 'all' ? rows : rows.slice((currentPage - 1) * pageSize, currentPage * pageSize);
 
   const handleInputChange = (flatId, field, value) => {
     const existing = data.payments.find((p) => p.flatId === flatId && p.month === selectedMonth) || {};
@@ -118,7 +123,7 @@ export function MonthlyCollectionView() {
                 </tr>
               </thead>
               <tbody>
-                {rows.map((r, idx) => {
+                {paginatedRows.map((r, idx) => {
                   const flat = r.flat;
                   const payment = data.payments.find((p) => p.flatId === flat.id && p.month === selectedMonth);
                   const isPaid = payment && Number(payment.amount) > 0;
@@ -219,6 +224,17 @@ export function MonthlyCollectionView() {
               </tfoot>
             </table>
           </div>
+          <Pagination
+            currentPage={currentPage}
+            totalItems={rows.length}
+            pageSize={pageSize}
+            onPageChange={setCurrentPage}
+            onPageSizeChange={(size) => {
+              setPageSize(size);
+              setCurrentPage(1);
+            }}
+            pageSizeOptions={[10, 15, 25, 'all']}
+          />
         </div>
       </div>
 

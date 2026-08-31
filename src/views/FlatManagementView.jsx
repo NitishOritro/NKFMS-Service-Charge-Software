@@ -3,11 +3,14 @@ import { useData } from '../context/DataContext';
 import * as U from '../utils/format';
 import { Building2, Edit2, Plus, Check, X } from 'lucide-react';
 import { Modal } from '../components/Modal';
+import { Pagination } from '../components/Pagination';
 
 export function FlatManagementView() {
   const { data, updateFlat, addFlat } = useData();
   const [editModal, setEditModal] = useState({ isOpen: false, flat: null });
   const [addModal, setAddModal] = useState(false);
+  const [currentPage, setCurrentPage] = useState(1);
+  const [pageSize, setPageSize] = useState('all');
 
   const [formData, setFormData] = useState({
     serial: '',
@@ -19,6 +22,7 @@ export function FlatManagementView() {
   });
 
   const flats = [...data.flats].sort((a, b) => (a.serial || 0) - (b.serial || 0));
+  const paginatedFlats = pageSize === 'all' ? flats : flats.slice((currentPage - 1) * pageSize, currentPage * pageSize);
 
   const openEdit = (flat) => {
     setFormData({
@@ -102,7 +106,7 @@ export function FlatManagementView() {
                 </tr>
               </thead>
               <tbody>
-                {flats.map((f) => (
+                {paginatedFlats.map((f) => (
                   <tr key={f.id}>
                     <td style={{ textAlign: 'center', color: '#64748b' }}>{U.bnDigits(f.serial)}</td>
                     <td style={{ textAlign: 'center' }}><b>{f.flatNo}</b></td>
@@ -128,6 +132,17 @@ export function FlatManagementView() {
               </tbody>
             </table>
           </div>
+          <Pagination
+            currentPage={currentPage}
+            totalItems={flats.length}
+            pageSize={pageSize}
+            onPageChange={setCurrentPage}
+            onPageSizeChange={(size) => {
+              setPageSize(size);
+              setCurrentPage(1);
+            }}
+            pageSizeOptions={[10, 15, 25, 'all']}
+          />
         </div>
       </div>
 

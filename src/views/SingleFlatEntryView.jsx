@@ -14,6 +14,7 @@ import {
   AlertCircle
 } from 'lucide-react';
 import { Modal } from '../components/Modal';
+import { Pagination } from '../components/Pagination';
 
 export function SingleFlatEntryView({ onOpenLedger }) {
   const { data, setPayment, deletePayment, bulkSetPayments, addToast } = useData();
@@ -21,6 +22,8 @@ export function SingleFlatEntryView({ onOpenLedger }) {
     return data.flats.length ? data.flats[0].id : '';
   });
   const [monthFilter, setMonthFilter] = useState('all');
+  const [currentPage, setCurrentPage] = useState(1);
+  const [pageSize, setPageSize] = useState(10);
   const [bulkCollectorModalOpen, setBulkCollectorModalOpen] = useState(false);
   const [selectedCollectorId, setSelectedCollectorId] = useState('');
 
@@ -50,6 +53,12 @@ export function SingleFlatEntryView({ onOpenLedger }) {
     }
     return allMonths.filter((m) => m === monthFilter);
   }, [allMonths, monthFilter]);
+
+  const paginatedMonths = useMemo(() => {
+    if (pageSize === 'all') return displayMonths;
+    const start = (currentPage - 1) * pageSize;
+    return displayMonths.slice(start, start + pageSize);
+  }, [displayMonths, currentPage, pageSize]);
 
   if (!currentFlat) {
     return <div className="page-body">কোনো ফ্ল্যাট পাওয়া যায়নি।</div>;
@@ -299,7 +308,7 @@ export function SingleFlatEntryView({ onOpenLedger }) {
                 </tr>
               </thead>
               <tbody>
-                {displayMonths.map((m, idx) => {
+                {paginatedMonths.map((m, idx) => {
                   const payment = paymentsMap[m];
                   const charge = Calc.rateForMonth(data.settings, m, currentFlat);
                   const isPaid = payment && Number(payment.amount) > 0;
@@ -388,6 +397,17 @@ export function SingleFlatEntryView({ onOpenLedger }) {
               </tbody>
             </table>
           </div>
+          <Pagination
+            currentPage={currentPage}
+            totalItems={displayMonths.length}
+            pageSize={pageSize}
+            onPageChange={setCurrentPage}
+            onPageSizeChange={(size) => {
+              setPageSize(size);
+              setCurrentPage(1);
+            }}
+            pageSizeOptions={[5, 10, 15, 25, 'all']}
+          />
         </div>
       </div>
 

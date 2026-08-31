@@ -372,10 +372,28 @@ button, input, select, textarea {
   color: var(--text-light);
 }
 
-/* Tables */
+/* Tables & Scrolling */
 .table-container {
   overflow-x: auto;
+  overflow-y: auto;
+  max-height: 680px;
   width: 100%;
+  position: relative;
+}
+
+.table-container::-webkit-scrollbar {
+  width: 7px;
+  height: 7px;
+}
+.table-container::-webkit-scrollbar-track {
+  background: #f1f5f9;
+}
+.table-container::-webkit-scrollbar-thumb {
+  background: #cbd5e1;
+  border-radius: 4px;
+}
+.table-container::-webkit-scrollbar-thumb:hover {
+  background: #94a3b8;
 }
 
 table.data-table {
@@ -392,6 +410,10 @@ table.data-table th {
   padding: 12px 14px;
   border-bottom: 1px solid var(--border-strong);
   white-space: nowrap;
+  position: sticky;
+  top: 0;
+  z-index: 10;
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
 }
 
 table.data-table td {

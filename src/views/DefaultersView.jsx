@@ -3,13 +3,18 @@ import { useData } from '../context/DataContext';
 import * as Calc from '../utils/calc';
 import * as U from '../utils/format';
 import { AlertTriangle, Printer, CheckSquare, Square } from 'lucide-react';
+import { Pagination } from '../components/Pagination';
 
 export function DefaultersView({ onOpenSelectivePrint }) {
   const { data, selectedMonth } = useData();
   const [selectedIds, setSelectedIds] = useState([]);
+  const [currentPage, setCurrentPage] = useState(1);
+  const [pageSize, setPageSize] = useState('all');
 
   const statuses = Calc.allStatuses(data, selectedMonth);
   const defaulters = statuses.filter((s) => s.due > 0);
+
+  const paginatedStatuses = pageSize === 'all' ? statuses : statuses.slice((currentPage - 1) * pageSize, currentPage * pageSize);
 
   const toggleSelectAll = () => {
     if (selectedIds.length === defaulters.length) {
@@ -94,7 +99,7 @@ export function DefaultersView({ onOpenSelectivePrint }) {
                 </tr>
               </thead>
               <tbody>
-                {statuses.map((s, idx) => {
+                {paginatedStatuses.map((s, idx) => {
                   const isDefaulter = s.due > 0;
                   const isSelected = selectedIds.includes(s.flat.id);
                   const eqMonths = s.monthRate > 0 ? Math.round(s.due / s.monthRate) : 0;
@@ -154,6 +159,17 @@ export function DefaultersView({ onOpenSelectivePrint }) {
               </tfoot>
             </table>
           </div>
+          <Pagination
+            currentPage={currentPage}
+            totalItems={statuses.length}
+            pageSize={pageSize}
+            onPageChange={setCurrentPage}
+            onPageSizeChange={(size) => {
+              setPageSize(size);
+              setCurrentPage(1);
+            }}
+            pageSizeOptions={[10, 15, 25, 'all']}
+          />
         </div>
       </div>
     </div>
