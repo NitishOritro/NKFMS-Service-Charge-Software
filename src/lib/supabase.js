@@ -13,9 +13,17 @@ const FALLBACK_URL = 'https://grpgntaayuwciudswfxl.supabase.co';
 const FALLBACK_ANON_KEY =
   'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImdycGdudGFheXV3Y2l1ZHN3ZnhsIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODgxODgyOTEsImV4cCI6MjEwMzc2NDI5MX0.rBTlM_Ztpe4vgTEPUH2vhYWBbhbKWifIDkpylCitp4Y';
 
+// Supabase ড্যাশবোর্ডে "Project URL" এর পাশেই REST endpoint-টি
+// (.../rest/v1/) দেখায়। ভুল করে সেটি কপি করলে supabase-js আবার নিজে
+// /rest/v1 জুড়ে দেয় — পথ হয় /rest/v1/rest/v1/flats, আর PostgREST
+// PGRST125 "Invalid path specified in request URL" ফেরায়। তাই শেষের
+// স্ল্যাশ ও /rest/v1 অংশটুকু এখানেই ছেঁটে নেওয়া হয়।
+const cleanUrl = (u) =>
+  (u || '').trim().replace(/\/+$/, '').replace(/\/rest\/v\d+$/, '');
+
 // .env থাকলে সেটিই অগ্রাধিকার পায়, তাই অন্য প্রজেক্টে সরানো সহজ থাকলো।
-const url = import.meta.env.VITE_SUPABASE_URL || FALLBACK_URL;
-const anonKey = import.meta.env.VITE_SUPABASE_ANON_KEY || FALLBACK_ANON_KEY;
+const url = cleanUrl(import.meta.env.VITE_SUPABASE_URL) || FALLBACK_URL;
+const anonKey = (import.meta.env.VITE_SUPABASE_ANON_KEY || '').trim() || FALLBACK_ANON_KEY;
 
 if (!url || !anonKey) {
   console.error(
