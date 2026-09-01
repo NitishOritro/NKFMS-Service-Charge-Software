@@ -46,12 +46,19 @@ const NAV_GROUPS = [
   }
 ];
 
-export function Sidebar({ currentTab, setCurrentTab }) {
+export function Sidebar({ currentTab, setCurrentTab, open = false, onClose }) {
   const { user, logout, isReadOnly } = useAuth();
   const { data } = useData();
 
   return (
-    <aside className="sidebar no-print">
+    <>
+      {/* মোবাইলে মেনু খুললে পেছনের অংশে ট্যাপ করলেই বন্ধ হবে */}
+      <div
+        className={`sidebar-backdrop no-print ${open ? 'open' : ''}`}
+        onClick={onClose}
+        aria-hidden="true"
+      />
+    <aside className={`sidebar no-print ${open ? 'open' : ''}`}>
       <div className="sidebar-header">
         <img src={LOGO_BASE64} alt="NKFMS Logo" className="sidebar-logo" />
         <div style={{ minWidth: 0 }}>
@@ -73,7 +80,11 @@ export function Sidebar({ currentTab, setCurrentTab }) {
                 <button
                   key={item.id}
                   className={`nav-item ${isActive ? 'active' : ''} ${item.highlight && !isActive ? 'highlight-tab' : ''}`}
-                  onClick={() => setCurrentTab(item.id)}
+                  onClick={() => {
+                    setCurrentTab(item.id);
+                    // মোবাইলে পাতা বেছে নেওয়ার সাথে সাথেই মেনু সরে যাবে
+                    if (onClose) onClose();
+                  }}
                   aria-current={isActive ? 'page' : undefined}
                 >
                   <Icon size={18} />
@@ -111,5 +122,6 @@ export function Sidebar({ currentTab, setCurrentTab }) {
         </button>
       </div>
     </aside>
+    </>
   );
 }

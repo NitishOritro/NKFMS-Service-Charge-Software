@@ -1,11 +1,11 @@
 import React from 'react';
-import { Calendar, Download, Eye } from 'lucide-react';
+import { Calendar, Download, Eye, Menu } from 'lucide-react';
 import { useData } from '../context/DataContext';
 import { useAuth } from '../context/AuthContext';
 import * as U from '../utils/format';
 import * as Calc from '../utils/calc';
 
-export function Navbar({ pageTitle }) {
+export function Navbar({ pageTitle, onOpenNav }) {
   const { data, selectedMonth, setSelectedMonth, exportBackupJson } = useData();
   const { isReadOnly } = useAuth();
 
@@ -17,6 +17,15 @@ export function Navbar({ pageTitle }) {
   return (
     <header className="navbar no-print">
       <div className="navbar-left">
+        {/* শুধু ছোট পর্দায় দেখা যায় (CSS এ ডিফল্ট display:none) */}
+        <button
+          type="button"
+          className="nav-toggle"
+          onClick={onOpenNav}
+          aria-label="মেনু খুলুন"
+        >
+          <Menu size={20} />
+        </button>
         <h1 className="page-heading">{pageTitle}</h1>
         {isReadOnly && (
           <span className="pill warning">

@@ -1626,6 +1626,10 @@ table.data-table tr:focus-within select {
    ১৭. রেসপন্সিভ
    ========================================================================== */
 
+/* হ্যামবার্গার ও পর্দা-ঢাকা — কেবল ছোট পর্দায় কাজে লাগে */
+.nav-toggle { display: none; }
+.sidebar-backdrop { display: none; }
+
 @media (max-width: 1280px) {
   .sidebar { width: 252px; }
   .nav-item { font-size: 14.5px; padding: 9px 12px; }
@@ -1647,18 +1651,65 @@ table.data-table tr:focus-within select {
     width: 100% !important;
   }
 
+  /* আগে সাইডবারটি পাতার মাথায় পুরোটা জুড়ে বসত — ফলে ফোনে খুললে প্রথমে
+     মেনুর দেয়াল দেখা যেত, কাজের পাতা দেখতে বহুক্ষণ স্ক্রল করতে হত।
+     এখন এটি পাশে লুকানো ড্রয়ার — হ্যামবার্গারে চাপ দিলে বেরিয়ে আসে। */
   .sidebar {
-    width: 100% !important;
-    height: auto !important;
-    overflow: visible !important;
-    border-right: none !important;
-    border-bottom: 1px solid rgba(148, 163, 184, 0.16) !important;
+    position: fixed !important;
+    top: 0 !important;
+    left: 0 !important;
+    bottom: 0 !important;
+    z-index: 200 !important;
+    width: min(300px, 84vw) !important;
+    height: 100% !important;
+    overflow-y: auto !important;
+    border-right: 1px solid rgba(148, 163, 184, 0.16) !important;
+    border-bottom: none !important;
+    transform: translateX(-100%);
+    transition: transform 0.28s var(--ease);
+    box-shadow: 0 0 40px rgba(15, 23, 42, 0.35);
   }
 
+  .sidebar.open { transform: translateX(0); }
+
+  .sidebar-backdrop {
+    display: block;
+    position: fixed;
+    inset: 0;
+    z-index: 199;
+    background: rgba(15, 23, 42, 0.5);
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 0.28s var(--ease);
+  }
+
+  .sidebar-backdrop.open {
+    opacity: 1;
+    pointer-events: auto;
+  }
+
+  /* হ্যামবার্গার — আঙুলের জন্য পর্যাপ্ত বড় (প্রায় 44px) */
+  .nav-toggle {
+    display: inline-flex !important;
+    align-items: center;
+    justify-content: center;
+    width: 42px;
+    height: 42px;
+    flex-shrink: 0;
+    margin-right: 10px;
+    border: 1px solid var(--border);
+    border-radius: var(--radius-md);
+    background: #fff;
+    color: var(--primary-dark);
+    cursor: pointer;
+  }
+
+  .nav-toggle:active { background: #eef2f7; }
+
   .sidebar-nav {
-    display: grid !important;
-    grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)) !important;
-    gap: 6px !important;
+    display: flex !important;
+    flex-direction: column !important;
+    gap: 4px !important;
     padding: 10px !important;
     overflow: visible !important;
   }
@@ -1669,7 +1720,7 @@ table.data-table tr:focus-within select {
   }
   .nav-item.active::before { display: none !important; }
 
-  .nav-group-label { display: none !important; }
+  .nav-group-label { display: block !important; }
 
   .main-content {
     height: auto !important;
@@ -1718,8 +1769,6 @@ table.data-table tr:focus-within select {
   body { font-size: 15.5px; }
 
   .metrics-grid { grid-template-columns: 1fr !important; }
-
-  .sidebar-nav { grid-template-columns: 1fr 1fr !important; }
 
   .pagination-container {
     flex-direction: column !important;

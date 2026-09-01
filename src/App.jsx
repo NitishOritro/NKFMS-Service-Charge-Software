@@ -57,6 +57,8 @@ export function App() {
   //   • নির্দিষ্ট পেজের লিংক বুকমার্ক বা শেয়ার করা যায়
   const [currentTab, setCurrentTabState] = useState(tabFromHash);
   const [reportState, setReportState] = useState({ type: 'monthly', selectiveIds: null });
+  // ছোট পর্দায় সাইডবার ড্রয়ার হয়ে যায়; বড় পর্দায় এই অবস্থার কোনো প্রভাব নেই
+  const [navOpen, setNavOpen] = useState(false);
 
   const setCurrentTab = useCallback((tab) => {
     const next = Object.prototype.hasOwnProperty.call(PAGE_TITLES, tab) ? tab : DEFAULT_TAB;
@@ -110,10 +112,15 @@ export function App() {
 
   return (
     <div className="app-container">
-      <Sidebar currentTab={currentTab} setCurrentTab={setCurrentTab} />
+      <Sidebar
+        currentTab={currentTab}
+        setCurrentTab={setCurrentTab}
+        open={navOpen}
+        onClose={() => setNavOpen(false)}
+      />
 
       <div className="main-content">
-        <Navbar pageTitle={getPageTitle()} />
+        <Navbar pageTitle={getPageTitle()} onOpenNav={() => setNavOpen(true)} />
 
         {currentTab === 'dashboard' && <DashboardView setCurrentTab={setCurrentTab} />}
         {currentTab === 'collection' && <MonthlyCollectionView />}
