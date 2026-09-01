@@ -258,3 +258,142 @@ export function monthOptions(data) {
   }
   return list;
 }
+
+/* ==========================================================================
+   মাসিক আয়-ব্যয় হিসাবায়ন
+   ========================================================================== */
+
+/** একটি সারির অঙ্ক — উপ-লাইন থাকলে তাদের যোগফল, নইলে সরাসরি বসানো অঙ্ক */
+export function ledgerRowAmount(entry) {
+  const lines = entry.lines || [];
+  return lines.length
+    ? lines.reduce((sum, l) => sum + (Number(l.amount) || 0), 0)
+    : Number(entry.amount) || 0;
+}
+
+/**
+ * এক মাসের আয়-ব্যয়ের যোগফল ও ক্যাশ ঘাটতি/উদ্বৃত্ত।
+ * balance ঋণাত্মক মানে ঘাটতি, ধনাত্মক মানে উদ্বৃত্ত।
+ */
+export function ledgerSummary(data, month) {
+  const all = (data.ledgerEntries || []).filter((e) => e.month === month);
+  const stored = all.filter((e) => e.side === 'income');
+  const expense = all.filter((e) => e.side === 'expense');
+
+  // ঐ মাসে যাঁদের মাধ্যমে সার্ভিস চার্জ আদায় হয়েছে, তাঁদের সারি জমার খাতায়
+  // নিজে থেকেই বসে। ডাটাবেজে কিছু লেখা হয় না — প্রতিবার আদায়ের হিসাব থেকে
+  // গুনে নেওয়া হয়, ফলে পরে কোনো আদায় সংশোধন করলে এখানেও সাথে সাথে মেলে।
+  //
+  // কেউ সারিটি সম্পাদনা করলে সেটি ডাটাবেজে স্থায়ীভাবে বসে যায়, আর তখন এই
+  // স্বয়ংক্রিয় সারিটি আর তৈরি হয় না — হাতে লেখা সবসময় অগ্রাধিকার পায়।
+  const claimed = new Set(
+    all.filter((e) => e.source === 'collector').map((e) => e.refId || '')
+  );
+
+  const auto = collectorLedgerRows(data, month)
+    .filter((r) => !claimed.has(r.refId || ''))
+    .map((r) => ({
+      id: `auto-collector-${r.refId || 'none'}`,
+      month,
+      side: 'income',
+      serial: null,
+      title: r.title,
+      lines: [],
+      amount: r.amount,
+      source: 'collector',
+      refId: r.refId,
+      note: `${U.bnDigits(r.flats)} টি ফ্ল্যাট`,
+      auto: true
+    }));
+
+  // কাগজে আদায়কারীদের সারিগুলো সবার উপরে থাকে, তাই আগে সেগুলোই
+  const income = [
+    ...auto,
+    ...stored.sort((a, b) => (a.serial ?? 999) - (b.serial ?? 999))
+  ];
+  const expenseSorted = expense.sort((a, b) => (a.serial ?? 999) - (b.serial ?? 999));
+
+  const sum = (list) => list.reduce((t, e) => t + ledgerRowAmount(e), 0);
+  const totalIncome = sum(income);
+  const totalExpense = sum(expenseSorted);
+
+  return {
+    income,
+    expense: expenseSorted,
+    autoCount: auto.length,
+    totalIncome,
+    totalExpense,
+    balance: totalIncome - totalExpense,
+    lineCount: [...income, ...expenseSorted].reduce(
+      (n, e) => n + Math.max(1, (e.lines || []).length),
+      0
+    )
+  };
+}
+
+/**
+ * আদায়ের হিসাব থেকে আদায়কারীভিত্তিক সারি বানানো।
+ * ledgerSummary এগুলো নিজে থেকেই জমার খাতায় বসিয়ে দেয়।
+ */
+export function collectorLedgerRows(data, month) {
+  // কাগজে সম্বোধনসহ লেখা হয় — "জনাব নীতিশ রঞ্জন", "মিসেস সীমা চন্দ"।
+  // সেটিংসে সম্বোধন না দেওয়া থাকলে শুধু নামই বসে, ভুল সম্বোধন বসে না।
+  const people = new Map(
+    (data.settings.collectors || []).map((c) => [
+      c.id,
+      { name: c.bn || c.en, honorific: (c.honorific || '').trim() }
+    ])
+  );
+  const totals = new Map();
+
+  data.payments
+    .filter((p) => p.month === month && Number(p.amount) > 0)
+    .forEach((p) => {
+      const key = p.collectorId || '';
+      const cur = totals.get(key) || { amount: 0, flats: 0 };
+      cur.amount += Number(p.amount) || 0;
+      cur.flats += 1;
+      totals.set(key, cur);
+    });
+
+  return Array.from(totals.entries())
+    .sort((a, b) => b[1].amount - a[1].amount)
+    .map(([collectorId, t]) => {
+      const p = people.get(collectorId);
+      const who = p ? [p.honorific, p.name].filter(Boolean).join(' ') : '';
+      return {
+        refId: collectorId,
+        collectorName: p ? p.name : '',
+        flats: t.flats,
+        amount: t.amount,
+        title: who
+          ? `${who} কর্তৃক আদায় (${U.monthLabelShort(month)} এর সার্ভিস চার্জ বাবদ)`
+          : `আদায়কারী উল্লেখ নেই (${U.monthLabelShort(month)} এর সার্ভিস চার্জ বাবদ)`
+      };
+    });
+}
+
+/**
+ * আগের মাসের ফলাফল — ঘাটতি থাকলে চলতি মাসের খরচে, উদ্বৃত্ত থাকলে আয়ে বসে।
+ * আগের মাসের কোনো হিসাবই না থাকলে null (তখন সারিটি বসানো হয় না)।
+ */
+export function carryoverRow(data, month) {
+  const prev = U.addMonths(month, -1);
+  const hasPrev = (data.ledgerEntries || []).some((e) => e.month === prev);
+  if (!hasPrev) return null;
+
+  const { balance } = ledgerSummary(data, prev);
+  if (balance === 0) return null;
+
+  return balance < 0
+    ? {
+        side: 'expense',
+        amount: -balance,
+        title: `পূর্বের হিসাবের ক্যাশ (${U.monthLabelShort(prev)}) ঘাটতি পূরণ`
+      }
+    : {
+        side: 'income',
+        amount: balance,
+        title: `পূর্বের হিসাবের ক্যাশ (${U.monthLabelShort(prev)}) উদ্বৃত্ত`
+      };
+}

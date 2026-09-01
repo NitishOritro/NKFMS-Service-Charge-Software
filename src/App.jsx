@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import { useAuth } from './context/AuthContext';
 import { Sidebar } from './components/Sidebar';
+import { LedgerEntryView } from './views/LedgerEntryView';
 import { Navbar } from './components/Navbar';
 import { ToastContainer } from './components/Toast';
 
@@ -25,6 +26,7 @@ const PAGE_TITLES = {
   'charge-form': 'সার্ভিস চার্জ এন্ট্রি ফর্ম',
   'flat-entry': 'একক ফ্ল্যাট এন্ট্রি (বিগত ২৫ মাস)',
   summary: 'মাসিক হিসাবায়ন সারসংক্ষেপ',
+  ledger: 'আয়-ব্যয় হিসাব',
   defaulters: 'বকেয়া ফ্ল্যাটের তালিকা',
   reports: 'অফিসিয়াল প্রিন্ট ও PDF রিপোর্ট',
   flats: 'ফ্ল্যাট ও মালিকদের তথ্য',
@@ -37,7 +39,7 @@ const DEFAULT_TAB = 'dashboard';
 
 // কেবল অ্যাডমিন লগইনে খোলা পেজ। ভিউ মোডে মেনু থেকে লুকানো তো থাকেই,
 // কেউ ঠিকানায় সরাসরি #/flat-entry লিখলেও যেন ঢুকতে না পারে।
-const ADMIN_ONLY_TABS = ['flat-entry'];
+const ADMIN_ONLY_TABS = ['flat-entry', 'ledger'];
 
 /** ঠিকানার হ্যাশ (#/reports) থেকে পেজের নাম — অচেনা হলে ড্যাশবোর্ড */
 function tabFromHash() {
@@ -129,6 +131,9 @@ export function App() {
           <SingleFlatEntryView onOpenLedger={() => setCurrentTab('reports')} />
         )}
         {currentTab === 'summary' && <MonthlySummaryView onOpenPrint={() => setCurrentTab('reports')} />}
+        {currentTab === 'ledger' && !isReadOnly && (
+          <LedgerEntryView onOpenPrint={() => setCurrentTab('reports')} />
+        )}
         {currentTab === 'defaulters' && <DefaultersView onOpenSelectivePrint={handleOpenSelectivePrint} />}
         {currentTab === 'reports' && (
           <ReportView

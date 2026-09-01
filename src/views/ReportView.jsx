@@ -10,6 +10,63 @@ import { LOGO_BASE64 } from '../assets/logoData';
 // জমা পড়েনি বোঝাতে লাল '-'; ছাপার সময়ও রঙটি যেন থেকে যায় (styles/print.css)
 const DASH = <span className="dash">-</span>;
 
+/**
+ * আয়-ব্যয় খতিয়ানের এক পাশ (আদায় বা খরচ) ছাপার সারিতে ভাঙা।
+ *
+ * উপ-লাইনহীন সারি → একটি সারি: [ক্রমিক] [বিবরণ] [পরিমাণ]
+ * উপ-লাইনসহ সারি  → শিরোনামের একটি সারি, তারপর প্রতিটি লাইনের সারি;
+ *                    ক্রমিকের ঘরটি সবগুলো জুড়ে থাকে (rowSpan) — কাগজে
+ *                    যেভাবে মার্জ করা থাকে ঠিক সেভাবেই।
+ */
+function cashbookCells(entries) {
+  const cell = { padding: '4px 7px', verticalAlign: 'middle' };
+  const out = [];
+
+  entries.forEach((e, idx) => {
+    const lines = e.lines || [];
+    const serial = U.bnDigits(idx + 1);
+
+    if (!lines.length) {
+      out.push([
+        <td key="s" style={{ ...cell, textAlign: 'center' }}>{serial}</td>,
+        <td key="t" style={{ ...cell, textAlign: 'left' }}>{e.title}</td>,
+        <td key="a" style={{ ...cell, textAlign: 'right' }}>
+          {U.bnNumber(Calc.ledgerRowAmount(e))}
+        </td>
+      ]);
+      return;
+    }
+
+    out.push([
+      <td key="s" rowSpan={lines.length + 1} style={{ ...cell, textAlign: 'center' }}>
+        {serial}
+      </td>,
+      <td key="t" colSpan={2} style={{ ...cell, textAlign: 'left', fontWeight: 600 }}>
+        {e.title}
+      </td>
+    ]);
+
+    lines.forEach((l, li) => {
+      out.push([
+        <td key={`t${li}`} style={{ ...cell, textAlign: 'left', paddingLeft: '16px' }}>
+          {l.text}
+        </td>,
+        <td key={`a${li}`} style={{ ...cell, textAlign: 'right' }}>
+          {U.bnNumber(l.amount)}
+        </td>
+      ]);
+    });
+  });
+
+  return out;
+}
+
+const CASHBOOK_BLANK = [
+  <td key="b1">&nbsp;</td>,
+  <td key="b2">&nbsp;</td>,
+  <td key="b3">&nbsp;</td>
+];
+
 export function ReportView({ defaultReport = 'monthly', selectiveFlatIds = null }) {
   const { data, selectedMonth } = useData();
   const [reportType, setReportType] = useState(defaultReport);
@@ -22,6 +79,12 @@ export function ReportView({ defaultReport = 'monthly', selectiveFlatIds = null 
   const nextShort = U.monthLabelShort(nextMonth);
 
   const { rows, totals } = Calc.summary(data, selectedMonth);
+
+  // আয়-ব্যয় হিসাবায়ন — আদায়কারীদের সারি ledgerSummary নিজেই বসিয়ে দেয়
+  const cash = Calc.ledgerSummary(data, selectedMonth);
+  const cashDeficit = cash.balance < 0;
+  const cashIn = cashbookCells(cash.income);
+  const cashOut = cashbookCells(cash.expense);
 
   const getCollectorName = (colId) => {
     const c = (s.collectors || []).find((x) => x.id === colId);
@@ -77,6 +140,12 @@ export function ReportView({ defaultReport = 'monthly', selectiveFlatIds = null 
             className={`btn btn-sm ${reportType === 'selective' ? 'btn-primary' : 'btn-outline'}`}
           >
             বকেয়া বিবরণী রিপোর্ট
+          </button>
+          <button
+            onClick={() => setReportType('cashbook')}
+            className={`btn btn-sm ${reportType === 'cashbook' ? 'btn-primary' : 'btn-outline'}`}
+          >
+            আয়-ব্যয় হিসাবায়ন
           </button>
           <button
             onClick={() => setReportType('ledger')}
@@ -146,6 +215,7 @@ export function ReportView({ defaultReport = 'monthly', selectiveFlatIds = null 
             <div className="title">
               {reportType === 'monthly' && `সার্ভিস চার্জ জমা ও বকেয়া হিসাবায়ন সারসংক্ষেপ (${monthShort} পর্যন্ত)`}
               {reportType === 'selective' && `ফ্ল্যাট মালিকদের বকেয়া সার্ভিস চার্জ বিবরণী (${U.monthLabel(duesUpToMonth)} পর্যন্ত)`}
+              {reportType === 'cashbook' && `সার্ভিস হিসাবায়ন সারসংক্ষেপ (${monthShort})`}
               {reportType === 'ledger' && 'ফ্ল্যাটভিত্তিক সার্ভিস চার্জ লেজার ও বকেয়া বিবরণী'}
             </div>
           </div>
@@ -235,6 +305,88 @@ export function ReportView({ defaultReport = 'monthly', selectiveFlatIds = null 
 
             <div className="print-foot">
               মোট ফ্ল্যাট: {U.bnDigits(totals.flatCount)} &nbsp;|&nbsp; {monthShort} মাসে জমা দিয়েছেন {U.bnDigits(totals.paidThisMonth)} জন &nbsp;|&nbsp; নীলকণ্ঠ ফ্ল্যাট মালিক সমিতি সার্ভিস চার্জ সফটওয়্যার দ্বারা প্রস্তুত
+            </div>
+          </>
+        )}
+
+        {/* REPORT 4: আয়-ব্যয় হিসাবায়ন — কাগজের মতো পাশাপাশি দুটি খতিয়ান */}
+        {reportType === 'cashbook' && (
+          <>
+            <table className="print-table cashbook-table">
+              <thead>
+                <tr>
+                  <th style={{ width: '6%' }}>ক্রমিক<br />নং</th>
+                  <th style={{ width: '33%' }}>আদায়ের বিবরণ (+)</th>
+                  <th style={{ width: '11%' }}>আদায়ের<br />পরিমান</th>
+                  <th style={{ width: '6%' }}>ক্রমিক<br />নং</th>
+                  <th style={{ width: '33%' }}>খরচের বিবরণ (−)</th>
+                  <th style={{ width: '11%' }}>খরচের<br />পরিমান</th>
+                </tr>
+              </thead>
+              <tbody>
+                {Array.from({ length: Math.max(cashIn.length, cashOut.length) }).map((_, i) => (
+                  <tr key={i}>
+                    {cashIn[i] || CASHBOOK_BLANK}
+                    {cashOut[i] || CASHBOOK_BLANK}
+                  </tr>
+                ))}
+                {cashIn.length === 0 && cashOut.length === 0 && (
+                  <tr>
+                    <td colSpan="6" style={{ textAlign: 'center', padding: '18px' }}>
+                      {monthShort} মাসের কোনো আদায় বা খরচ এখনো লেখা হয়নি।
+                    </td>
+                  </tr>
+                )}
+              </tbody>
+              <tfoot>
+                <tr>
+                  <td colSpan="2" style={{ textAlign: 'center', background: '#dcfce7' }}>
+                    মোট আদায়ের পরিমান
+                  </td>
+                  <td style={{ textAlign: 'right', background: '#dcfce7' }}>
+                    {U.bnNumber(cash.totalIncome)}
+                  </td>
+                  <td colSpan="2" style={{ textAlign: 'center', background: '#fee2e2' }}>
+                    মোট খরচের পরিমান
+                  </td>
+                  <td style={{ textAlign: 'right', background: '#fee2e2' }}>
+                    {U.bnNumber(cash.totalExpense)}
+                  </td>
+                </tr>
+                <tr>
+                  <td colSpan="6" style={{ textAlign: 'center', background: '#fef9c3' }}>
+                    {cash.balance === 0
+                      ? 'আয় ও ব্যয় সমান'
+                      : cashDeficit
+                        ? 'ক্যাশ ঘাটতি রয়েছে'
+                        : 'ক্যাশ উদ্বৃত্ত রয়েছে'}{' '}
+                    = &nbsp;
+                    <b>
+                      {cashDeficit ? '−' : ''}
+                      {U.bnNumber(Math.abs(cash.balance))}
+                    </b>
+                    &nbsp; টাকা
+                  </td>
+                </tr>
+              </tfoot>
+            </table>
+
+            <div className="print-signs" style={{ marginTop: '26px' }}>
+              {(s.signatories || []).map((sig) => (
+                <div key={sig.id} className="s">
+                  <div className="line"></div>
+                  <div className="sd">স্বাক্ষরিত/-</div>
+                  <div className="nm">{sig.name}</div>
+                  <div className="dg">{sig.designation}</div>
+                  <div className="dg">{s.committeeName}</div>
+                </div>
+              ))}
+            </div>
+
+            <div className="print-foot">
+              {monthShort} মাসের আদায় ও খরচের হিসাব &nbsp;|&nbsp; আদায়ের সারি{' '}
+              {U.bnDigits(cash.income.length)}টি, খরচের সারি {U.bnDigits(cash.expense.length)}টি
+              &nbsp;|&nbsp; নীলকণ্ঠ ফ্ল্যাট মালিক সমিতি সার্ভিস চার্জ সফটওয়্যার দ্বারা প্রস্তুত
             </div>
           </>
         )}

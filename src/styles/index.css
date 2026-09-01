@@ -2334,3 +2334,42 @@ table.print-table tfoot td {
     width: 100%;
   }
 }
+
+/* ==========================================================================
+   ১৯. আয়-ব্যয় খতিয়ানের এন্ট্রি পাতা
+   কাগজের মতোই পাশাপাশি দুটি কলাম; ছোট পর্দায় একটির নিচে আরেকটি।
+   ========================================================================== */
+
+.ledger-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 16px;
+  align-items: start;
+}
+
+@media (max-width: 1000px) {
+  .ledger-grid { grid-template-columns: 1fr; }
+}
+
+/* ==========================================================================
+   ২০. আয়-ব্যয় হিসাবায়নের ছাপা টেবিল
+   একই পাতায় পাশাপাশি দুটি খতিয়ান, তাই ঘরগুলো একটু ছোট।
+   ========================================================================== */
+
+table.cashbook-table th,
+table.cashbook-table td {
+  font-size: 11px;
+  line-height: 1.45;
+  vertical-align: middle;
+}
+
+/* আদায় ও খরচের মাঝের ভাগরেখাটি মোটা — কোথায় এক খতিয়ান শেষ, স্পষ্ট থাকে */
+table.cashbook-table th:nth-child(4),
+table.cashbook-table td:nth-child(4) {
+  border-left-width: 2px;
+}
+
+table.cashbook-table tfoot td {
+  font-weight: 700;
+  font-size: 12px;
+}

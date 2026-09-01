@@ -10,8 +10,7 @@ import {
   Settings,
   Printer,
   ClipboardList,
-  LogOut
-} from 'lucide-react';
+  LogOut, Wallet } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
 import { useData } from '../context/DataContext';
 import { LOGO_BASE64 } from '../assets/logoData';
@@ -32,6 +31,8 @@ const NAV_GROUPS = [
     label: 'হিসাব ও প্রতিবেদন',
     items: [
       { id: 'summary', label: 'মাসিক হিসাব সারসংক্ষেপ', icon: FileSpreadsheet },
+      // ভিউ মোডে এন্ট্রির পাতা নয় — সেই মাসের জমা-খরচ তাঁরা রিপোর্টে দেখবেন
+      { id: 'ledger', label: 'আয়-ব্যয় হিসাব', icon: Wallet, adminOnly: true },
       { id: 'defaulters', label: 'বকেয়া তালিকা', icon: AlertTriangle },
       { id: 'reports', label: 'প্রিন্ট ও PDF রিপোর্ট', icon: Printer }
     ]

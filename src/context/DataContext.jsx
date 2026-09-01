@@ -6,7 +6,9 @@ import {
   flatFromRow,
   flatToRow,
   paymentFromRow,
-  paymentToRow
+  paymentToRow,
+  ledgerFromRow,
+  ledgerToRow
 } from '../lib/supabase';
 
 const DataContext = createContext();
@@ -61,22 +63,31 @@ export function DataProvider({ children }) {
       return;
     }
     try {
-      const [settingsRes, flatsRes, paymentsRes] = await Promise.all([
+      const [settingsRes, flatsRes, paymentsRes, ledgerRes] = await Promise.all([
         supabase.from('app_settings').select('data').eq('id', 1).single(),
         supabase.from('flats').select('*').order('serial', { ascending: true }),
         // ১০০০ সারির ডিফল্ট সীমা ছাড়িয়ে যাওয়া ঠেকাতে সুস্পষ্ট range
-        supabase.from('payments').select('*').range(0, 99999)
+        supabase.from('payments').select('*').range(0, 99999),
+        supabase.from('ledger_entries').select('*').range(0, 99999)
       ]);
 
       if (settingsRes.error) throw settingsRes.error;
       if (flatsRes.error) throw flatsRes.error;
       if (paymentsRes.error) throw paymentsRes.error;
 
+      // ledger_entries টেবিলটি এখনো তৈরি না হয়ে থাকলেও অ্যাপ যেন চালু থাকে —
+      // শুধু আয়-ব্যয়ের পাতাটি খালি দেখাবে, বাকি সব আগের মতোই চলবে।
+      if (ledgerRes.error) {
+        console.warn('ledger_entries পড়া যায়নি (supabase/06_ledger.sql চালানো হয়েছে?):', ledgerRes.error.message);
+      }
+
       setData({
         version: 1,
         settings: settingsRes.data.data,
         flats: (flatsRes.data || []).map(flatFromRow),
-        payments: (paymentsRes.data || []).map(paymentFromRow)
+        payments: (paymentsRes.data || []).map(paymentFromRow),
+        ledgerEntries: ledgerRes.error ? [] : (ledgerRes.data || []).map(ledgerFromRow),
+        ledgerReady: !ledgerRes.error
       });
       setLoadError(null);
     } catch (e) {
@@ -191,6 +202,84 @@ export function DataProvider({ children }) {
         supabase.from('payments').upsert(records.map(paymentToRow), { onConflict: 'flat_id,month' }),
       'এন্ট্রিগুলো সংরক্ষণ করা যায়নি'
     ).then((ok) => ok && addToast('সকল এন্ট্রি সফলভাবে সংরক্ষিত হয়েছে।', 'success'));
+  };
+
+  // ---- আয়-ব্যয় খতিয়ান -----------------------------------------------------
+  // উপ-লাইন থাকলে শিরোনামের অঙ্ক সবসময় তাদের যোগফল — হাতে বসানো অঙ্ক আর
+  // ভেতরের লাইনগুলো কখনো আলাদা হয়ে যেতে পারবে না।
+  const normalizeLedger = (e, existing) => {
+    const lines = (e.lines || [])
+      .filter((l) => (l.text || '').trim() !== '' || Number(l.amount))
+      .map((l) => ({ text: (l.text || '').trim(), amount: Number(l.amount) || 0 }));
+    return {
+      id: existing ? existing.id : e.id || newId('l'),
+      month: e.month,
+      side: e.side,
+      serial: e.serial ?? null,
+      title: (e.title || '').trim(),
+      lines,
+      amount: lines.length
+        ? lines.reduce((sum, l) => sum + l.amount, 0)
+        : Number(e.amount) || 0,
+      source: e.source || 'manual',
+      refId: e.refId || '',
+      note: e.note || ''
+    };
+  };
+
+  const ledgerEntries = (month, side) =>
+    (data.ledgerEntries || [])
+      .filter((e) => e.month === month && (!side || e.side === side))
+      .sort((a, b) => (a.serial ?? 999) - (b.serial ?? 999));
+
+  const setLedgerEntry = (entry) => {
+    if (!guard()) return null;
+    const existing = (data.ledgerEntries || []).find((x) => x.id === entry.id);
+    const record = normalizeLedger(entry, existing);
+
+    setData((prev) => {
+      const list = [...(prev.ledgerEntries || [])];
+      const idx = list.findIndex((x) => x.id === record.id);
+      if (idx >= 0) list[idx] = record;
+      else list.push(record);
+      return { ...prev, ledgerEntries: list };
+    });
+
+    runWrite(
+      () => supabase.from('ledger_entries').upsert(ledgerToRow(record), { onConflict: 'id' }),
+      'খতিয়ানের সারি সংরক্ষণ করা যায়নি'
+    );
+    return record;
+  };
+
+  const deleteLedgerEntry = (id) => {
+    if (!guard()) return;
+    setData((prev) => ({
+      ...prev,
+      ledgerEntries: (prev.ledgerEntries || []).filter((x) => x.id !== id)
+    }));
+    runWrite(
+      () => supabase.from('ledger_entries').delete().eq('id', id),
+      'খতিয়ানের সারি মুছে ফেলা যায়নি'
+    ).then((ok) => ok && addToast('সারিটি মুছে ফেলা হয়েছে।', 'warning'));
+  };
+
+  const bulkSetLedgerEntries = (entries) => {
+    if (!guard()) return;
+    const byId = new Map((data.ledgerEntries || []).map((x) => [x.id, x]));
+    const records = entries.map((e) => normalizeLedger(e, byId.get(e.id)));
+
+    setData((prev) => {
+      const m = new Map((prev.ledgerEntries || []).map((x) => [x.id, x]));
+      records.forEach((r) => m.set(r.id, r));
+      return { ...prev, ledgerEntries: Array.from(m.values()) };
+    });
+
+    runWrite(
+      () =>
+        supabase.from('ledger_entries').upsert(records.map(ledgerToRow), { onConflict: 'id' }),
+      'খতিয়ানের সারিগুলো সংরক্ষণ করা যায়নি'
+    ).then((ok) => ok && addToast('সারিগুলো সংরক্ষিত হয়েছে।', 'success'));
   };
 
   // ---- ফ্ল্যাট -------------------------------------------------------------
@@ -349,6 +438,10 @@ export function DataProvider({ children }) {
         data,
         canWrite,
         reload: loadAll,
+        ledgerEntries,
+        setLedgerEntry,
+        deleteLedgerEntry,
+        bulkSetLedgerEntries,
         selectedMonth,
         setSelectedMonth,
         getPayment,

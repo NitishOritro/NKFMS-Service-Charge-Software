@@ -330,3 +330,24 @@
     break-after: auto;
   }
 }
+
+@media print {
+  /* আয়-ব্যয় হিসাবায়ন — এক পাতায় দুটি খতিয়ান ধরাতে ঘরগুলো আরও ছোট */
+  table.cashbook-table th,
+  table.cashbook-table td {
+    font-size: 10px !important;
+    line-height: 1.35 !important;
+    padding: 2px 5px !important;
+  }
+
+  table.cashbook-table th:nth-child(4),
+  table.cashbook-table td:nth-child(4) {
+    border-left-width: 2px !important;
+  }
+
+  /* সবুজ, লাল ও হলুদ ব্যান্ড কাগজেও যেন থাকে */
+  table.cashbook-table tfoot td {
+    -webkit-print-color-adjust: exact !important;
+    print-color-adjust: exact !important;
+  }
+}

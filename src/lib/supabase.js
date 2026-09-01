@@ -104,3 +104,34 @@ export const paymentToRow = (p) => ({
   received_on: p.receivedOn || '',
   note: p.note || ''
 });
+
+// ---------------------------------------------------------------------------
+//  মাসিক আয়-ব্যয় খতিয়ানের সারি
+// ---------------------------------------------------------------------------
+
+export const ledgerFromRow = (r) => ({
+  id: r.id,
+  month: r.month,
+  side: r.side,                       // 'income' | 'expense'
+  serial: r.serial ?? null,
+  title: r.title || '',
+  // উপ-লাইন: [{ text, amount }] — কাগজে মার্জ-করা ঘরের ভেতরের সারিগুলো
+  lines: Array.isArray(r.lines) ? r.lines : [],
+  amount: Number(r.amount) || 0,
+  source: r.source || 'manual',       // 'manual' | 'collector' | 'carryover'
+  refId: r.ref_id || '',
+  note: r.note || ''
+});
+
+export const ledgerToRow = (e) => ({
+  id: e.id,
+  month: e.month,
+  side: e.side,
+  serial: e.serial ?? null,
+  title: e.title || '',
+  lines: Array.isArray(e.lines) ? e.lines : [],
+  amount: Number(e.amount) || 0,
+  source: e.source || 'manual',
+  ref_id: e.refId || null,
+  note: e.note || ''
+});

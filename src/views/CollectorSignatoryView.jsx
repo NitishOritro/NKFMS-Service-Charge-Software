@@ -10,7 +10,7 @@ export function CollectorSignatoryView() {
   const [collectors, setCollectors] = useState(data.settings.collectors || []);
   const [signatories, setSignatories] = useState(data.settings.signatories || []);
 
-  const [newCollector, setNewCollector] = useState({ bn: '', en: '' });
+  const [newCollector, setNewCollector] = useState({ honorific: 'জনাব', bn: '', en: '' });
   const [newSignatory, setNewSignatory] = useState({ name: '', designation: '' });
 
   const handleAddCollector = (e) => {
@@ -19,11 +19,27 @@ export function CollectorSignatoryView() {
     if (!newCollector.bn.trim()) return;
 
     const newId = 'c' + Date.now().toString(36);
-    const updated = [...collectors, { id: newId, bn: newCollector.bn.trim(), en: newCollector.en.trim() }];
+    const updated = [
+      ...collectors,
+      {
+        id: newId,
+        honorific: newCollector.honorific.trim(),
+        bn: newCollector.bn.trim(),
+        en: newCollector.en.trim()
+      }
+    ];
     setCollectors(updated);
     updateCollectors(updated);
-    setNewCollector({ bn: '', en: '' });
+    setNewCollector({ honorific: 'জনাব', bn: '', en: '' });
     addToast('নতুন আদায়কারী সফলভাবে যোগ করা হয়েছে।');
+  };
+
+  // সম্বোধন বদলানো — রিপোর্টে "জনাব/মিসেস ... কর্তৃক আদায়" এভাবে বসে
+  const handleHonorific = (id, honorific) => {
+    if (isReadOnly) return;
+    const updated = collectors.map((c) => (c.id === id ? { ...c, honorific } : c));
+    setCollectors(updated);
+    updateCollectors(updated);
   };
 
   const handleDeleteCollector = (id) => {
@@ -71,6 +87,17 @@ export function CollectorSignatoryView() {
           <div className="card-body">
             {!isReadOnly && (
               <form onSubmit={handleAddCollector} style={{ display: 'flex', gap: '10px', marginBottom: '18px' }}>
+                <select
+                  className="form-input"
+                  value={newCollector.honorific}
+                  onChange={(e) => setNewCollector({ ...newCollector, honorific: e.target.value })}
+                  aria-label="সম্বোধন"
+                  style={{ flexShrink: 0, width: '104px' }}
+                >
+                  <option value="জনাব">জনাব</option>
+                  <option value="মিসেস">মিসেস</option>
+                  <option value="">(কিছু নয়)</option>
+                </select>
                 <input
                   type="text"
                   className="form-input"
@@ -97,6 +124,7 @@ export function CollectorSignatoryView() {
               <table className="data-table">
                 <thead>
                   <tr>
+                    <th style={{ width: '96px' }}>সম্বোধন</th>
                     <th>বাংলা নাম</th>
                     <th>ইংরেজি নাম</th>
                     {!isReadOnly && <th style={{ width: '60px', textAlign: 'center' }}>মুছুন</th>}
@@ -105,6 +133,23 @@ export function CollectorSignatoryView() {
                 <tbody>
                   {collectors.map((c) => (
                     <tr key={c.id}>
+                      <td>
+                        {isReadOnly ? (
+                          <span style={{ color: '#64748b' }}>{c.honorific || '—'}</span>
+                        ) : (
+                          <select
+                            className="form-input"
+                            value={c.honorific || ''}
+                            onChange={(e) => handleHonorific(c.id, e.target.value)}
+                            aria-label={`${c.bn} এর সম্বোধন`}
+                            style={{ padding: '4px 6px', fontSize: '13px' }}
+                          >
+                            <option value="জনাব">জনাব</option>
+                            <option value="মিসেস">মিসেস</option>
+                            <option value="">(কিছু নয়)</option>
+                          </select>
+                        )}
+                      </td>
                       <td><b>{c.bn}</b></td>
                       <td style={{ color: '#64748b' }}>{c.en || '—'}</td>
                       {!isReadOnly && (
