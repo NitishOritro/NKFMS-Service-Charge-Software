@@ -1941,6 +1941,12 @@ table.print-table th {
   vertical-align: middle;
 }
 
+.print-table .dash,
+.print-sheet .dash {
+  color: #dc2626;
+  font-weight: 700;
+}
+
 table.print-table tfoot td {
   font-weight: 700;
   background: rgba(243, 245, 249, 0.9);

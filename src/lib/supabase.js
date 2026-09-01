@@ -1,13 +1,26 @@
 import { createClient } from '@supabase/supabase-js';
 
-const url = import.meta.env.VITE_SUPABASE_URL;
-const anonKey = import.meta.env.VITE_SUPABASE_ANON_KEY;
+// হোস্টিংয়ে (Vercel/Netlify) Environment Variable বসানো না থাকলেও অ্যাপ যেন
+// চলে — তাই সংযোগের তথ্য এখানে ডিফল্ট হিসেবে রাখা হলো।
+//
+// anon key গোপন নয় — এটি ব্রাউজারে যাওয়ার জন্যই তৈরি; বিল্ড করলে এমনিতেও
+// এটি JS ফাইলে ছাপা হয়ে সবার কাছে পৌঁছায়। আসল সুরক্ষা ডাটাবেজের RLS
+// নিয়মে — এই কী দিয়ে পড়া যায় (অ্যাপে "পাসওয়ার্ড ছাড়া দেখুন" মোড আছে),
+// কিন্তু লেখা যায় না — লিখতে হলে অ্যাডমিন লগইন লাগে।
+//
+// service_role / secret key কখনো এখানে রাখবেন না — সেটি RLS উপেক্ষা করে।
+const FALLBACK_URL = 'https://grpgntaayuwciudswfxl.supabase.co';
+const FALLBACK_ANON_KEY =
+  'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImdycGdudGFheXV3Y2l1ZHN3ZnhsIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODgxODgyOTEsImV4cCI6MjEwMzc2NDI5MX0.rBTlM_Ztpe4vgTEPUH2vhYWBbhbKWifIDkpylCitp4Y';
+
+// .env থাকলে সেটিই অগ্রাধিকার পায়, তাই অন্য প্রজেক্টে সরানো সহজ থাকলো।
+const url = import.meta.env.VITE_SUPABASE_URL || FALLBACK_URL;
+const anonKey = import.meta.env.VITE_SUPABASE_ANON_KEY || FALLBACK_ANON_KEY;
 
 if (!url || !anonKey) {
-  // এই দুটি না থাকলে অ্যাপ ডাটাবেজে পৌঁছাতেই পারবে না — তাই আগেভাগে জানানো
   console.error(
-    'VITE_SUPABASE_URL অথবা VITE_SUPABASE_ANON_KEY পাওয়া যায়নি। ' +
-      '.env ফাইলটি দেখুন (নমুনা: .env.example)।'
+    'Supabase সংযোগের তথ্য পাওয়া যায়নি। src/lib/supabase.js এর FALLBACK_URL / ' +
+      'FALLBACK_ANON_KEY দেখুন, অথবা .env বসান (নমুনা: .env.example)।'
   );
 }
 

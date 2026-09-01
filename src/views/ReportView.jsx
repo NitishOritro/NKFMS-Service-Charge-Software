@@ -7,6 +7,9 @@ import { Watermark } from '../components/Watermark';
 import { ResidentBadge } from '../components/ResidentBadge';
 import { LOGO_BASE64 } from '../assets/logoData';
 
+// জমা পড়েনি বোঝাতে লাল '-'; ছাপার সময়ও রঙটি যেন থেকে যায় (styles/print.css)
+const DASH = <span className="dash">-</span>;
+
 export function ReportView({ defaultReport = 'monthly', selectiveFlatIds = null }) {
   const { data, selectedMonth } = useData();
   const [reportType, setReportType] = useState(defaultReport);
@@ -173,10 +176,10 @@ export function ReportView({ defaultReport = 'monthly', selectiveFlatIds = null 
               </thead>
               <tbody>
                 {rows.map((r) => {
-                  const paidCell = r.monthPaid > 0 ? U.bnNumber(r.monthPaid) : '-';
+                  const paidCell = r.monthPaid > 0 ? U.bnNumber(r.monthPaid) : DASH;
                   const dueCell = r.due > 0 ? U.bnNumber(r.due) : (r.advance > 0 ? `অগ্রীম ${U.bnNumber(r.advance)}` : 'নেই');
                   const sigNames = r.collectorIds.map(getCollectorName).filter(Boolean);
-                  const sigCell = sigNames.length ? sigNames.join(', ') : '-';
+                  const sigCell = sigNames.length ? sigNames.join(', ') : DASH;
 
                   return (
                     <tr key={r.flat.id}>
@@ -215,7 +218,7 @@ export function ReportView({ defaultReport = 'monthly', selectiveFlatIds = null 
             </div>
 
             <div style={{ fontSize: '10.5px', fontStyle: 'italic', marginTop: '6px' }}>
-              ' - ' চিহ্ন মানে {monthShort} মাসের সার্ভিস চার্জ {U.bnNumber(Calc.rateForMonth(s, selectedMonth))}/- জমা হয়নি।
+              {DASH} চিহ্ন মানে {monthShort} মাসের সার্ভিস চার্জ {U.bnNumber(Calc.rateForMonth(s, selectedMonth))}/- জমা হয়নি।
             </div>
 
             <div className="print-signs">
@@ -331,10 +334,10 @@ export function ReportView({ defaultReport = 'monthly', selectiveFlatIds = null 
                         <ResidentBadge flat={ledgerFlat} />
                       )}
                     </td>
-                    <td style={{ textAlign: 'right' }}>{lr.charge ? U.bnNumber(lr.charge) : '-'}</td>
-                    <td style={{ textAlign: 'right' }}>{lr.paid ? U.bnNumber(lr.paid) : '-'}</td>
+                    <td style={{ textAlign: 'right' }}>{lr.charge ? U.bnNumber(lr.charge) : DASH}</td>
+                    <td style={{ textAlign: 'right' }}>{lr.paid ? U.bnNumber(lr.paid) : DASH}</td>
                     <td style={{ textAlign: 'center', fontSize: '9.5px' }}>
-                      {lr.collectorIds.map(getCollectorName).filter(Boolean).join(', ') || '-'}
+                      {lr.collectorIds.map(getCollectorName).filter(Boolean).join(', ') || DASH}
                     </td>
                     <td style={{ textAlign: 'right', fontWeight: 700 }}>{U.bnNumber(lr.balance)}</td>
                   </tr>

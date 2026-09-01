@@ -193,6 +193,15 @@
     text-align: center !important;
   }
 
+  /* জমা পড়েনি বোঝানোর লাল '-' — ব্রাউজার যেন রঙটি ছেঁটে না ফেলে */
+  .print-table .dash,
+  .print-sheet .dash {
+    color: #dc2626 !important;
+    font-weight: 700 !important;
+    -webkit-print-color-adjust: exact !important;
+    print-color-adjust: exact !important;
+  }
+
   table.print-table tfoot td {
     font-weight: 700 !important;
     background: rgba(243, 245, 249, 0.85) !important;
