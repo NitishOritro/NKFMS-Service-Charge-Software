@@ -35,6 +35,10 @@ const PAGE_TITLES = {
 const SITE_NAME = 'নীলকণ্ঠ ফ্ল্যাট মালিক সমিতি';
 const DEFAULT_TAB = 'dashboard';
 
+// কেবল অ্যাডমিন লগইনে খোলা পেজ। ভিউ মোডে মেনু থেকে লুকানো তো থাকেই,
+// কেউ ঠিকানায় সরাসরি #/flat-entry লিখলেও যেন ঢুকতে না পারে।
+const ADMIN_ONLY_TABS = ['flat-entry'];
+
 /** ঠিকানার হ্যাশ (#/reports) থেকে পেজের নাম — অচেনা হলে ড্যাশবোর্ড */
 function tabFromHash() {
   if (typeof window === 'undefined') return DEFAULT_TAB;
@@ -45,7 +49,7 @@ function tabFromHash() {
 }
 
 export function App() {
-  const { isAuthenticated } = useAuth();
+  const { isAuthenticated, isReadOnly } = useAuth();
 
   // পেজের নামটি ঠিকানাতেই রাখা হয় (#/reports)। এতে —
   //   • রিফ্রেশ করলে একই পেজেই থাকা যায়, ড্যাশবোর্ডে ফিরে যেতে হয় না
@@ -73,6 +77,13 @@ export function App() {
       window.history.replaceState(null, '', '#/' + DEFAULT_TAB);
     }
   }, []);
+
+  // ভিউ মোডে অ্যাডমিন-পেজে ঢোকার চেষ্টা হলে ড্যাশবোর্ডে ফিরিয়ে দেওয়া
+  useEffect(() => {
+    if (isReadOnly && ADMIN_ONLY_TABS.includes(currentTab)) {
+      setCurrentTab(DEFAULT_TAB);
+    }
+  }, [isReadOnly, currentTab, setCurrentTab]);
 
   // ব্রাউজার ট্যাবের নাম — কোন পেজে আছি তা ট্যাব দেখেই বোঝা যায়
   useEffect(() => {
@@ -107,7 +118,9 @@ export function App() {
         {currentTab === 'dashboard' && <DashboardView setCurrentTab={setCurrentTab} />}
         {currentTab === 'collection' && <MonthlyCollectionView />}
         {currentTab === 'charge-form' && <ServiceChargeEntryFormView />}
-        {currentTab === 'flat-entry' && <SingleFlatEntryView onOpenLedger={() => setCurrentTab('reports')} />}
+        {currentTab === 'flat-entry' && !isReadOnly && (
+          <SingleFlatEntryView onOpenLedger={() => setCurrentTab('reports')} />
+        )}
         {currentTab === 'summary' && <MonthlySummaryView onOpenPrint={() => setCurrentTab('reports')} />}
         {currentTab === 'defaulters' && <DefaultersView onOpenSelectivePrint={handleOpenSelectivePrint} />}
         {currentTab === 'reports' && (

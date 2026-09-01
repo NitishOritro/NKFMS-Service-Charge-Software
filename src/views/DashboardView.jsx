@@ -1,5 +1,6 @@
 import React from 'react';
 import { useData } from '../context/DataContext';
+import { useAuth } from '../context/AuthContext';
 import * as Calc from '../utils/calc';
 import * as U from '../utils/format';
 import {
@@ -18,6 +19,7 @@ import {
 
 export function DashboardView({ setCurrentTab }) {
   const { data, selectedMonth } = useData();
+  const { isReadOnly } = useAuth();
 
   const { totals } = Calc.summary(data, selectedMonth);
   const collectorData = Calc.collectorBreakdown(data, selectedMonth);
@@ -40,14 +42,15 @@ export function DashboardView({ setCurrentTab }) {
     : 0;
 
   const quickActions = [
-    {
+    // ভিউ মোডে "একক ফ্ল্যাট এন্ট্রি" কার্ডটি দেখানো হয় না
+    ...(isReadOnly ? [] : [{
       id: 'flat-entry',
       icon: Layers,
       color: '#0284c7',
       featured: true,
       title: 'একক ফ্ল্যাট এন্ট্রি',
       desc: 'একটি ফ্ল্যাটের বিগত ২৫ মাসের (আগস্ট ২০২৪ হতে আগস্ট ২০২৬) সব এন্ট্রি একসাথে দিন।'
-    },
+    }]),
     {
       id: 'collection',
       icon: CheckCircle2,
@@ -83,14 +86,16 @@ export function DashboardView({ setCurrentTab }) {
           </p>
         </div>
 
-        <button
-          onClick={() => setCurrentTab('flat-entry')}
-          className="btn btn-success"
-          style={{ padding: '11px 18px' }}
-        >
-          <Layers size={18} />
-          <span>একক ফ্ল্যাট এন্ট্রি (২৫ মাস)</span>
-        </button>
+        {!isReadOnly && (
+          <button
+            onClick={() => setCurrentTab('flat-entry')}
+            className="btn btn-success"
+            style={{ padding: '11px 18px' }}
+          >
+            <Layers size={18} />
+            <span>একক ফ্ল্যাট এন্ট্রি (২৫ মাস)</span>
+          </button>
+        )}
       </div>
 
       {/* আর্থিক মেট্রিক */}

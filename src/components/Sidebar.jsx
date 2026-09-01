@@ -23,7 +23,8 @@ const NAV_GROUPS = [
     items: [
       { id: 'dashboard', label: 'ড্যাশবোর্ড', icon: LayoutDashboard },
       { id: 'collection', label: 'মাসিক আদায় এন্ট্রি', icon: CalendarCheck },
-      { id: 'flat-entry', label: 'একক ফ্ল্যাট এন্ট্রি (২৫ মাস)', icon: Layers, highlight: true },
+      // adminOnly — ভিউ মোডে এই পেজটি মেনুতে দেখা যাবে না
+      { id: 'flat-entry', label: 'একক ফ্ল্যাট এন্ট্রি (২৫ মাস)', icon: Layers, highlight: true, adminOnly: true },
       { id: 'charge-form', label: 'সার্ভিস চার্জ এন্ট্রি ফর্ম', icon: ClipboardList }
     ]
   },
@@ -46,7 +47,7 @@ const NAV_GROUPS = [
 ];
 
 export function Sidebar({ currentTab, setCurrentTab }) {
-  const { user, logout } = useAuth();
+  const { user, logout, isReadOnly } = useAuth();
   const { data } = useData();
 
   return (
@@ -63,7 +64,9 @@ export function Sidebar({ currentTab, setCurrentTab }) {
         {NAV_GROUPS.map((group) => (
           <React.Fragment key={group.label}>
             <div className="nav-group-label">{group.label}</div>
-            {group.items.map((item) => {
+            {group.items
+              .filter((item) => !(item.adminOnly && isReadOnly))
+              .map((item) => {
               const Icon = item.icon;
               const isActive = currentTab === item.id;
               return (
