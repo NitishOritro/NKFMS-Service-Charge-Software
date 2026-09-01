@@ -9,7 +9,11 @@ import {
   Layers,
   AlertTriangle,
   Printer,
-  Zap
+  Zap,
+  Inbox,
+  TrendingUp,
+  TrendingDown,
+  Minus
 } from 'lucide-react';
 
 export function DashboardView({ setCurrentTab }) {
@@ -17,6 +21,14 @@ export function DashboardView({ setCurrentTab }) {
 
   const { totals } = Calc.summary(data, selectedMonth);
   const collectorData = Calc.collectorBreakdown(data, selectedMonth);
+
+  // গত মাসের সাথে তুলনা — নইলে মাসের শুরুতে "৳০ জমা / ০%" দেখে মনে হয়
+  // সব ভেঙে পড়েছে, অথচ সেটাই স্বাভাবিক। তুলনা থাকলে প্রেক্ষাপট বোঝা যায়।
+  const prevMonth = U.addMonths(selectedMonth, -1);
+  const prevTotals = Calc.summary(data, prevMonth).totals;
+  const collectedDelta = totals.monthCollected - prevTotals.monthCollected;
+  const DeltaIcon = collectedDelta > 0 ? TrendingUp : collectedDelta < 0 ? TrendingDown : Minus;
+  const deltaClass = collectedDelta > 0 ? 'up' : collectedDelta < 0 ? 'down' : 'flat';
 
   const getCollectorName = (colId) => {
     const c = (data.settings.collectors || []).find((x) => x.id === colId);
@@ -90,6 +102,17 @@ export function DashboardView({ setCurrentTab }) {
           </div>
           <div className="metric-sub">
             {U.bnDigits(totals.paidThisMonth)} টি ফ্ল্যাট এ মাসে পরিশোধ করেছে
+          </div>
+          <div
+            className={`metric-delta ${deltaClass}`}
+            title={`${U.monthLabel(prevMonth)} মাসে জমা হয়েছিল ${U.bnTaka(prevTotals.monthCollected)}`}
+          >
+            <DeltaIcon size={14} />
+            <span>
+              {collectedDelta === 0
+                ? 'গত মাসের সমান'
+                : `গত মাসের চেয়ে ${U.bnTaka(Math.abs(collectedDelta))} ${collectedDelta > 0 ? 'বেশি' : 'কম'}`}
+            </span>
           </div>
         </div>
 
@@ -203,7 +226,22 @@ export function DashboardView({ setCurrentTab }) {
                 ) : (
                   <tr>
                     <td colSpan="4" className="empty-state">
-                      এই মাসে কোনো আদায়ের রেকর্ড এন্ট্রি করা হয়নি।
+                      <div className="empty-state-icon">
+                        <Inbox size={24} />
+                      </div>
+                      <div className="empty-state-title">এখনো কোনো আদায় এন্ট্রি হয়নি</div>
+                      <p>
+                        {U.monthLabel(selectedMonth)} মাসের জমা এন্ট্রি করলে কে কত টাকা
+                        আদায় করেছেন তার হিসাব এখানে দেখা যাবে।
+                      </p>
+                      <button
+                        type="button"
+                        className="btn btn-primary"
+                        onClick={() => setCurrentTab('charge-form')}
+                      >
+                        <ArrowRight size={16} />
+                        <span>এন্ট্রি শুরু করুন</span>
+                      </button>
                     </td>
                   </tr>
                 )}

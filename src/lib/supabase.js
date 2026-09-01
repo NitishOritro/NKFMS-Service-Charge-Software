@@ -11,12 +11,21 @@ if (!url || !anonKey) {
   );
 }
 
-export const supabase = createClient(url || '', anonKey || '', {
-  auth: {
-    persistSession: true,
-    autoRefreshToken: true
+// createClient-কে খালি স্ট্রিং দিলে সে সাথে সাথেই "supabaseUrl is required"
+// ছুড়ে দেয় — মডিউল লোডেই অ্যাপ ভেঙে সাদা স্ক্রিন আসে, আর নিচের
+// hasSupabaseConfig গার্ডগুলো কখনো চলার সুযোগই পায় না। তাই .env না থাকলে
+// একটি নিরীহ প্লেসহোল্ডার দেওয়া হয়; এতে অ্যাপ চালু হয় এবং DataContext
+// ব্যবহারকারীকে ".env পাওয়া যায়নি" বার্তাটি পরিষ্কারভাবে দেখাতে পারে।
+export const supabase = createClient(
+  url || 'https://placeholder.invalid',
+  anonKey || 'placeholder-anon-key',
+  {
+    auth: {
+      persistSession: true,
+      autoRefreshToken: true
+    }
   }
-});
+);
 
 export const hasSupabaseConfig = Boolean(url && anonKey);
 
@@ -34,7 +43,10 @@ export const flatFromRow = (r) => ({
   note: r.note || '',
   active: r.active !== false,
   joinMonth: r.join_month || '',
-  closedFrom: r.closed_from || ''
+  closedFrom: r.closed_from || '',
+  // মাসভিত্তিক বিশেষ ধার্য হার, যেমন {"2024-08": 3500, "2024-09": 3500}
+  // (ভবনে বসবাসরত মালিকদের জন্য)। কলামটি না থাকলে বা খালি হলে {}।
+  customRates: r.custom_rates || {}
 });
 
 export const flatToRow = (f) => ({
@@ -47,7 +59,9 @@ export const flatToRow = (f) => ({
   note: f.note || '',
   active: f.active !== false,
   join_month: f.joinMonth || null,
-  closed_from: f.closedFrom || null
+  closed_from: f.closedFrom || null,
+  // ফ্ল্যাট সম্পাদনা করলে যেন বিশেষ হারগুলো মুছে না যায়
+  custom_rates: f.customRates && Object.keys(f.customRates).length ? f.customRates : null
 });
 
 export const paymentFromRow = (r) => ({

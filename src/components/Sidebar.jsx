@@ -9,6 +9,7 @@ import {
   Users,
   Settings,
   Printer,
+  ClipboardList,
   LogOut
 } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
@@ -22,7 +23,8 @@ const NAV_GROUPS = [
     items: [
       { id: 'dashboard', label: 'ড্যাশবোর্ড', icon: LayoutDashboard },
       { id: 'collection', label: 'মাসিক আদায় এন্ট্রি', icon: CalendarCheck },
-      { id: 'flat-entry', label: 'একক ফ্ল্যাট এন্ট্রি (২৫ মাস)', icon: Layers, highlight: true }
+      { id: 'flat-entry', label: 'একক ফ্ল্যাট এন্ট্রি (২৫ মাস)', icon: Layers, highlight: true },
+      { id: 'charge-form', label: 'সার্ভিস চার্জ এন্ট্রি ফর্ম', icon: ClipboardList }
     ]
   },
   {

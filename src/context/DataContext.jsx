@@ -38,7 +38,9 @@ export function DataProvider({ children }) {
   const [loadError, setLoadError] = useState(null);
   const [session, setSession] = useState(null);
   const [toasts, setToasts] = useState([]);
-  const [selectedMonth, setSelectedMonth] = useState('2026-08');
+  // ডিফল্ট মাস = চলতি মাস। আগে '2026-08' হার্ডকোড ছিল, ফলে সময় এগোলে
+  // সফটওয়্যার পুরনো মাসেই আটকে থাকত।
+  const [selectedMonth, setSelectedMonth] = useState(() => U.currentMonth());
 
   const canWrite = Boolean(session);
 

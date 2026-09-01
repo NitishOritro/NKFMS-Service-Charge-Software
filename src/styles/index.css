@@ -538,6 +538,16 @@ b, strong { font-weight: 700; }
   min-height: 0;
 }
 
+/* .page-body একটি ফ্লেক্স কলাম, আর তার সন্তানেরা ফ্লেক্স আইটেম। ফ্লেক্স
+   আইটেম ডিফল্টভাবে চেপে ছোট হতে পারে; যেসব কার্ডে overflow:hidden আছে
+   (যেমন রিপোর্ট শিট) সেগুলো চেপে গিয়ে নিজের ভেতরের লেখাই কেটে ফেলত —
+   ফলে স্ক্রল করার মতো উচ্চতা তৈরি হতো না, লম্বা রিপোর্টের নিচের সারিগুলো
+   দেখাই যেত না। সন্তানদের স্বাভাবিক উচ্চতা ধরে রাখলে .page-body ঠিকভাবে
+   স্ক্রল করে।                                                          */
+.page-body > * {
+  flex-shrink: 0;
+}
+
 .section-title {
   font-size: 16px;
   font-weight: 700;
@@ -781,10 +791,57 @@ b, strong { font-weight: 700; }
 .table-container {
   overflow-x: auto;
   overflow-y: auto;
-  max-height: calc(100vh - 420px);
+  max-height: calc(100vh - 420px);   /* পুরোনো ব্রাউজারের জন্য ফলব্যাক */
   min-height: 220px;
   width: 100%;
   position: relative;
+}
+
+/* --------------------------------------------------------------------
+   টেবিলওয়ালা কার্ড পেজের অবশিষ্ট উচ্চতাটুকু নিজে নিয়ে নেয়।
+
+   আগে উপরের max-height (100vh − ৪২০px) দিয়েই উচ্চতা ঠিক হতো। ৪২০ একটি
+   আন্দাজে বসানো সংখ্যা — ৯০০px পর্দায় টেবিল পেত মাত্র ৪৮০px, অথচ পেজে
+   জায়গা ছিল ৮৩৮px। ফলে নিচে ২৯৬px ফাঁকা পড়ে থাকত এবং শেষ সারিটা
+   মাঝখান দিয়ে কাটা যেত। এখন উচ্চতা মাপা হয় না, অবশিষ্ট জায়গাটুকুই
+   নেওয়া হয় — তাই যেকোনো পর্দার মাপে ঠিক বসে।
+
+   :has() না বোঝা ব্রাউজারে উপরের max-height ফলব্যাক হিসেবে কাজ করবে।
+   -------------------------------------------------------------------- */
+.page-body > .card:has(.table-container) {
+  flex: 1 1 auto;
+  /* স্পষ্ট মেঝে — auto ভরসা করা যায় না।
+     CSS স্পেক অনুযায়ী min-height:auto এর স্বয়ংক্রিয় সর্বনিম্ন মাপ কেবল
+     তখনই খাটে যখন উপাদানের overflow: visible। .card-এ overflow: hidden
+     থাকায় সেটি ০-তে নেমে আসে, ফলে কার্ড নিজের বিষয়বস্তুর চেয়েও ছোট
+     হয়ে যেত এবং স্ক্রলবার ছাড়াই নিচের অংশ কেটে ফেলত (ড্যাশবোর্ডে
+     "এন্ট্রি শুরু করুন" বোতামটি এভাবেই উধাও হয়ে যাচ্ছিল)।
+     ৩২০px = কার্ড হেডার + টেবিলের ২৬০px মেঝে। এর কমে নামলে পেজ-বডি
+     নিজেই স্ক্রল করবে, কিছু কাটা যাবে না।                          */
+  min-height: 320px;
+  display: flex;
+  flex-direction: column;
+}
+
+.page-body > .card:has(.table-container) > .card-body {
+  flex: 1 1 auto;
+  /* এখানে ০ থাকা জরুরি। না থাকলে card-body-র স্বয়ংক্রিয় সর্বনিম্ন মাপ
+     ভেতরের টেবিলের পুরো উচ্চতা (২৭ সারিতে ১৪৩৭px) হয়ে যায়, ফলে
+     .table-container আর নিজে স্ক্রল করে না — পুরো টেবিল লম্বা হয়ে
+     কার্ডের বাইরে গিয়ে কেটে যায়।
+     কার্ডের মেঝেটি উপরে min-height দিয়ে আলাদাভাবে ঠিক করা আছে।    */
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
+}
+
+.page-body > .card:has(.table-container) .table-container {
+  flex: 1 1 auto;
+  /* একেবারে ০ দিলে ছোট পর্দায় বা লম্বা পেজে (যেমন ড্যাশবোর্ড) টেবিলটি
+     চেপে গিয়ে সারি বা খালি-অবস্থার বার্তা কেটে যায়। এই মেঝেটুকু
+     থাকলে পেজ নিজেই স্ক্রল করে, টেবিল চ্যাপ্টা হয় না।              */
+  min-height: 260px;
+  max-height: none;
 }
 
 table.data-table {
@@ -809,6 +866,14 @@ table.data-table th {
   letter-spacing: 0.1px;
   line-height: 1.45;
   box-shadow: 0 1px 0 var(--border-strong);
+}
+
+/* বাংলা অঙ্কগুলো যেন এক কলামে সোজা নিচে নিচে বসে — নইলে টাকার
+   অঙ্ক এলোমেলো দেখায়। আগে কেবল .amount ক্লাসে ছিল, কিন্তু সেটি
+   ব্যবহার হতো শুধু ড্যাশবোর্ডে; বাকি টেবিলগুলো বাদ পড়ত।        */
+table.data-table th,
+table.data-table td {
+  font-variant-numeric: tabular-nums;
 }
 
 table.data-table td {
@@ -873,9 +938,106 @@ table.data-table tr:focus-within select {
 .empty-state {
   text-align: center;
   color: var(--text-light);
-  padding: 40px 20px;
+  padding: 44px 20px 48px;
   font-size: 15px;
   line-height: 1.6;
+}
+
+/* ---- খালি টেবিলের চেহারা: আইকন, শিরোনাম, ব্যাখ্যা, পরবর্তী পদক্ষেপ ----
+   কেবল এক লাইন লেখা থাকলে বড় সাদা বাক্সটি ফাঁকা ও অসমাপ্ত দেখায়।   */
+.empty-state-icon {
+  width: 54px;
+  height: 54px;
+  margin: 0 auto 14px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: var(--bg-muted);
+  color: var(--text-light);
+  border: 1px solid var(--border);
+}
+
+.empty-state-title {
+  font-weight: 700;
+  font-size: 16.5px;
+  color: var(--text-main);
+  margin-bottom: 5px;
+}
+
+.empty-state p {
+  margin: 0 auto 18px;
+  max-width: 400px;
+  font-size: 14.5px;
+}
+
+/* ---- মেট্রিক কার্ডে গত মাসের তুলনা ---- */
+.metric-delta {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  margin-top: 10px;
+  padding: 4px 10px;
+  border-radius: 999px;
+  font-size: 12.5px;
+  font-weight: 600;
+  line-height: 1.4;
+  border: 1px solid transparent;
+}
+
+.metric-delta.up {
+  background: #ecfdf5;
+  color: var(--success-dark);
+  border-color: #a7f3d0;
+}
+
+.metric-delta.down {
+  background: #fef2f2;
+  color: #b91c1c;
+  border-color: #fecaca;
+}
+
+.metric-delta.flat {
+  background: var(--bg-muted);
+  color: var(--text-light);
+  border-color: var(--border);
+}
+
+.metric-delta svg { flex-shrink: 0; }
+.metric-delta span { white-space: nowrap; }
+
+/* ---- "বসবাসরত অবস্থায়" ব্যাজ ----------------------------------------
+   আগস্ট ও সেপ্টেম্বর ২০২৪ মাসে যাঁদের ধার্য চার্জ ৩,৫০০ ছিল, নামের পাশে
+   এটি বসে। হলুদ-অ্যাম্বার রঙ বেছে নেওয়া হয়েছে — সবুজ (পরিশোধিত) ও লাল
+   (বকেয়া) ব্যাজের সাথে যেন গুলিয়ে না যায়।                            */
+/* ছোট রূপ — বকেয়া বিবরণী রিপোর্টের জন্য।
+   ওখানে নামের কলাম সরু, তাই ব্যাজটি নামের নিচের লাইনে নেমে যায় এবং
+   সারিটি লম্বা হয়ে পড়ে। ছোট হরফ ও কম প্যাডিং দিয়ে সেই বাড়তি
+   উচ্চতাটুকু কমানো হলো — এক পাতায় বেশি সারি ধরে।                 */
+.resident-badge.is-compact {
+  font-size: 9px;
+  font-weight: 600;
+  padding: 0 4px;
+  margin-left: 4px;
+  border-radius: 3px;
+  line-height: 1.35;
+}
+
+.resident-badge {
+  display: inline-flex;
+  align-items: center;
+  margin-left: 7px;
+  padding: 2px 8px;
+  border-radius: 5px;
+  background: #fef3c7;
+  color: #92400e;
+  border: 1px solid #fcd34d;
+  font-size: 11.5px;
+  font-weight: 700;
+  line-height: 1.5;
+  white-space: nowrap;
+  vertical-align: middle;
+  cursor: help;
 }
 
 /* ==========================================================================
@@ -1617,6 +1779,58 @@ table.data-table tr:focus-within select {
   max-width: 820px;
   margin: 0 auto;
   overflow: hidden;
+
+  /* পর্দায় রিপোর্ট বড় করে দেখানো — চোখে কম দেখেন এমন ব্যবহারকারীদের
+     জন্য। ৮২০px চওড়া A4 প্রিভিউ পর্দায় বেশ ছোট লাগত, দুপাশে অনেকটা
+     জায়গা খালি পড়ে থাকত।
+
+     প্রতিটি ফন্টের মাপ আলাদা করে না বাড়িয়ে zoom ব্যবহার করা হয়েছে —
+     এতে লেখা, টেবিল, লোগো, জলছাপ সবই একসাথে সমানুপাতে বড় হয়, তাই
+     কাগজে যেমন ছাপা হবে ঠিক সেই চেহারাই থাকে, শুধু বড় করে দেখা যায়।
+     transform: scale() নয়, কারণ zoom নতুন করে লেআউট করে — লেখা ঝাপসা
+     হয় না, আর পাশে বাড়তি স্ক্রলবারও আসে না।
+
+     সরু পর্দায় নিজে থেকেই ছোট হয়ে যায়: প্রকৃত প্রস্থ হয়
+     min(৮২০ × ১.৫, জায়গা) — তাই ছোট ল্যাপটপেও উপচে পড়ে না।       */
+  zoom: 1.5;
+}
+
+/* ---- লেজার রিপোর্টে ফ্ল্যাট বাছাইয়ের ঘর ----
+   লেজার বোতামের পাশেই বসে, তাই হালকা রঙের পটভূমি ও লেবেল দিয়ে
+   আলাদা করে চেনানো হয়েছে — নইলে বোতামের সারিতে মিশে যেত।      */
+.ledger-flat-picker {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-left: 6px;
+  padding: 4px 10px 4px 12px;
+  background: var(--bg-subtle);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-md);
+}
+
+.ledger-flat-picker label {
+  font-size: 12.5px;
+  font-weight: 700;
+  color: var(--text-body);
+  white-space: nowrap;
+  margin: 0;
+}
+
+.ledger-flat-picker .form-select {
+  width: auto;
+  min-width: 210px;
+  padding: 5px 30px 5px 10px;
+  font-size: 13px;
+  font-weight: 600;
+}
+
+@media (max-width: 720px) {
+  .ledger-flat-picker {
+    width: 100%;
+    margin-left: 0;
+  }
+  .ledger-flat-picker .form-select { flex: 1; min-width: 0; }
 }
 
 /* ---- মাঝখানের জলছাপ — লেখার পেছনে, হালকা ---- */
@@ -1625,9 +1839,9 @@ table.data-table tr:focus-within select {
   top: 50%;
   left: 50%;
   transform: translate(-50%, -50%);
-  width: 440px;
-  height: 440px;
-  max-width: 62%;
+  width: 80%;
+  height: auto;
+  aspect-ratio: 1 / 1;
   z-index: 0;
   pointer-events: none;
   display: flex;
@@ -1657,18 +1871,22 @@ table.data-table tr:focus-within select {
 }
 
 .print-head .head-logo {
-  width: 78px;
+  width: 165px;          /* ডান পাশের তারিখ-কলামের সমান — নইলে
+                            মাঝের শিরোনাম ব্লক বাঁ দিকে সরে যায় */
   flex-shrink: 0;
-  text-align: center;
+  text-align: left;
 }
 
 .print-head .head-logo img {
+  display: block;
   width: 62px;
   height: 62px;
   object-fit: contain;
 }
 
 .print-head .head-logo .logo-label {
+  width: 62px;
+  text-align: center;
   font-size: 10px;
   font-weight: 700;
   letter-spacing: 0.5px;
@@ -1760,9 +1978,13 @@ table.print-table tfoot td {
 }
 
 .print-signs .s {
-  flex: 0 0 33.33%;
+  flex: 1 1 0;        /* সারিটা সমান ভাগে — ৩ জনে ৩ ভাগ, ৫ জনে ৫ ভাগ */
+  min-width: 0;
   text-align: center;
-  font-size: 12px;
+  /* ৫ জনের ঘর পাশাপাশি বসায় প্রতিটির প্রস্থ কম। হরফ ছোট রাখলে
+     নাম-পদবি-কমিটির তিনটি লাইন খোলামেলা থাকে, চাপাচাপি লাগে না।  */
+  font-size: 10.5px;
+  line-height: 1.35;
 }
 
 .print-signs .s .line {
@@ -1772,8 +1994,9 @@ table.print-table tfoot td {
   padding-top: 3px;
 }
 
-.print-signs .s .nm { font-weight: 700; }
-.print-signs .s .dg { color: #475569; font-size: 11.5px; }
+.print-signs .s .sd { font-size: 9.5px; }
+.print-signs .s .nm { font-weight: 700; font-size: 11.5px; }
+.print-signs .s .dg { color: #475569; font-size: 8.5px; line-height: 1.3; }
 
 .print-foot {
   margin-top: 16px;
@@ -1786,4 +2009,273 @@ table.print-table tfoot td {
   .print-head { flex-wrap: wrap; }
   .print-head .head-date { width: 100%; text-align: center; }
   .print-signs .s { flex: 0 0 50%; }
+}
+
+/* ==========================================================================
+   ১৯. সার্ভিস চার্জ এন্ট্রি ফর্ম (২ কলাম গ্রিড)
+   ========================================================================== */
+
+/* এই পেজ এখনো সংরক্ষণ করে না — সেই বার্তার বাক্স */
+.form-notice {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  background: var(--warning-light);
+  border: 1px solid var(--warning-border);
+  color: #78350f;
+  padding: 12px 15px;
+  border-radius: var(--radius-md);
+  font-size: 14px;
+  line-height: 1.6;
+  margin-bottom: 22px;
+}
+.form-notice svg {
+  flex-shrink: 0;
+  margin-top: 2px;
+  color: var(--warning-dark);
+}
+
+/* দুই কলামের গ্রিড — প্রতি সারিতে দুটি ঘর */
+.charge-form-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 18px 26px;
+}
+
+/* একটি ঘর: লেবেল উপরে, ইনপুট নিচে, ইঙ্গিত সবার শেষে */
+.charge-field {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+}
+
+.charge-field-label {
+  font-size: 14.5px;
+  font-weight: 600;
+  color: var(--text-body);
+  line-height: 1.5;
+  margin-bottom: 6px;
+}
+
+.charge-field-hint {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  font-size: 12.5px;
+  color: var(--text-light);
+  line-height: 1.5;
+  margin-top: 5px;
+  min-height: 19px;
+}
+.charge-field-hint b {
+  color: var(--text-muted);
+  font-weight: 700;
+}
+.charge-field-hint svg {
+  flex-shrink: 0;
+}
+
+/* স্বয়ংক্রিয়ভাবে বসা ঘর — দেখেই বোঝা যায় লেখা যাবে না */
+.form-input.is-auto {
+  background: var(--bg-muted);
+  color: var(--text-body);
+  font-weight: 600;
+  cursor: default;
+}
+.form-input.is-auto:focus {
+  border-color: var(--border-strong);
+  box-shadow: none;
+}
+.form-input.is-auto.is-due {
+  color: var(--danger-dark);
+  background: var(--danger-light);
+  border-color: var(--danger-border);
+}
+.form-input.is-auto.is-advance {
+  color: var(--success-dark);
+  background: var(--success-light);
+  border-color: var(--success-border);
+}
+
+/* এখনো চালু না হওয়া ঘর */
+.charge-field.is-disabled .charge-field-label {
+  color: var(--text-light);
+}
+.charge-field.is-disabled .form-input {
+  background: var(--bg-subtle);
+  border-style: dashed;
+}
+
+/* নির্বাচিত মালিকের সংক্ষিপ্ত তথ্য */
+/* ---- ফর্মের সহায়িকা ঘর (গ্রিডের শেষ ফাঁকা ঘর পূরণ করে) ---- */
+.charge-help {
+  background: var(--bg-subtle);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-md);
+  padding: 13px 15px;
+  align-self: start;
+}
+
+.charge-help-title {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-weight: 700;
+  font-size: 13px;
+  color: var(--text-main);
+  margin-bottom: 8px;
+}
+
+.charge-help ul {
+  margin: 0;
+  /* Tailwind preflight ul থেকে বুলেট সরিয়ে দেয় — ফিরিয়ে আনা হলো */
+  list-style: disc outside;
+  padding-left: 18px;
+  display: grid;
+  gap: 5px;
+}
+
+.charge-help li {
+  font-size: 12.8px;
+  line-height: 1.55;
+  color: var(--text-light);
+}
+
+.charge-form-summary {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+  gap: 14px;
+  margin-top: 24px;
+  padding: 16px 18px;
+  background: var(--primary-soft);
+  border: 1px solid var(--primary-border);
+  border-radius: var(--radius-md);
+}
+.charge-form-summary .s-item {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+  min-width: 0;
+}
+.charge-form-summary .s-label {
+  font-size: 12.5px;
+  font-weight: 600;
+  color: var(--text-muted);
+}
+.charge-form-summary .s-value {
+  font-size: 16px;
+  font-weight: 700;
+  color: var(--text-main);
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+/* ছোট পর্দায় এক কলাম */
+@media (max-width: 760px) {
+  .charge-form-grid {
+    grid-template-columns: 1fr;
+    gap: 14px;
+  }
+}
+
+/* কার্ডটি পুরো প্রস্থ নেবে — আগে 1080px-এ আটকে থাকায় বড় পর্দায় ডান পাশে
+   বড় ফাঁকা জায়গা পড়ে থাকত। বাইরের .page-body ইতিমধ্যেই 1640px-এ সীমা
+   টানে, তাই লেখা অতিরিক্ত চওড়া হয়ে পড়ার ঝুঁকি নেই।                    */
+.charge-form-card {
+  width: 100%;
+}
+
+/* প্রশস্ত পর্দায় ঘরগুলো যেন অতিরিক্ত টানা না লাগে — কলামের ফাঁক বাড়ে */
+@media (min-width: 1200px) {
+  .charge-form-grid {
+    gap: 20px 40px;
+  }
+}
+
+/* ---- এন্ট্রি ফর্মের সতর্কতা, ত্রুটি ও ফুটার ---- */
+
+/* একই ফ্ল্যাট-মাসে আগের এন্ট্রি থাকলে — টাকার হিসাব বদলে যাওয়ার সতর্কতা */
+.form-warn {
+  display: flex;
+  align-items: flex-start;
+  gap: 11px;
+  background: var(--warning-light);
+  border: 1px solid var(--warning-border);
+  color: #78350f;
+  padding: 13px 16px;
+  border-radius: var(--radius-md);
+  font-size: 14px;
+  line-height: 1.6;
+  margin-top: 22px;
+}
+.form-warn svg {
+  flex-shrink: 0;
+  margin-top: 2px;
+  color: var(--warning-dark);
+}
+
+/* "হ্যাঁ, বদলে দিন" টিক-বাক্স */
+.form-confirm {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  margin-top: 10px;
+  padding: 6px 12px 6px 8px;
+  background: #fff;
+  border: 1px solid var(--warning-border);
+  border-radius: var(--radius-sm);
+  font-weight: 600;
+  cursor: pointer;
+  user-select: none;
+}
+.form-confirm input {
+  width: 16px;
+  height: 16px;
+  accent-color: var(--warning-dark);
+  cursor: pointer;
+}
+
+/* ভুল থাকলে যে বার্তা */
+.form-error {
+  background: var(--danger-light);
+  border: 1px solid var(--danger-border);
+  color: var(--danger-dark);
+  padding: 11px 15px;
+  border-radius: var(--radius-md);
+  font-size: 14px;
+  font-weight: 600;
+  line-height: 1.6;
+  margin-top: 18px;
+}
+
+/* ইঙ্গিতের জায়গায় বসা ছোট লিংক-বাটন (ধার্য হার বসানোর জন্য) */
+.link-btn {
+  background: none;
+  border: none;
+  padding: 0;
+  font: inherit;
+  font-size: 12.5px;
+  font-weight: 600;
+  color: var(--primary);
+  cursor: pointer;
+  text-decoration: underline;
+  text-underline-offset: 2px;
+}
+.link-btn:hover {
+  color: var(--primary-hover);
+}
+
+/* ফুটারে বাঁ পাশে ব্যাখ্যা, ডান পাশে বাটন */
+.charge-form-foot-note {
+  margin-right: auto;
+  font-size: 13px;
+  color: var(--text-light);
+  line-height: 1.5;
+}
+
+@media (max-width: 640px) {
+  .charge-form-foot-note {
+    margin-right: 0;
+    width: 100%;
+  }
 }

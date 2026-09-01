@@ -9,15 +9,8 @@ export function Navbar({ pageTitle }) {
   const { data, selectedMonth, setSelectedMonth, exportBackupJson } = useData();
   const { isReadOnly } = useAuth();
 
-  // Generate available months list from 2024-08 to 2026-08
-  const start = data.settings.startMonth || '2024-08';
-  const startIdx = U.monthIndex(start);
-  const endIdx = U.monthIndex('2026-08');
-
-  const monthsList = [];
-  for (let i = startIdx; i <= endIdx; i += 1) {
-    monthsList.push(U.indexToMonth(i));
-  }
+  // শুরুর মাস থেকে চলতি মাস পর্যন্ত (ডাটায় আরও পরের এন্ট্রি থাকলে সেটি পর্যন্ত)
+  const monthsList = Calc.monthOptions(data);
 
   const currentRate = Calc.rateForMonth(data.settings, selectedMonth);
 

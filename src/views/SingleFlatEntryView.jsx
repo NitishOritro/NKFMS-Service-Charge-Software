@@ -1,6 +1,7 @@
 import React, { useState, useMemo, useEffect, useRef } from 'react';
 import { useData } from '../context/DataContext';
 import * as Calc from '../utils/calc';
+import { ResidentBadge } from '../components/ResidentBadge';
 import * as U from '../utils/format';
 import {
   Layers,
@@ -513,6 +514,7 @@ export function SingleFlatEntryView({ onOpenLedger }) {
             <Layers size={18} color="var(--primary)" />
             <span>
               {currentFlat.flatNo} ({currentFlat.ownerName}) — মাসভিত্তিক সার্ভিস চার্জ এন্ট্রি
+              <ResidentBadge flat={currentFlat} />
             </span>
           </div>
           <span style={{ fontSize: '12px', color: '#64748b' }}>
@@ -560,6 +562,9 @@ export function SingleFlatEntryView({ onOpenLedger }) {
                       </td>
                       <td>
                         <b>{U.monthLabel(m)}</b>
+                        {Calc.isResidentMonth(currentFlat, m) && (
+                          <ResidentBadge flat={currentFlat} />
+                        )}
                       </td>
                       <td style={{ textAlign: 'right', color: '#64748b', fontWeight: 600 }}>
                         {chargeable ? `${U.bnNumber(charge)}/-` : '—'}

@@ -1,7 +1,60 @@
 // সার্ভিস চার্জ ও বকেয়ার গাণিতিক হিসাব
 import * as U from './format';
 
-const SPECIAL_3500_FLATS = new Set(['fA-1', 'fB-2', 'fB-5', 'fB-7', 'fC-3', 'fC-8']);
+// ---------------------------------------------------------------------------
+//  "বসবাসরত অবস্থায়" — যে মালিকেরা ভবনে বসবাস করতেন, তাঁদের জন্য আগস্ট ও
+//  সেপ্টেম্বর ২০২৪ মাসে ধার্য সার্ভিস চার্জ ছিল ১,৫০০ নয়, ৩,৫০০ টাকা।
+//
+//  A-4 (চিত্রলেখা বিশ্বাস) ও C-1 (দর্শনা সরকার) আগে এই তালিকায় ছিলেন না,
+//  ফলে তাঁদের ধার্য চার্জ ৪,০০০ টাকা কম ধরা হচ্ছিল। সমিতির শিটের সাথে
+//  মিলিয়ে যোগ করা হলো — এখন A-4 এর বকেয়া ৩,৫০০ ও C-1 এর ৫০০ টাকা
+//  (ডিসেম্বর ২০২৪ পর্যন্ত), যা শিটের হুবহু সমান।
+// ---------------------------------------------------------------------------
+const SPECIAL_3500_FLATS = new Set([
+  'fA-1', 'fA-4', 'fB-2', 'fB-5', 'fB-7', 'fC-1', 'fC-3', 'fC-8'
+]);
+
+/** "বসবাসরত অবস্থায়" প্রযোজ্য মাসিক হার */
+export const RESIDENT_RATE = 3500;
+
+/** কোড-নির্ভর ফলব্যাক — ডাটাবেজে custom_rates বসানোর আগ পর্যন্ত */
+export const RESIDENT_MONTHS = ['2024-08', '2024-09'];
+
+/**
+ * এই ফ্ল্যাটে "বসবাসরত" হার কোন কোন মাসে খেটেছে।
+ *
+ * আগে উত্তরটা কেবল উপরের হার্ডকোড করা তালিকা থেকে আসত। এখন আগে
+ * ডাটাবেজের custom_rates দেখা হয় — নতুন কোনো মালিক যোগ হলে বা হার
+ * বদলালে কোডে হাত না দিয়ে কেবল ডাটাবেজ হালনাগাদ করলেই চলবে।
+ * কলামটি এখনো বসানো না থাকলে পুরোনো তালিকাই কাজ করে, তাই SQL চালানোর
+ * আগে-পরে হিসাব একই থাকে।
+ */
+export function residentMonths(flat) {
+  if (!flat) return [];
+  const custom = flat.customRates || {};
+  const fromDb = Object.keys(custom)
+    .filter((m) => Number(custom[m]) === RESIDENT_RATE)
+    .sort();
+  if (fromDb.length) return fromDb;
+  return SPECIAL_3500_FLATS.has(flat.id) ? RESIDENT_MONTHS.slice() : [];
+}
+
+/** এই ফ্ল্যাটে কখনো "বসবাসরত" হার খেটেছে কি না */
+export function isResidentFlat(flat) {
+  return residentMonths(flat).length > 0;
+}
+
+/** নির্দিষ্ট মাসে এই ফ্ল্যাটে "বসবাসরত" হার খাটছে কি না */
+export function isResidentMonth(flat, month) {
+  return residentMonths(flat).includes(month);
+}
+
+/** টুলটিপে দেখানোর ব্যাখ্যা */
+export function residentNote(flat) {
+  const name = (flat && flat.ownerName) || 'এই';
+  const months = residentMonths(flat).map(U.monthLabel).join(' ও ');
+  return `${name} ফ্ল্যাট মালিক উক্ত সময়ে (${months}) ভবনে বসবাসরত ছিলেন — তাই ওই দুই মাসে ধার্য মাসিক সার্ভিস চার্জ ছিল ৩,৫০০/- টাকা।`;
+}
 
 /** নির্দিষ্ট ফ্ল্যাট ও মাসে প্রযোজ্য মাসিক ধার্য হার */
 export function rateForMonth(settings, month, flat) {
@@ -174,4 +227,34 @@ export function ledger(data, flat, asOfMonth) {
     });
   }
   return rows;
+}
+
+/**
+ * ড্রপডাউনে দেখানোর শেষ মাস।
+ *
+ * আগে সব জায়গায় '2026-08' হার্ডকোড করা ছিল, ফলে সেপ্টেম্বর ২০২৬ এলেও
+ * তালিকা আগস্টেই আটকে থাকত — চলতি মাসের এন্ট্রিই দেওয়া যেত না। এখন
+ * চলতি মাস নিজে থেকেই যুক্ত হয়, তাই সময় এগোলে সফটওয়্যারও এগোয়।
+ *
+ * ডাটাবেজে যদি চলতি মাসেরও পরের কোনো এন্ট্রি থাকে (যেমন অগ্রীম জমা),
+ * সেটিও যেন হারিয়ে না যায় — তাই দুইয়ের মধ্যে যেটি পরে সেটিই শেষ মাস।
+ */
+export function lastSelectableMonth(data) {
+  let idx = U.monthIndex(U.currentMonth());
+  (data.payments || []).forEach((p) => {
+    const i = U.monthIndex(p.month);
+    if (i > idx) idx = i;
+  });
+  return U.indexToMonth(idx);
+}
+
+/** সেটিংসের শুরুর মাস থেকে lastSelectableMonth পর্যন্ত সব মাসের তালিকা */
+export function monthOptions(data) {
+  const startIdx = U.monthIndex(data.settings.startMonth || '2024-08');
+  const endIdx = U.monthIndex(lastSelectableMonth(data));
+  const list = [];
+  for (let i = startIdx; i <= Math.max(startIdx, endIdx); i += 1) {
+    list.push(U.indexToMonth(i));
+  }
+  return list;
 }

@@ -4,6 +4,7 @@ import * as Calc from '../utils/calc';
 import * as U from '../utils/format';
 import { Printer, FileText, ChevronLeft, Layers } from 'lucide-react';
 import { Watermark } from '../components/Watermark';
+import { ResidentBadge } from '../components/ResidentBadge';
 import { LOGO_BASE64 } from '../assets/logoData';
 
 export function ReportView({ defaultReport = 'monthly', selectiveFlatIds = null }) {
@@ -24,13 +25,24 @@ export function ReportView({ defaultReport = 'monthly', selectiveFlatIds = null 
     return c ? (c.bn || c.en) : '';
   };
 
-  // Selective Dues Data
+  // ---- বকেয়া বিবরণী ----
+  // এই রিপোর্টটি হিসাব করে আগের মাস পর্যন্ত, চলতি মাস বাদ দিয়ে।
+  // কারণ চলতি মাসের চার্জ সবে ধার্য হয়েছে, আদায়ের সময় এখনো পার হয়নি —
+  // সেটিকে বকেয়া দেখালে প্রায় সব মালিকই অন্যায়ভাবে বকেয়াদার হয়ে যান।
+  // অর্থাৎ সেপ্টেম্বর ২০২৬ চললে বিবরণী দেখাবে আগস্ট ২০২৬ পর্যন্ত।
+  const duesUpToMonth = U.addMonths(selectedMonth, -1);
   const targetFlats = selectiveFlatIds && selectiveFlatIds.length
     ? data.flats.filter((f) => selectiveFlatIds.includes(f.id))
     : data.flats;
-  const selectiveStatuses = targetFlats.map((f) => Calc.flatStatus(data, f, selectedMonth));
+  const selectiveStatuses = targetFlats.map((f) => Calc.flatStatus(data, f, duesUpToMonth));
 
   // Ledger Data
+  // হেডারের তারিখ রিপোর্ট যতটুকু সময় ঢেকেছে সেই সময়ের শেষ দিন দেখাবে।
+  // বকেয়া বিবরণী চলতি মাস বাদ দিয়ে হিসাব করে, তাই সেখানে আগের মাসের
+  // শেষ তারিখ — নইলে "আগস্ট পর্যন্ত" লেখা থাকলেও তারিখ সেপ্টেম্বরের
+  // দেখাত, যা পরস্পরবিরোধী।
+  const headDateMonth = reportType === 'selective' ? duesUpToMonth : selectedMonth;
+
   const ledgerFlat = data.flats.find((f) => f.id === selectedLedgerFlatId) || data.flats[0];
   const ledgerRows = ledgerFlat ? Calc.ledger(data, ledgerFlat, selectedMonth) : [];
   const ledgerStatus = ledgerFlat ? Calc.flatStatus(data, ledgerFlat, selectedMonth) : null;
@@ -50,7 +62,7 @@ export function ReportView({ defaultReport = 'monthly', selectiveFlatIds = null 
           marginBottom: '20px'
         }}
       >
-        <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap' }}>
+        <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap', alignItems: 'center' }}>
           <button
             onClick={() => setReportType('monthly')}
             className={`btn btn-sm ${reportType === 'monthly' ? 'btn-primary' : 'btn-outline'}`}
@@ -69,24 +81,30 @@ export function ReportView({ defaultReport = 'monthly', selectiveFlatIds = null 
           >
             ফ্ল্যাটভিত্তিক লেজার স্টেটমেন্ট
           </button>
+
+          {/* ফ্ল্যাট বাছাইয়ের ঘরটি আগে ডান কোণে প্রিন্ট বোতামের পাশে ছিল,
+              চোখে পড়ত না। লেজার বোতামের ঠিক পাশে আনা হলো — যে বোতামটি
+              চেপে এখানে আসা হয়, তার গায়েই বাছাইয়ের ঘর।              */}
+          {reportType === 'ledger' && (
+            <div className="ledger-flat-picker">
+              <label htmlFor="ledger-flat">ফ্ল্যাট বাছুন:</label>
+              <select
+                id="ledger-flat"
+                className="form-select"
+                value={selectedLedgerFlatId}
+                onChange={(e) => setSelectedLedgerFlatId(e.target.value)}
+              >
+                {data.flats.map((f) => (
+                  <option key={f.id} value={f.id}>
+                    {f.flatNo} — {f.ownerName}
+                  </option>
+                ))}
+              </select>
+            </div>
+          )}
         </div>
 
         <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
-          {reportType === 'ledger' && (
-            <select
-              className="form-select"
-              style={{ width: 'auto', padding: '5px 10px', fontSize: '13px' }}
-              value={selectedLedgerFlatId}
-              onChange={(e) => setSelectedLedgerFlatId(e.target.value)}
-            >
-              {data.flats.map((f) => (
-                <option key={f.id} value={f.id}>
-                  {f.flatNo} — {f.ownerName}
-                </option>
-              ))}
-            </select>
-          )}
-
           <button
             onClick={() => window.print()}
             className="btn btn-success"
@@ -124,12 +142,12 @@ export function ReportView({ defaultReport = 'monthly', selectiveFlatIds = null 
             <div className="committee">{s.committeeName}</div>
             <div className="title">
               {reportType === 'monthly' && `সার্ভিস চার্জ জমা ও বকেয়া হিসাবায়ন সারসংক্ষেপ (${monthShort} পর্যন্ত)`}
-              {reportType === 'selective' && `ফ্ল্যাট মালিকদের বকেয়া সার্ভিস চার্জ বিবরণী (${U.monthLabel(selectedMonth)} পর্যন্ত)`}
+              {reportType === 'selective' && `ফ্ল্যাট মালিকদের বকেয়া সার্ভিস চার্জ বিবরণী (${U.monthLabel(duesUpToMonth)} পর্যন্ত)`}
               {reportType === 'ledger' && 'ফ্ল্যাটভিত্তিক সার্ভিস চার্জ লেজার ও বকেয়া বিবরণী'}
             </div>
           </div>
           <div className="head-date">
-            তারিখ: {U.monthEndDateLabel(selectedMonth)}
+            তারিখ: {U.monthEndDateLabel(headDateMonth)}
             {reportType === 'ledger' && ledgerFlat && (
               <div style={{ fontSize: '10.5px', marginTop: '2px' }}>
                 ফ্ল্যাট: <b>{ledgerFlat.flatNo}</b>
@@ -226,8 +244,14 @@ export function ReportView({ defaultReport = 'monthly', selectiveFlatIds = null 
                 <tr>
                   <th style={{ width: '5%' }}>ক্রম</th>
                   <th style={{ width: '8%' }}>ফ্ল্যাট</th>
-                  <th style={{ width: '20%', textAlign: 'left' }}>মালিকের নাম</th>
-                  <th style={{ width: '12%' }}>মোবাইল</th>
+                  {/* নাম ২০% → ২৫%, মোবাইল ১২% → ৭%।
+                      "বসবাসরত অবস্থায়" ব্যাজটি নামের পাশে বসতে ২১৪px
+                      জায়গা লাগত, ছিল মাত্র ২০৭px — তাই প্রতিবার নিচের
+                      লাইনে নেমে সারিটি ৪৩px থেকে ৭০px হয়ে যেত।
+                      মোবাইলের ঘরে ১১ অঙ্কের নম্বরই যথেষ্ট, বাড়তি
+                      জায়গাটুকু নামের কলামে দেওয়া হলো।              */}
+                  <th style={{ width: '25%', textAlign: 'left' }}>মালিকের নাম</th>
+                  <th style={{ width: '7%' }}>মোবাইল</th>
                   <th style={{ width: '11%', textAlign: 'right' }}>ধার্যকৃত<br />চার্জ</th>
                   <th style={{ width: '11%', textAlign: 'right' }}>মোট<br />জমা</th>
                   <th style={{ width: '11%', textAlign: 'right' }}>বর্তমান<br />বকেয়া</th>
@@ -241,7 +265,10 @@ export function ReportView({ defaultReport = 'monthly', selectiveFlatIds = null 
                     <tr key={st.flat.id}>
                       <td style={{ textAlign: 'center' }}>{U.bnDigits(idx + 1)}</td>
                       <td style={{ textAlign: 'center' }}><b>{st.flat.flatNo}</b></td>
-                      <td style={{ textAlign: 'left' }}><b>{st.flat.ownerName}</b></td>
+                      <td style={{ textAlign: 'left' }}>
+                        <b>{st.flat.ownerName}</b>
+                        <ResidentBadge flat={st.flat} className="is-compact" />
+                      </td>
                       <td style={{ textAlign: 'center', fontSize: '10px' }}>{st.flat.phone || '—'}</td>
                       <td style={{ textAlign: 'right' }}>{U.bnNumber(st.charged)}</td>
                       <td style={{ textAlign: 'right' }}>{U.bnNumber(st.paid)}</td>
@@ -292,13 +319,18 @@ export function ReportView({ defaultReport = 'monthly', selectiveFlatIds = null 
                   <th style={{ width: '16%', textAlign: 'right' }}>ধার্য চার্জ</th>
                   <th style={{ width: '16%', textAlign: 'right' }}>জমা</th>
                   <th style={{ width: '18%', textAlign: 'center' }}>আদায়কারী</th>
-                  <th style={{ width: '18%', textAlign: 'right' }}>জের (টাকা)</th>
+                  <th style={{ width: '18%', textAlign: 'right' }}>বকেয়া টাকা</th>
                 </tr>
               </thead>
               <tbody>
                 {ledgerRows.map((lr, idx) => (
                   <tr key={idx}>
-                    <td style={{ textAlign: 'left' }}><b>{lr.label}</b></td>
+                    <td style={{ textAlign: 'left' }}>
+                      <b>{lr.label}</b>
+                      {Calc.isResidentMonth(ledgerFlat, lr.month) && (
+                        <ResidentBadge flat={ledgerFlat} />
+                      )}
+                    </td>
                     <td style={{ textAlign: 'right' }}>{lr.charge ? U.bnNumber(lr.charge) : '-'}</td>
                     <td style={{ textAlign: 'right' }}>{lr.paid ? U.bnNumber(lr.paid) : '-'}</td>
                     <td style={{ textAlign: 'center', fontSize: '9.5px' }}>
@@ -327,12 +359,14 @@ export function ReportView({ defaultReport = 'monthly', selectiveFlatIds = null 
             </div>
 
             <div className="print-signs" style={{ marginTop: '30px' }}>
-              {(s.signatories || []).slice(0, 3).map((sig) => (
+              {(s.signatories || []).map((sig) => (
                 <div key={sig.id} className="s">
                   <div className="line"></div>
                   <div className="sd">স্বাক্ষরিত/-</div>
                   <div className="nm">{sig.name}</div>
                   <div className="dg">{sig.designation}</div>
+                  {/* কমিটির নাম — অন্য দুই রিপোর্টে ছিল, লেজারে বাদ পড়েছিল */}
+                  <div className="dg">{s.committeeName}</div>
                 </div>
               ))}
             </div>

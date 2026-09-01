@@ -68,6 +68,8 @@
 
   /* Printable Sheet & Centered Watermark */
   .print-sheet {
+    /* পর্দার বড় করে দেখানোটা কেবল মনিটরের জন্য — কাগজে আসল মাপ */
+    zoom: 1 !important;
     position: relative !important;
     padding: 2mm 3mm !important;
     min-height: 270mm !important;
@@ -80,8 +82,9 @@
     top: 50% !important;
     left: 50% !important;
     transform: translate(-50%, -50%) !important;
-    width: 500px !important;
-    height: 500px !important;
+    width: 80% !important;
+    height: auto !important;
+    aspect-ratio: 1 / 1 !important;
     opacity: 0.12 !important;
     z-index: 0 !important;
     pointer-events: none !important;
@@ -97,6 +100,9 @@
     mix-blend-mode: multiply !important;
   }
 
+  /* লোগো ও তারিখের কলাম সমান চওড়া — নইলে মাঝের শিরোনাম ব্লকটি
+     দুই পাশের পার্থক্যের অর্ধেক (১৪৫−৬৫)/২ = ৪০px বাঁ দিকে সরে যেত। */
+
   /* 3-Column Header */
   .print-head {
     display: flex !important;
@@ -108,18 +114,21 @@
   }
 
   .print-head .head-logo {
-    width: 65px !important;
-    text-align: center !important;
+    width: 145px !important;
+    text-align: left !important;
     flex-shrink: 0 !important;
   }
 
   .print-head .head-logo img {
+    display: block !important;
     width: 52px !important;
     height: 52px !important;
     object-fit: contain !important;
   }
 
   .print-head .head-logo .logo-label {
+    width: 52px !important;
+    text-align: center !important;
     font-size: 9px !important;
     font-weight: 700 !important;
     letter-spacing: 0.5px !important;
@@ -171,8 +180,8 @@
 
   table.print-table th, table.print-table td {
     border: 1px solid #000 !important;
-    padding: 3.5px 5px !important;
-    font-size: 11px !important;
+    padding: 3px 6px !important;
+    font-size: 13px !important;
     line-height: 1.4 !important;
     background: transparent !important;
   }
@@ -180,13 +189,35 @@
   table.print-table th {
     background: rgba(238, 241, 246, 0.85) !important;
     font-weight: 700 !important;
-    font-size: 10.5px !important;
+    font-size: 12.5px !important;
     text-align: center !important;
   }
 
   table.print-table tfoot td {
     font-weight: 700 !important;
     background: rgba(243, 245, 249, 0.85) !important;
+  }
+
+  /* ---- "বসবাসরত অবস্থায়" ব্যাজ ----
+     কাগজে সাধারণত সাদাকালো ছাপা হয়, তাই হলুদ ভরাটের বদলে পাতলা বর্ডার
+     ও ছোট হরফ — লেখাটি পড়া যায়, অথচ সারির জায়গা বেশি নেয় না।       */
+  .resident-badge.is-compact {
+    font-size: 7.5px !important;
+    padding: 0 2px !important;
+    margin-left: 3px !important;
+  }
+
+  .resident-badge {
+    display: inline !important;
+    background: transparent !important;
+    color: #000 !important;
+    border: 1px solid #000 !important;
+    border-radius: 3px !important;
+    font-size: 9px !important;
+    font-weight: 700 !important;
+    padding: 0 3px !important;
+    margin-left: 4px !important;
+    white-space: nowrap !important;
   }
 
   .print-totals {
@@ -220,10 +251,29 @@
     z-index: 1 !important;
   }
 
+  /* স্বাক্ষরের ঘরগুলো সারিটা সমান ভাগে ভাগ করে নেয় — ৩ জন হলে ৩ ভাগ,
+     ৫ জন হলে ৫ ভাগ। স্থির ৩৩.৩৩% রাখলে ৫ জনে ৩+২ হয়ে দ্বিতীয় সারি
+     তৈরি হতো, আর ২৭ ফ্ল্যাটের মাসিক রিপোর্ট দ্বিতীয় পাতায় গড়াত।   */
   .print-signs .s {
-    flex: 0 0 33.33% !important;
+    flex: 1 1 0 !important;
+    min-width: 0 !important;
     text-align: center !important;
-    font-size: 11px !important;
+    font-size: 9.5px !important;
+    line-height: 1.35 !important;
+  }
+
+  .print-signs .s .nm {
+    font-size: 10.5px !important;
+  }
+
+  .print-signs .s .sd {
+    font-size: 8.5px !important;
+  }
+
+  /* পদবি ও কমিটির নাম — সরু ঘরে যেন দুই লাইনে না ভাঙে */
+  .print-signs .s .dg {
+    font-size: 7.5px !important;
+    line-height: 1.25 !important;
   }
 
   .print-signs .s .line {
