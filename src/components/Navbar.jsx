@@ -1,18 +1,22 @@
 import React from 'react';
-import { Calendar, Download, Eye, Menu } from 'lucide-react';
+import { Download, Eye, Menu } from 'lucide-react';
+import { MonthSelector } from './MonthSelector';
 import { useData } from '../context/DataContext';
 import { useAuth } from '../context/AuthContext';
 import * as U from '../utils/format';
 import * as Calc from '../utils/calc';
 
-export function Navbar({ pageTitle, onOpenNav }) {
-  const { data, selectedMonth, setSelectedMonth, exportBackupJson } = useData();
+/**
+ * showMonthPicker=false দিলে নেভবারে মাসের ঘরটি আসে না — রিপোর্ট পাতায়
+ * ঘরটি টুলবারে থাকে, দুই জায়গায় দুটি ঘর থাকলে বিভ্রান্তি হতো।
+ */
+export function Navbar({ pageTitle, onOpenNav, showMonthPicker = true }) {
+  const { data, selectedMonth, monthLock, exportBackupJson } = useData();
   const { isReadOnly } = useAuth();
 
-  // শুরুর মাস থেকে চলতি মাস পর্যন্ত (ডাটায় আরও পরের এন্ট্রি থাকলে সেটি পর্যন্ত)
-  const monthsList = Calc.monthOptions(data);
-
-  const currentRate = Calc.rateForMonth(data.settings, selectedMonth);
+  // লক থাকলে সেই মাসের হারই দেখানো হয়
+  const shownMonth = monthLock ? monthLock.month : selectedMonth;
+  const currentRate = Calc.rateForMonth(data.settings, shownMonth);
 
   return (
     <header className="navbar no-print">
@@ -35,20 +39,7 @@ export function Navbar({ pageTitle, onOpenNav }) {
       </div>
 
       <div className="navbar-right">
-        <div className="month-selector">
-          <Calendar size={16} color="var(--primary-dark)" />
-          <select
-            value={selectedMonth}
-            onChange={(e) => setSelectedMonth(e.target.value)}
-            aria-label="হিসাব মাস নির্বাচন"
-          >
-            {monthsList.map((m) => (
-              <option key={m} value={m}>
-                {U.monthLabel(m)}
-              </option>
-            ))}
-          </select>
-        </div>
+        {showMonthPicker && <MonthSelector />}
 
         <div className="navbar-chip">
           মাসিক চার্জ: <b>{U.bnTaka(currentRate)}</b>

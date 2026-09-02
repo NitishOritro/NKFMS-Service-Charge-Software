@@ -122,7 +122,11 @@ export function App() {
       />
 
       <div className="main-content">
-        <Navbar pageTitle={getPageTitle()} onOpenNav={() => setNavOpen(true)} />
+        <Navbar
+          pageTitle={getPageTitle()}
+          onOpenNav={() => setNavOpen(true)}
+          showMonthPicker={currentTab !== 'reports'}
+        />
 
         {currentTab === 'dashboard' && <DashboardView setCurrentTab={setCurrentTab} />}
         {currentTab === 'collection' && <MonthlyCollectionView />}

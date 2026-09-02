@@ -202,6 +202,25 @@
     print-color-adjust: exact !important;
   }
 
+  /* অগ্রীম প্রদানকারীর সারি — কাগজেও সবুজ ছাপ পড়বে */
+  table.print-table tbody tr.advance-row > td {
+    background: #e7f7ec !important;
+    -webkit-print-color-adjust: exact !important;
+    print-color-adjust: exact !important;
+  }
+
+  table.print-table tbody tr.advance-row > td:first-child {
+    box-shadow: inset 3px 0 0 0 #16a34a !important;
+  }
+
+  .print-sheet .advance-tag,
+  .print-table .advance-tag {
+    color: #15803d !important;
+    font-weight: 700 !important;
+    -webkit-print-color-adjust: exact !important;
+    print-color-adjust: exact !important;
+  }
+
   table.print-table tfoot td {
     font-weight: 700 !important;
     background: rgba(243, 245, 249, 0.85) !important;

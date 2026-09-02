@@ -8,8 +8,6 @@ export function MonthlySummaryView({ onOpenPrint }) {
   const { data, selectedMonth } = useData();
 
   const { rows, totals } = Calc.summary(data, selectedMonth);
-  const nextMonth = U.addMonths(selectedMonth, 1);
-  const nextRate = Calc.rateForMonth(data.settings, nextMonth);
 
   const getCollectorName = (colId) => {
     const c = (data.settings.collectors || []).find((x) => x.id === colId);
@@ -57,23 +55,26 @@ export function MonthlySummaryView({ onOpenPrint }) {
                   <th style={{ width: '120px', textAlign: 'right' }}>
                     {U.monthLabelShort(selectedMonth)} জমা (i)
                   </th>
-                  <th style={{ width: '160px', textAlign: 'right' }}>
+                  <th style={{ width: '175px', textAlign: 'right' }}>
                     মোট বকেয়া {U.monthLabelShort(selectedMonth)} পর্যন্ত (ii)
                   </th>
-                  <th style={{ width: '130px', textAlign: 'center' }}>
-                    {U.monthLabelShort(nextMonth)} জমা ({U.bnNumber(nextRate)}/-) (iii)
-                  </th>
-                  <th style={{ width: '160px', textAlign: 'center' }}>জমার স্বাক্ষর</th>
+                  <th style={{ width: '190px', textAlign: 'center' }}>জমার স্বাক্ষর</th>
                 </tr>
               </thead>
               <tbody>
                 {rows.map((r, idx) => {
                   const payment = data.payments.find((p) => p.flatId === r.flat.id && p.month === selectedMonth);
                   const isPaid = payment && Number(payment.amount) > 0;
+                  const isAdvance = r.due <= 0 && r.advance > 0;
                   const sigNames = r.collectorIds.map(getCollectorName).filter(Boolean);
 
                   return (
-                    <tr key={r.flat.id} className={isPaid ? 'paid-row' : ''}>
+                    <tr
+                      key={r.flat.id}
+                      className={[isPaid ? 'paid-row' : '', isAdvance ? 'advance-row' : '']
+                        .filter(Boolean)
+                        .join(' ')}
+                    >
                       <td style={{ textAlign: 'center', color: '#64748b' }}>{U.bnDigits(r.flat.serial)}</td>
                       <td><b>{r.flat.ownerName}</b></td>
                       <td style={{ textAlign: 'center' }}>{r.flat.flatNo}</td>
@@ -81,9 +82,12 @@ export function MonthlySummaryView({ onOpenPrint }) {
                         {isPaid ? U.bnNumber(payment.amount) : '—'}
                       </td>
                       <td style={{ textAlign: 'right', fontWeight: 700, color: r.due > 0 ? 'var(--danger)' : '#64748b' }}>
-                        {r.due > 0 ? U.bnNumber(r.due) : (r.advance > 0 ? `অগ্রীম ${U.bnNumber(r.advance)}` : 'নেই')}
+                        {r.due > 0
+                          ? U.bnNumber(r.due)
+                          : isAdvance
+                            ? <span className="advance-tag">অগ্রীম {U.bnNumber(r.advance)}</span>
+                            : 'নেই'}
                       </td>
-                      <td style={{ textAlign: 'center', color: '#94a3b8' }}>—</td>
                       <td style={{ textAlign: 'center', fontSize: '12px' }}>
                         {sigNames.length ? sigNames.join(', ') : '—'}
                       </td>
@@ -96,7 +100,7 @@ export function MonthlySummaryView({ onOpenPrint }) {
                   <td colSpan="3" style={{ textAlign: 'right' }}>সর্বমোট:</td>
                   <td style={{ textAlign: 'right', color: 'var(--primary)' }}>{U.bnTaka(totals.monthCollected)}</td>
                   <td style={{ textAlign: 'right', color: 'var(--danger)' }}>{U.bnTaka(totals.totalDue)}</td>
-                  <td colSpan="2" style={{ textAlign: 'center', color: '#64748b' }}>
+                  <td colSpan="1" style={{ textAlign: 'center', color: '#64748b' }}>
                     মোট ফ্ল্যাট: {U.bnDigits(totals.flatCount)} টি
                   </td>
                 </tr>

@@ -503,6 +503,19 @@ b, strong { font-weight: 700; }
   padding: 2px;
 }
 
+/* মাস বদলানো যাবে না এমন পাতায় (যেমন ফ্ল্যাটভিত্তিক লেজার) ড্রপডাউনটি
+   ধূসর ও নিষ্ক্রিয় দেখায়, যাতে কেউ বদলানোর চেষ্টা করে বিভ্রান্ত না হন। */
+.month-selector.is-locked {
+  background: #f1f5f9;
+  border-color: #cbd5e1;
+}
+
+.month-selector.is-locked select {
+  color: #64748b;
+  cursor: not-allowed;
+  opacity: 1;
+}
+
 /* নেভবারে ছোট তথ্য-চিপ (যেমন: মাসিক চার্জ) */
 .navbar-chip {
   display: inline-flex;
@@ -1994,6 +2007,26 @@ table.print-table th {
 .print-sheet .dash {
   color: #dc2626;
   font-weight: 700;
+}
+
+/* ---- অগ্রীম প্রদানকারীর সারি ----
+   যাঁরা আগাম সার্ভিস চার্জ দিয়েছেন তাঁদের পুরো সারিটি হালকা সবুজে
+   চিহ্নিত থাকে, আর বাঁ পাশে একটি সবুজ দাগ — ছাপা কাগজেও দেখা যায়। */
+table.print-table tbody tr.advance-row > td,
+.data-table tbody tr.advance-row > td {
+  background: #e7f7ec;
+}
+
+table.print-table tbody tr.advance-row > td:first-child,
+.data-table tbody tr.advance-row > td:first-child {
+  box-shadow: inset 3px 0 0 0 #16a34a;
+}
+
+.advance-tag {
+  display: inline-block;
+  color: #15803d;
+  font-weight: 700;
+  white-space: nowrap;
 }
 
 table.print-table tfoot td {

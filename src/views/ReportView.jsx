@@ -5,6 +5,7 @@ import * as U from '../utils/format';
 import { Printer, FileText, ChevronLeft, Layers } from 'lucide-react';
 import { Watermark } from '../components/Watermark';
 import { ResidentBadge } from '../components/ResidentBadge';
+import { MonthSelector } from '../components/MonthSelector';
 import { LOGO_BASE64 } from '../assets/logoData';
 
 // জমা পড়েনি বোঝাতে লাল '-'; ছাপার সময়ও রঙটি যেন থেকে যায় (styles/print.css)
@@ -81,15 +82,12 @@ export function ReportView({
   autoPrint = false,
   onAutoPrintDone
 }) {
-  const { data, selectedMonth } = useData();
+  const { data, selectedMonth, setMonthLock } = useData();
   const [reportType, setReportType] = useState(defaultReport);
   const [selectedLedgerFlatId, setSelectedLedgerFlatId] = useState(data.flats[0]?.id || '');
 
   const s = data.settings;
   const monthShort = U.monthLabelShort(selectedMonth);
-  const nextMonth = U.addMonths(selectedMonth, 1);
-  const nextRate = Calc.rateForMonth(s, nextMonth);
-  const nextShort = U.monthLabelShort(nextMonth);
 
   const { rows, totals } = Calc.summary(data, selectedMonth);
 
@@ -118,26 +116,39 @@ export function ReportView({
   };
 
   // ---- বকেয়া বিবরণী ----
-  // এই রিপোর্টটি হিসাব করে আগের মাস পর্যন্ত, চলতি মাস বাদ দিয়ে।
-  // কারণ চলতি মাসের চার্জ সবে ধার্য হয়েছে, আদায়ের সময় এখনো পার হয়নি —
-  // সেটিকে বকেয়া দেখালে প্রায় সব মালিকই অন্যায়ভাবে বকেয়াদার হয়ে যান।
-  // অর্থাৎ সেপ্টেম্বর ২০২৬ চললে বিবরণী দেখাবে আগস্ট ২০২৬ পর্যন্ত।
-  const duesUpToMonth = U.addMonths(selectedMonth, -1);
+  // উপরের ড্রপডাউনে যে মাস বাছা, বিবরণী ঠিক সেই মাস পর্যন্তই হিসাব করে।
+  // আগে এক মাস আগে পর্যন্ত ধরা হতো (চলতি মাসের আদায়ের সময় পার হয়নি
+  // বলে), কিন্তু তাতে বাছাই করা মাস আর ছাপা মাস আলাদা হয়ে বিভ্রান্তি হতো।
+  const duesUpToMonth = selectedMonth;
+
+  // ফ্ল্যাটভিত্তিক লেজার সবসময় গত মাস পর্যন্ত। চলতি মাস এখনো শেষ হয়নি,
+  // তাই তার জমা-বকেয়া দেখানো বিভ্রান্তিকর। মাসটি নির্বাচিত মাসের উপর
+  // নির্ভর করে না — আজকের তারিখ থেকেই ঠিক হয়।
+  const ledgerMonth = U.addMonths(U.currentMonth(), -1);
+  const ledgerMonthLabel = U.monthLabel(ledgerMonth);
+
+  // এই ট্যাব খোলা থাকলে নেভবারের মাস ড্রপডাউন নিষ্ক্রিয় থাকে
+  useEffect(() => {
+    setMonthLock(
+      reportType === 'ledger'
+        ? { month: ledgerMonth,
+            reason: `ফ্ল্যাটভিত্তিক লেজার সবসময় ${ledgerMonthLabel} পর্যন্ত — মাস বদলানো যাবে না` }
+        : null
+    );
+    return () => setMonthLock(null);
+  }, [reportType, ledgerMonth, ledgerMonthLabel, setMonthLock]);
   const targetFlats = selectiveFlatIds && selectiveFlatIds.length
     ? data.flats.filter((f) => selectiveFlatIds.includes(f.id))
     : data.flats;
   const selectiveStatuses = targetFlats.map((f) => Calc.flatStatus(data, f, duesUpToMonth));
 
-  // Ledger Data
-  // হেডারের তারিখ রিপোর্ট যতটুকু সময় ঢেকেছে সেই সময়ের শেষ দিন দেখাবে।
-  // বকেয়া বিবরণী চলতি মাস বাদ দিয়ে হিসাব করে, তাই সেখানে আগের মাসের
-  // শেষ তারিখ — নইলে "আগস্ট পর্যন্ত" লেখা থাকলেও তারিখ সেপ্টেম্বরের
-  // দেখাত, যা পরস্পরবিরোধী।
-  const headDateMonth = reportType === 'selective' ? duesUpToMonth : selectedMonth;
+  // হেডারের তারিখ = রিপোর্ট যতটুকু সময় ঢেকেছে তার শেষ দিন। লেজার ছাড়া
+  // বাকি সব রিপোর্ট নির্বাচিত মাস পর্যন্ত, তাই তারিখও সেই মাসের শেষ দিন।
+  const headDateMonth = reportType === 'ledger' ? ledgerMonth : selectedMonth;
 
   const ledgerFlat = data.flats.find((f) => f.id === selectedLedgerFlatId) || data.flats[0];
-  const ledgerRows = ledgerFlat ? Calc.ledger(data, ledgerFlat, selectedMonth) : [];
-  const ledgerStatus = ledgerFlat ? Calc.flatStatus(data, ledgerFlat, selectedMonth) : null;
+  const ledgerRows = ledgerFlat ? Calc.ledger(data, ledgerFlat, ledgerMonth) : [];
+  const ledgerStatus = ledgerFlat ? Calc.flatStatus(data, ledgerFlat, ledgerMonth) : null;
 
   return (
     <div className="page-body">
@@ -203,6 +214,10 @@ export function ReportView({
         </div>
 
         <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+          {/* হিসাবের মাস — আগে উপরের নেভবারে ছিল, রিপোর্টের বোতামগুলো থেকে
+              দূরে বলে চোখে পড়ত না। প্রিন্ট বোতামের পাশে আনা হলো।        */}
+          <MonthSelector id="report-month" />
+
           <button
             onClick={() => window.print()}
             className="btn btn-success"
@@ -242,7 +257,7 @@ export function ReportView({
               {reportType === 'monthly' && `সার্ভিস চার্জ জমা ও বকেয়া হিসাবায়ন সারসংক্ষেপ (${monthShort} পর্যন্ত)`}
               {reportType === 'selective' && `ফ্ল্যাট মালিকদের বকেয়া সার্ভিস চার্জ বিবরণী (${U.monthLabel(duesUpToMonth)} পর্যন্ত)`}
               {reportType === 'cashbook' && `সার্ভিস হিসাবায়ন সারসংক্ষেপ (${monthShort})`}
-              {reportType === 'ledger' && 'ফ্ল্যাটভিত্তিক সার্ভিস চার্জ লেজার ও বকেয়া বিবরণী'}
+              {reportType === 'ledger' && `ফ্ল্যাটভিত্তিক সার্ভিস চার্জ লেজার ও বকেয়া বিবরণী (${ledgerMonthLabel} পর্যন্ত)`}
             </div>
           </div>
           <div className="head-date">
@@ -261,30 +276,34 @@ export function ReportView({
             <table className="print-table">
               <thead>
                 <tr>
-                  <th style={{ width: '5%' }}>ক্রমিক<br />নং</th>
-                  <th style={{ width: '28%', textAlign: 'left' }}>ফ্ল্যাট মালিকের নাম<br />(ফ্ল্যাট নম্বর ক্রম অনুযায়ী)</th>
-                  <th style={{ width: '8%' }}>ফ্ল্যাট<br />নং</th>
-                  <th style={{ width: '12%', textAlign: 'right' }}>{monthShort} জমা<br />(i)</th>
-                  <th style={{ width: '15%', textAlign: 'right' }}>মোট বকেয়া পাওনা<br />{monthShort} পর্যন্ত (ii)</th>
-                  <th style={{ width: '14%' }}>{nextShort} জমা<br />{U.bnNumber(nextRate)}/-<br />(iii)</th>
-                  <th style={{ width: '18%' }}>{monthShort} জমার<br />স্বাক্ষর</th>
+                  <th style={{ width: '6%' }}>ক্রমিক<br />নং</th>
+                  <th style={{ width: '32%', textAlign: 'left' }}>ফ্ল্যাট মালিকের নাম<br />(ফ্ল্যাট নম্বর ক্রম অনুযায়ী)</th>
+                  <th style={{ width: '9%' }}>ফ্ল্যাট<br />নং</th>
+                  <th style={{ width: '14%', textAlign: 'right' }}>{monthShort} জমা<br />(i)</th>
+                  <th style={{ width: '17%', textAlign: 'right' }}>মোট বকেয়া পাওনা<br />{monthShort} পর্যন্ত (ii)</th>
+                  <th style={{ width: '22%' }}>{monthShort} জমার<br />স্বাক্ষর</th>
                 </tr>
               </thead>
               <tbody>
                 {rows.map((r) => {
                   const paidCell = r.monthPaid > 0 ? U.bnNumber(r.monthPaid) : DASH;
-                  const dueCell = r.due > 0 ? U.bnNumber(r.due) : (r.advance > 0 ? `অগ্রীম ${U.bnNumber(r.advance)}` : 'নেই');
+                  // অগ্রীম প্রদানকারীর সারি সবুজ রঙে চিহ্নিত হয় — সবাই যেন এক নজরে দেখেন
+                  const isAdvance = r.due <= 0 && r.advance > 0;
+                  const dueCell = r.due > 0
+                    ? U.bnNumber(r.due)
+                    : (isAdvance
+                        ? <span className="advance-tag">অগ্রীম {U.bnNumber(r.advance)}</span>
+                        : 'নেই');
                   const sigNames = r.collectorIds.map(getCollectorName).filter(Boolean);
                   const sigCell = sigNames.length ? sigNames.join(', ') : DASH;
 
                   return (
-                    <tr key={r.flat.id}>
+                    <tr key={r.flat.id} className={isAdvance ? 'advance-row' : undefined}>
                       <td style={{ textAlign: 'center' }}>{U.bnDigits(r.flat.serial)}</td>
                       <td style={{ textAlign: 'left' }}><b>{r.flat.ownerName}</b></td>
                       <td style={{ textAlign: 'center' }}>{r.flat.flatNo}</td>
                       <td style={{ textAlign: 'right' }}>{paidCell}</td>
                       <td style={{ textAlign: 'right', fontWeight: r.due > 0 ? 700 : 400 }}>{dueCell}</td>
-                      <td style={{ textAlign: 'center' }}>&nbsp;</td>
                       <td style={{ textAlign: 'center', fontSize: '9.5px' }}>{sigCell}</td>
                     </tr>
                   );
@@ -295,7 +314,6 @@ export function ReportView({
                   <td colSpan="3" style={{ textAlign: 'right' }}>সর্বমোট</td>
                   <td style={{ textAlign: 'right' }}>{U.bnNumber(totals.monthCollected)}</td>
                   <td style={{ textAlign: 'right' }}>{U.bnNumber(totals.totalDue)}</td>
-                  <td>&nbsp;</td>
                   <td>&nbsp;</td>
                 </tr>
               </tfoot>

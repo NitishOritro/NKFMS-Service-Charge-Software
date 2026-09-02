@@ -25,3 +25,8 @@ Desktop.ini
 # Supabase কী (anon key ব্রাউজারে যায়, তবু .env কমিট না করাই রীতি)
 .env
 .env.local
+
+# Firebase Hosting
+.firebase/
+.firebaserc.bak
+firebase-debug.log

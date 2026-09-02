@@ -44,6 +44,11 @@ export function DataProvider({ children }) {
   // সফটওয়্যার পুরনো মাসেই আটকে থাকত।
   const [selectedMonth, setSelectedMonth] = useState(() => U.currentMonth());
 
+  // কোনো কোনো পাতায় মাস বদলানো অর্থহীন (যেমন ফ্ল্যাটভিত্তিক লেজার —
+  // সেটি সবসময় গত মাস পর্যন্ত)। সেই পাতা খোলা থাকলে এখানে মাসটি বসে
+  // যায়, আর নেভবারের ড্রপডাউন নিষ্ক্রিয় হয়ে সেই মাসই দেখায়।
+  const [monthLock, setMonthLock] = useState(null);
+
   const canWrite = Boolean(session);
 
   const addToast = useCallback((message, type = 'success') => {
@@ -448,6 +453,8 @@ export function DataProvider({ children }) {
         bulkSetLedgerEntries,
         selectedMonth,
         setSelectedMonth,
+        monthLock,
+        setMonthLock,
         getPayment,
         setPayment,
         deletePayment,
