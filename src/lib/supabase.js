@@ -115,7 +115,8 @@ export const ledgerFromRow = (r) => ({
   side: r.side,                       // 'income' | 'expense'
   serial: r.serial ?? null,
   title: r.title || '',
-  // উপ-লাইন: [{ text, amount }] — কাগজে মার্জ-করা ঘরের ভেতরের সারিগুলো
+  // উপ-লাইন: [{ text, amount, due? }] — কাগজে মার্জ-করা ঘরের ভেতরের সারিগুলো।
+  // due:true হলে অঙ্কের বদলে "বকেয়া" বসে, যোগফলেও ধরা হয় না।
   lines: Array.isArray(r.lines) ? r.lines : [],
   amount: Number(r.amount) || 0,
   source: r.source || 'manual',       // 'manual' | 'collector' | 'carryover'

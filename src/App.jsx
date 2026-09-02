@@ -130,15 +130,30 @@ export function App() {
         {currentTab === 'flat-entry' && !isReadOnly && (
           <SingleFlatEntryView onOpenLedger={() => setCurrentTab('reports')} />
         )}
-        {currentTab === 'summary' && <MonthlySummaryView onOpenPrint={() => setCurrentTab('reports')} />}
+        {currentTab === 'summary' && (
+          <MonthlySummaryView
+            onOpenPrint={() => {
+              setReportState({ type: 'monthly', selectiveIds: null });
+              setCurrentTab('reports');
+            }}
+          />
+        )}
         {currentTab === 'ledger' && !isReadOnly && (
-          <LedgerEntryView onOpenPrint={() => setCurrentTab('reports')} />
+          <LedgerEntryView
+            onOpenPrint={() => {
+              // আয়-ব্যয়ের রিপোর্টটাই খুলবে, আর ছাপার ঘরও নিজে থেকে আসবে
+              setReportState({ type: 'cashbook', selectiveIds: null, autoPrint: true });
+              setCurrentTab('reports');
+            }}
+          />
         )}
         {currentTab === 'defaulters' && <DefaultersView onOpenSelectivePrint={handleOpenSelectivePrint} />}
         {currentTab === 'reports' && (
           <ReportView
             defaultReport={reportState.type}
             selectiveFlatIds={reportState.selectiveIds}
+            autoPrint={reportState.autoPrint}
+            onAutoPrintDone={() => setReportState((p) => ({ ...p, autoPrint: false }))}
           />
         )}
         {currentTab === 'flats' && <FlatManagementView />}

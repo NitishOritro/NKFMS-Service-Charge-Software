@@ -1,4 +1,4 @@
-import React, { useState, useMemo } from 'react';
+import React, { useState, useMemo, useEffect } from 'react';
 import {
   Plus, Trash2, Pencil, Check, X, ChevronUp, ChevronDown,
   Wand2, CornerDownRight, Printer, AlertTriangle
@@ -42,7 +42,7 @@ const emptyDraft = (side, month, serial) => ({
    ========================================================================== */
 function RowForm({ draft, setDraft, onSave, onCancel, presets }) {
   const lines = draft.lines || [];
-  const linesTotal = lines.reduce((s, l) => s + (Number(l.amount) || 0), 0);
+  const linesTotal = lines.reduce((s, l) => s + (l.due ? 0 : Number(l.amount) || 0), 0);
 
   const setLine = (i, patch) => {
     const next = lines.map((l, idx) => (idx === i ? { ...l, ...patch } : l));
@@ -110,15 +110,41 @@ function RowForm({ draft, setDraft, onSave, onCancel, presets }) {
                 onChange={(e) => setLine(i, { text: e.target.value })}
                 style={{ flex: 1 }}
               />
-              <input
-                className="form-input"
-                type="number"
-                min="0"
-                value={l.amount}
-                placeholder="0"
-                onChange={(e) => setLine(i, { amount: e.target.value })}
-                style={{ width: '130px', textAlign: 'right' }}
-              />
+              {l.due ? (
+                <div
+                  style={{
+                    width: '130px', textAlign: 'center', fontWeight: 700,
+                    color: '#b91c1c', background: '#fee2e2', border: '1px solid #fecaca',
+                    borderRadius: '8px', padding: '8px 0'
+                  }}
+                >
+                  বকেয়া
+                </div>
+              ) : (
+                <input
+                  className="form-input"
+                  type="number"
+                  min="0"
+                  value={l.amount}
+                  placeholder="0"
+                  onChange={(e) => setLine(i, { amount: e.target.value })}
+                  style={{ width: '130px', textAlign: 'right' }}
+                />
+              )}
+              <label
+                title="টাকাটা এখনো দেওয়া হয়নি — যোগফলে ধরা হবে না"
+                style={{
+                  display: 'flex', alignItems: 'center', gap: '4px',
+                  fontSize: '12px', color: '#64748b', whiteSpace: 'nowrap', cursor: 'pointer'
+                }}
+              >
+                <input
+                  type="checkbox"
+                  checked={!!l.due}
+                  onChange={(e) => setLine(i, { due: e.target.checked })}
+                />
+                বকেয়া
+              </label>
               <button
                 type="button"
                 className="btn-icon"
@@ -152,6 +178,44 @@ function RowForm({ draft, setDraft, onSave, onCancel, presets }) {
           <Plus size={14} /> উপ-লাইন যোগ করুন
         </button>
         <div style={{ flex: 1 }} />
+        <button type="button" className="btn btn-outline btn-sm" onClick={onCancel}>
+          <X size={14} /> বাতিল
+        </button>
+        <button
+          type="button"
+          className="btn btn-primary btn-sm"
+          onClick={onSave}
+          disabled={!draft.title.trim()}
+        >
+          <Check size={14} /> সেভ করুন
+        </button>
+      </div>
+    </div>
+  );
+}
+
+/* ==========================================================================
+   বিশেষ নোট — টাকার অঙ্ক নয়, ঘোষণা। কাগজে যোগফলের নিচে বসে।
+   ========================================================================== */
+function NoteForm({ draft, setDraft, onSave, onCancel }) {
+  return (
+    <div className="card" style={{ padding: '16px', background: '#fffbeb' }}>
+      <div className="form-group" style={{ marginBottom: '12px' }}>
+        <label className="form-label">নোটের লেখা</label>
+        <textarea
+          className="form-input"
+          rows={4}
+          autoFocus
+          value={draft.title}
+          placeholder="যেমন: পর্যাপ্ত ফান্ডের স্বল্পতার কারণে এপ্রিল-২৬ মাসের নিরাপত্তা প্রহরীর বেতন ১২,০০০/- টাকা প্রদান করা সম্ভব হচ্ছে না।"
+          onChange={(e) => setDraft({ ...draft, title: e.target.value })}
+          style={{ resize: 'vertical', lineHeight: 1.7 }}
+        />
+      </div>
+      <div style={{ display: 'flex', gap: '8px' }}>
+        <div style={{ flex: 1, fontSize: '12.5px', color: '#92400e' }}>
+          এই লেখাটি কোনো যোগফলে ধরা হবে না — রিপোর্টে মোট আদায়-খরচের নিচে বসবে।
+        </div>
         <button type="button" className="btn btn-outline btn-sm" onClick={onCancel}>
           <X size={14} /> বাতিল
         </button>
@@ -247,7 +311,13 @@ function LedgerSide({ side, month, rows, total, isReadOnly, onEdit, onDelete, on
                       }}
                     >
                       <span>↳ {l.text}</span>
-                      <span style={{ whiteSpace: 'nowrap' }}>{U.bnNumber(l.amount)}</span>
+                      <span style={{ whiteSpace: 'nowrap' }}>
+                        {l.due ? (
+                          <b style={{ color: '#b91c1c' }}>বকেয়া</b>
+                        ) : (
+                          U.bnNumber(l.amount)
+                        )}
+                      </span>
                     </div>
                   ))}
                 </div>
@@ -314,12 +384,29 @@ function LedgerSide({ side, month, rows, total, isReadOnly, onEdit, onDelete, on
    ========================================================================== */
 export function LedgerEntryView({ onOpenPrint }) {
   const {
-    data, selectedMonth, setLedgerEntry, deleteLedgerEntry, bulkSetLedgerEntries, addToast
+    data, selectedMonth, setSelectedMonth,
+    setLedgerEntry, deleteLedgerEntry, bulkSetLedgerEntries, addToast
   } = useData();
   const { isReadOnly } = useAuth();
 
   const [editingId, setEditingId] = useState(null);
   const [draft, setDraft] = useState(null);
+
+  // একটি মাসের জমা-খরচের হিসাব সেই মাস শেষ হওয়ার পরেই তৈরি হয় — কাগজেও
+  // আগস্টের সারসংক্ষেপের তারিখ ৩১শে আগস্ট, বানানো হয় সেপ্টেম্বরে। তাই এই
+  // পাতাটি খুললে চলতি মাস নয়, আগের মাসেই যায়। উপরের মাস-বাছাইয়ের ঘর দিয়ে
+  // অন্য মাসে যাওয়া যায়, আর সেই পছন্দ এরপর আর বদলানো হয় না।
+  const [monthFixed, setMonthFixed] = useState(false);
+  useEffect(() => {
+    if (monthFixed) return;
+    setMonthFixed(true);
+    if (selectedMonth === U.currentMonth()) {
+      setSelectedMonth(U.addMonths(selectedMonth, -1));
+    }
+  }, [monthFixed, selectedMonth, setSelectedMonth]);
+
+  // চলতি মাস এখনো শেষ হয়নি — তবু কেউ সেটি বেছে নিলে জানিয়ে দেওয়া
+  const isRunningMonth = selectedMonth === U.currentMonth();
 
   const summary = useMemo(() => Calc.ledgerSummary(data, selectedMonth), [data, selectedMonth]);
   const carryover = useMemo(() => Calc.carryoverRow(data, selectedMonth), [data, selectedMonth]);
@@ -344,7 +431,8 @@ export function LedgerEntryView({ onOpenPrint }) {
         amount: entry.lines?.length ? '' : String(entry.amount || '')
       });
     } else {
-      const rows = side === 'income' ? summary.income : summary.expense;
+      const rows =
+        side === 'income' ? summary.income : side === 'note' ? summary.notes : summary.expense;
       setEditingId(`new-${side}`);
       setDraft(emptyDraft(side, selectedMonth, rows.length + 1));
     }
@@ -362,7 +450,12 @@ export function LedgerEntryView({ onOpenPrint }) {
 
   // ক্রম বদল — দুটি সারির serial অদল-বদল
   const handleMove = (entry, dir) => {
-    const rows = entry.side === 'income' ? summary.income : summary.expense;
+    const rows =
+      entry.side === 'income'
+        ? summary.income
+        : entry.side === 'note'
+          ? summary.notes
+          : summary.expense;
     const i = rows.findIndex((r) => r.id === entry.id);
     const j = i + dir;
     if (i < 0 || j < 0 || j >= rows.length) return;
@@ -389,7 +482,16 @@ export function LedgerEntryView({ onOpenPrint }) {
     addToast('আগের মাসের সারিটি বসানো হয়েছে।', 'success');
   };
 
-  const form = draft && (
+  const noteForm = draft && draft.side === 'note' && (
+    <NoteForm
+      draft={draft}
+      setDraft={setDraft}
+      onSave={saveDraft}
+      onCancel={() => { setEditingId(null); setDraft(null); }}
+    />
+  );
+
+  const form = draft && draft.side !== 'note' && (
     <RowForm
       draft={draft}
       setDraft={setDraft}
@@ -410,6 +512,18 @@ export function LedgerEntryView({ onOpenPrint }) {
             <div className="card-title">
               {U.monthLabel(selectedMonth)} — সার্ভিস হিসাবায়ন সারসংক্ষেপ
             </div>
+            {isRunningMonth && (
+              <div
+                style={{
+                  marginTop: '4px', fontSize: '13px', color: '#b45309',
+                  background: '#fef3c7', border: '1px solid #fcd34d',
+                  borderRadius: '6px', padding: '5px 10px', display: 'inline-block'
+                }}
+              >
+                {U.monthLabel(selectedMonth)} মাস এখনো চলছে — হিসাব সাধারণত মাস শেষ হলে
+                তৈরি হয়। উপরে মাস বদলে নিতে পারেন।
+              </div>
+            )}
             <div className="card-sub">
               জমা ও খরচের প্রতিটি খাত এখানে লিখুন — যোগফল ও ঘাটতি সফটওয়্যার নিজেই হিসাব করবে।
               {summary.autoCount > 0 && (
@@ -463,6 +577,20 @@ export function LedgerEntryView({ onOpenPrint }) {
         </div>
       )}
 
+      {summary.incomplete && (
+        <div
+          style={{
+            marginBottom: '18px', padding: '12px 16px', borderRadius: '10px',
+            background: '#fef3c7', border: '1px solid #fcd34d', color: '#78350f',
+            fontSize: '14px'
+          }}
+        >
+          <b>{U.monthLabel(selectedMonth)} মাসের খরচ এখনো লেখা হয়নি।</b> আদায়ের
+          সারিগুলো নিজে থেকে বসেছে বলে নিচে একটি উদ্বৃত্ত দেখা যাচ্ছে — কিন্তু খরচ
+          বসানোর আগে সেটি আসল হিসাব নয়।
+        </div>
+      )}
+
       <div className="ledger-grid">
         <LedgerSide
           side="income"
@@ -490,49 +618,121 @@ export function LedgerEntryView({ onOpenPrint }) {
         />
       </div>
 
-      {/* ফলাফল */}
-      <div className="card" style={{ marginTop: '18px' }}>
-        <div
-          style={{
-            display: 'flex', flexWrap: 'wrap', gap: '10px',
-            alignItems: 'center', justifyContent: 'space-between', padding: '16px 18px'
-          }}
-        >
-          <div style={{ display: 'flex', gap: '26px', flexWrap: 'wrap' }}>
-            <div>
-              <div style={{ fontSize: '12.5px', color: '#64748b' }}>মোট আদায়ের পরিমান</div>
-              <div style={{ fontSize: '21px', fontWeight: 700, color: '#059669' }}>
-                ৳{U.bnNumber(summary.totalIncome)}
-              </div>
+      {/* বিশেষ নোট — কাগজে যেমন যোগফলের নিচে বসে, এখানেও তাই */}
+      <div className="ledger-notes">
+        <div className="ln-head">
+          <span>বিশেষ নোট</span>
+          <span className="ln-hint">টাকার অঙ্ক নয় — যোগফলে ধরা হবে না</span>
+        </div>
+
+        {summary.notes.length === 0 && editingId !== 'new-note' && (
+          <div className="ln-empty">কোনো নোট লেখা হয়নি।</div>
+        )}
+
+        {summary.notes.map((n, i) =>
+          editingId === n.id ? (
+            <div key={n.id} style={{ marginBottom: '10px' }}>{noteForm}</div>
+          ) : (
+            <div key={n.id} className="ln-item">
+              <span className="ln-num">{U.bnDigits(i + 1)}</span>
+              <div className="ln-text">{n.title}</div>
+              {!isReadOnly && (
+                <div className="ln-acts">
+                  <button className="btn-icon" title="উপরে" onClick={() => handleMove(n, -1)}>
+                    <ChevronUp size={14} />
+                  </button>
+                  <button className="btn-icon" title="নিচে" onClick={() => handleMove(n, 1)}>
+                    <ChevronDown size={14} />
+                  </button>
+                  <button className="btn-icon" title="সম্পাদনা" onClick={() => startEdit(n)}>
+                    <Pencil size={14} />
+                  </button>
+                  <button
+                    className="btn-icon"
+                    title="মুছুন"
+                    onClick={() => handleDelete(n)}
+                    style={{ color: '#dc2626' }}
+                  >
+                    <Trash2 size={14} />
+                  </button>
+                </div>
+              )}
             </div>
-            <div>
-              <div style={{ fontSize: '12.5px', color: '#64748b' }}>মোট খরচের পরিমান</div>
-              <div style={{ fontSize: '21px', fontWeight: 700, color: '#dc2626' }}>
-                ৳{U.bnNumber(summary.totalExpense)}
-              </div>
-            </div>
+          )
+        )}
+
+        {editingId === 'new-note' && <div style={{ marginTop: '4px' }}>{noteForm}</div>}
+
+        {!isReadOnly && editingId !== 'new-note' && (
+          <button
+            className="btn btn-outline btn-sm"
+            style={{ width: '100%', marginTop: '4px' }}
+            onClick={() => startEdit(null, 'note')}
+          >
+            <Plus size={15} /> নতুন নোট যোগ করুন
+          </button>
+        )}
+      </div>
+
+      {/* ফলাফল — খতিয়ানের অঙ্কটাই দেখানো: আদায় − খরচ = ফলাফল */}
+      <div className={`ledger-total ${balanced ? 'is-even' : deficit ? 'is-short' : 'is-over'}`}>
+        <div className="ledger-total-row">
+          <div className="lt-box lt-in">
+            <div className="lt-label">মোট আদায়ের পরিমান</div>
+            <div className="lt-value">৳{U.bnNumber(summary.totalIncome)}</div>
+            <div className="lt-sub">{U.bnDigits(summary.income.length)} টি খাত</div>
           </div>
 
-          <div
-            style={{
-              padding: '10px 18px', borderRadius: '10px',
-              background: balanced ? '#f1f5f9' : deficit ? '#fef3c7' : '#dcfce7',
-              border: `1px solid ${balanced ? '#cbd5e1' : deficit ? '#fcd34d' : '#86efac'}`
-            }}
-          >
-            <div style={{ fontSize: '12.5px', color: '#78350f' }}>
+          <div className="lt-op" aria-hidden="true">−</div>
+
+          <div className="lt-box lt-out">
+            <div className="lt-label">মোট খরচের পরিমান</div>
+            <div className="lt-value">৳{U.bnNumber(summary.totalExpense)}</div>
+            <div className="lt-sub">{U.bnDigits(summary.expense.length)} টি খাত</div>
+          </div>
+
+          <div className="lt-op" aria-hidden="true">=</div>
+
+          <div className="lt-box lt-result">
+            <div className="lt-label">
               {balanced ? 'আয় ও ব্যয় সমান' : deficit ? 'ক্যাশ ঘাটতি রয়েছে' : 'ক্যাশ উদ্বৃত্ত রয়েছে'}
             </div>
-            <div
-              style={{
-                fontSize: '22px', fontWeight: 700,
-                color: balanced ? '#475569' : deficit ? '#b45309' : '#15803d'
-              }}
-            >
-              {deficit ? '−' : ''}{U.bnNumber(Math.abs(summary.balance))} টাকা
+            <div className="lt-value">
+              {deficit ? '−' : ''}৳{U.bnNumber(Math.abs(summary.balance))}
+            </div>
+            <div className="lt-sub">
+              {balanced
+                ? 'কোনো ঘাটতি বা উদ্বৃত্ত নেই'
+                : deficit
+                  ? 'পরের মাসের খরচে বহন করতে হবে'
+                  : 'পরের মাসের আদায়ে যোগ হবে'}
             </div>
           </div>
         </div>
+
+        {/* দুই পাশের অনুপাত — কোনটি কতটা বড় এক নজরে বোঝা যায় */}
+        {(summary.totalIncome > 0 || summary.totalExpense > 0) && (
+          <div className="lt-bars">
+            <div className="lt-bar">
+              <span
+                className="lt-fill lt-fill-in"
+                style={{
+                  width: `${(summary.totalIncome /
+                    Math.max(summary.totalIncome, summary.totalExpense, 1)) * 100}%`
+                }}
+              />
+            </div>
+            <div className="lt-bar">
+              <span
+                className="lt-fill lt-fill-out"
+                style={{
+                  width: `${(summary.totalExpense /
+                    Math.max(summary.totalIncome, summary.totalExpense, 1)) * 100}%`
+                }}
+              />
+            </div>
+          </div>
+        )}
       </div>
     </div>
   );

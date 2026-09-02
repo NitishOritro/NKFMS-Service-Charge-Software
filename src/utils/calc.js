@@ -266,8 +266,10 @@ export function monthOptions(data) {
 /** একটি সারির অঙ্ক — উপ-লাইন থাকলে তাদের যোগফল, নইলে সরাসরি বসানো অঙ্ক */
 export function ledgerRowAmount(entry) {
   const lines = entry.lines || [];
+  // due:true মানে টাকাটা এখনো দেওয়া হয়নি — কাগজে অঙ্কের বদলে "বকেয়া" লেখা
+  // থাকে আর যোগফলে ধরা হয় না। এখানেও তাই।
   return lines.length
-    ? lines.reduce((sum, l) => sum + (Number(l.amount) || 0), 0)
+    ? lines.reduce((sum, l) => sum + (l.due ? 0 : Number(l.amount) || 0), 0)
     : Number(entry.amount) || 0;
 }
 
@@ -279,6 +281,12 @@ export function ledgerSummary(data, month) {
   const all = (data.ledgerEntries || []).filter((e) => e.month === month);
   const stored = all.filter((e) => e.side === 'income');
   const expense = all.filter((e) => e.side === 'expense');
+
+  // বিশেষ নোট — টাকার অঙ্ক নয়, ঘোষণা। কাগজে এগুলো যোগফলের নিচে পুরো
+  // পাতা জুড়ে বসে, তাই খরচের কলামেও ঢোকে না, যোগফলেও ধরা হয় না।
+  const notes = all
+    .filter((e) => e.side === 'note')
+    .sort((a, b) => (a.serial ?? 999) - (b.serial ?? 999));
 
   // ঐ মাসে যাঁদের মাধ্যমে সার্ভিস চার্জ আদায় হয়েছে, তাঁদের সারি জমার খাতায়
   // নিজে থেকেই বসে। ডাটাবেজে কিছু লেখা হয় না — প্রতিবার আদায়ের হিসাব থেকে
@@ -317,10 +325,18 @@ export function ledgerSummary(data, month) {
   const totalIncome = sum(income);
   const totalExpense = sum(expenseSorted);
 
+  // হাতে কিছুই লেখা না হলে হিসাবটি এখনো তৈরি হয়নি — আদায়ের সারিগুলো
+  // নিজে থেকে বসে বলে যোগফল দেখা যায়, কিন্তু সেটি সম্পূর্ণ হিসাব নয়।
+  const storedCount = all.length;
+
   return {
     income,
     expense: expenseSorted,
+    notes,
     autoCount: auto.length,
+    storedCount,
+    // খরচের একটিও সারি নেই অথচ আদায় আছে — মাসটি অসম্পূর্ণ
+    incomplete: income.length > 0 && expenseSorted.length === 0,
     totalIncome,
     totalExpense,
     balance: totalIncome - totalExpense,

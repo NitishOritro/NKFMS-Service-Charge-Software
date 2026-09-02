@@ -351,3 +351,36 @@
     print-color-adjust: exact !important;
   }
 }
+
+@media print {
+  /* অসম্পূর্ণ হিসাবের সতর্কতা কাগজেও থাকবে — নইলে ভুল হিসাব ছাপা হয়ে যাবে */
+  .cashbook-warning {
+    font-size: 10px !important;
+    padding: 6px 10px !important;
+    -webkit-print-color-adjust: exact !important;
+    print-color-adjust: exact !important;
+  }
+}
+
+@media print {
+  /* ক্যাশ ঘাটতির সারি কাগজেও লাল — ছাপার সময় রঙ যেন ছেঁটে না যায় */
+  table.cashbook-table tfoot td.cash-short {
+    color: #b91c1c !important;
+    background: #fee2e2 !important;
+    -webkit-print-color-adjust: exact !important;
+    print-color-adjust: exact !important;
+  }
+}
+
+@media print {
+  /* বিশেষ নোট কাগজেও একই চেহারায় */
+  table.cashbook-table tfoot tr.cashbook-note td {
+    background: #fff7ed !important;
+    color: #7c2d12 !important;
+    font-size: 9px !important;
+    font-weight: 400 !important;
+    line-height: 1.45 !important;
+    -webkit-print-color-adjust: exact !important;
+    print-color-adjust: exact !important;
+  }
+}

@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useData } from '../context/DataContext';
 import * as Calc from '../utils/calc';
 import * as U from '../utils/format';
@@ -51,8 +51,16 @@ function cashbookCells(entries) {
         <td key={`t${li}`} style={{ ...cell, textAlign: 'left', paddingLeft: '16px' }}>
           {l.text}
         </td>,
-        <td key={`a${li}`} style={{ ...cell, textAlign: 'right' }}>
-          {U.bnNumber(l.amount)}
+        <td
+          key={`a${li}`}
+          style={
+            l.due
+              ? { ...cell, textAlign: 'center', color: '#b91c1c',
+                  fontWeight: 700, background: '#fee2e2' }
+              : { ...cell, textAlign: 'right' }
+          }
+        >
+          {l.due ? 'বকেয়া' : U.bnNumber(l.amount)}
         </td>
       ]);
     });
@@ -67,7 +75,12 @@ const CASHBOOK_BLANK = [
   <td key="b3">&nbsp;</td>
 ];
 
-export function ReportView({ defaultReport = 'monthly', selectiveFlatIds = null }) {
+export function ReportView({
+  defaultReport = 'monthly',
+  selectiveFlatIds = null,
+  autoPrint = false,
+  onAutoPrintDone
+}) {
   const { data, selectedMonth } = useData();
   const [reportType, setReportType] = useState(defaultReport);
   const [selectedLedgerFlatId, setSelectedLedgerFlatId] = useState(data.flats[0]?.id || '');
@@ -80,9 +93,22 @@ export function ReportView({ defaultReport = 'monthly', selectiveFlatIds = null 
 
   const { rows, totals } = Calc.summary(data, selectedMonth);
 
+  // অন্য পাতা থেকে "প্রিন্ট ও PDF" চেপে এলে ছাপার ঘরটি নিজে থেকেই আসে।
+  // সামান্য দেরি — নইলে ফন্ট ও বিন্যাস বসার আগেই ব্রাউজার ছবি নিয়ে নেয়।
+  useEffect(() => {
+    if (!autoPrint) return;
+    const t = setTimeout(() => {
+      window.print();
+      if (onAutoPrintDone) onAutoPrintDone();
+    }, 600);
+    return () => clearTimeout(t);
+  }, [autoPrint, onAutoPrintDone]);
+
   // আয়-ব্যয় হিসাবায়ন — আদায়কারীদের সারি ledgerSummary নিজেই বসিয়ে দেয়
   const cash = Calc.ledgerSummary(data, selectedMonth);
   const cashDeficit = cash.balance < 0;
+  // মাসটি এখনো চলছে — এর হিসাব মাস শেষ হওয়ার আগে তৈরি হওয়ার কথা নয়
+  const cashRunning = selectedMonth === U.currentMonth();
   const cashIn = cashbookCells(cash.income);
   const cashOut = cashbookCells(cash.expense);
 
@@ -354,22 +380,61 @@ export function ReportView({ defaultReport = 'monthly', selectiveFlatIds = null 
                   </td>
                 </tr>
                 <tr>
-                  <td colSpan="6" style={{ textAlign: 'center', background: '#fef9c3' }}>
+                  {/* ঘাটতি চোখে পড়া দরকার — তাই লাল, উদ্বৃত্ত হলে সবুজ */}
+                  <td
+                    colSpan="6"
+                    className={cashDeficit ? 'cash-short' : undefined}
+                    style={{
+                      textAlign: 'center',
+                      background: cashDeficit ? '#fee2e2' : '#fef9c3',
+                      color: cashDeficit ? '#b91c1c' : cash.balance === 0 ? '#334155' : '#15803d'
+                    }}
+                  >
                     {cash.balance === 0
                       ? 'আয় ও ব্যয় সমান'
                       : cashDeficit
                         ? 'ক্যাশ ঘাটতি রয়েছে'
                         : 'ক্যাশ উদ্বৃত্ত রয়েছে'}{' '}
                     = &nbsp;
-                    <b>
+                    <b style={{ fontSize: '13.5px' }}>
                       {cashDeficit ? '−' : ''}
                       {U.bnNumber(Math.abs(cash.balance))}
                     </b>
                     &nbsp; টাকা
                   </td>
                 </tr>
+
+                {/* বিশেষ নোট — কাগজের মতো যোগফলের নিচে, পুরো পাতা জুড়ে।
+                    টাকার অঙ্ক নয়, তাই কোনো যোগফলে ধরা হয় না।          */}
+                {cash.notes.map((n, i) => (
+                  <tr key={n.id} className="cashbook-note">
+                    <td style={{ textAlign: 'center' }}>
+                      {U.bnDigits(cash.expense.length + i + 1)}
+                    </td>
+                    <td colSpan="5" style={{ textAlign: 'left', fontWeight: 400 }}>
+                      {n.title}
+                      {(n.lines || []).map((l, li) => (
+                        <div key={li} style={{ marginTop: '2px' }}>{l.text}</div>
+                      ))}
+                    </td>
+                  </tr>
+                ))}
               </tfoot>
             </table>
+
+            {cashRunning ? (
+              <div className="cashbook-warning">
+                <b>{monthShort} মাস এখনো চলছে।</b> মাসের হিসাব মাস শেষ হওয়ার পর তৈরি হয় —
+                এখানে যা দেখাচ্ছে তা কেবল আজ পর্যন্ত লেখা এন্ট্রি, সম্পূর্ণ হিসাব নয়।
+                এটি ছাপিয়ে সমিতিতে দেবেন না।
+              </div>
+            ) : cash.incomplete ? (
+              <div className="cashbook-warning">
+                <b>এই হিসাবটি এখনো সম্পূর্ণ নয়।</b> {monthShort} মাসের কোনো খরচ লেখা হয়নি,
+                তাই উপরের যোগফলকে উদ্বৃত্ত হিসেবে ধরা যাবে না। খরচের খাতগুলো
+                বসানোর পর হিসাবটি ছাপাবেন।
+              </div>
+            ) : null}
 
             <div className="print-signs" style={{ marginTop: '26px' }}>
               {(s.signatories || []).map((sig) => (
@@ -507,9 +572,13 @@ export function ReportView({ defaultReport = 'monthly', selectiveFlatIds = null 
             </table>
 
             <div className="print-totals" style={{ marginTop: '12px' }}>
-              <div className="box">মোট পরিশোধিত: <b>{U.bnNumber(ledgerStatus.paid)}/-</b></div>
+              <div className="box">
+                মোট পরিশোধিত ({monthShort} পর্যন্ত):{' '}
+                <b>{U.bnNumber(ledgerStatus.paid)}/-</b>
+              </div>
               <div className="box" style={{ border: '2px solid #000' }}>
-                বর্তমান বকেয়া পাওনা: <b style={{ color: '#b91c1c' }}>{U.bnNumber(ledgerStatus.due)}/-</b>
+                বকেয়া পাওনা ({monthShort} পর্যন্ত):{' '}
+                <b style={{ color: '#b91c1c' }}>{U.bnNumber(ledgerStatus.due)}/-</b>
               </div>
             </div>
 

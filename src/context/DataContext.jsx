@@ -209,8 +209,12 @@ export function DataProvider({ children }) {
   // ভেতরের লাইনগুলো কখনো আলাদা হয়ে যেতে পারবে না।
   const normalizeLedger = (e, existing) => {
     const lines = (e.lines || [])
-      .filter((l) => (l.text || '').trim() !== '' || Number(l.amount))
-      .map((l) => ({ text: (l.text || '').trim(), amount: Number(l.amount) || 0 }));
+      .filter((l) => (l.text || '').trim() !== '' || Number(l.amount) || l.due)
+      .map((l) =>
+        l.due
+          ? { text: (l.text || '').trim(), amount: 0, due: true }
+          : { text: (l.text || '').trim(), amount: Number(l.amount) || 0 }
+      );
     return {
       id: existing ? existing.id : e.id || newId('l'),
       month: e.month,
@@ -219,7 +223,7 @@ export function DataProvider({ children }) {
       title: (e.title || '').trim(),
       lines,
       amount: lines.length
-        ? lines.reduce((sum, l) => sum + l.amount, 0)
+        ? lines.reduce((sum, l) => sum + (l.due ? 0 : l.amount), 0)
         : Number(e.amount) || 0,
       source: e.source || 'manual',
       refId: e.refId || '',
