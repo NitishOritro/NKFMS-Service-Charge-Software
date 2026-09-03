@@ -37,9 +37,23 @@ const PAGE_TITLES = {
 const SITE_NAME = 'নীলকণ্ঠ ফ্ল্যাট মালিক সমিতি';
 const DEFAULT_TAB = 'dashboard';
 
+// এই পাতাগুলোর ভেতরেই মাস বাছাইয়ের ঘর আছে, তাই নেভবারে আরেকটি দেখানো
+// হয় না — দুটি ঘর পাশাপাশি থাকলে কোনটি কাজ করছে তা বোঝা যায় না।
+const PAGE_HAS_MONTH_PICKER = ['reports', 'summary'];
+
 // কেবল অ্যাডমিন লগইনে খোলা পেজ। ভিউ মোডে মেনু থেকে লুকানো তো থাকেই,
-// কেউ ঠিকানায় সরাসরি #/flat-entry লিখলেও যেন ঢুকতে না পারে।
-const ADMIN_ONLY_TABS = ['flat-entry', 'ledger'];
+// কেউ ঠিকানায় সরাসরি #/collection লিখলেও যেন ঢুকতে না পারে।
+// ভিউ মুডে ফ্ল্যাট মালিকদের জন্য থাকে শুধু: ড্যাশবোর্ড, মাসিক হিসাব
+// সারসংক্ষেপ, বকেয়া তালিকা ও প্রিন্ট/PDF রিপোর্ট।
+const ADMIN_ONLY_TABS = [
+  'collection',
+  'charge-form',
+  'flat-entry',
+  'ledger',
+  'flats',
+  'collectors',
+  'settings'
+];
 
 /** ঠিকানার হ্যাশ (#/reports) থেকে পেজের নাম — অচেনা হলে ড্যাশবোর্ড */
 function tabFromHash() {
@@ -125,12 +139,12 @@ export function App() {
         <Navbar
           pageTitle={getPageTitle()}
           onOpenNav={() => setNavOpen(true)}
-          showMonthPicker={currentTab !== 'reports'}
+          showMonthPicker={!PAGE_HAS_MONTH_PICKER.includes(currentTab)}
         />
 
         {currentTab === 'dashboard' && <DashboardView setCurrentTab={setCurrentTab} />}
-        {currentTab === 'collection' && <MonthlyCollectionView />}
-        {currentTab === 'charge-form' && <ServiceChargeEntryFormView />}
+        {currentTab === 'collection' && !isReadOnly && <MonthlyCollectionView />}
+        {currentTab === 'charge-form' && !isReadOnly && <ServiceChargeEntryFormView />}
         {currentTab === 'flat-entry' && !isReadOnly && (
           <SingleFlatEntryView onOpenLedger={() => setCurrentTab('reports')} />
         )}
@@ -160,9 +174,9 @@ export function App() {
             onAutoPrintDone={() => setReportState((p) => ({ ...p, autoPrint: false }))}
           />
         )}
-        {currentTab === 'flats' && <FlatManagementView />}
-        {currentTab === 'collectors' && <CollectorSignatoryView />}
-        {currentTab === 'settings' && <SettingsBackupView />}
+        {currentTab === 'flats' && !isReadOnly && <FlatManagementView />}
+        {currentTab === 'collectors' && !isReadOnly && <CollectorSignatoryView />}
+        {currentTab === 'settings' && !isReadOnly && <SettingsBackupView />}
       </div>
 
       <ToastContainer />

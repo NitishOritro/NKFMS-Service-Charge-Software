@@ -142,7 +142,7 @@ export function CollectorSignatoryView() {
                             value={c.honorific || ''}
                             onChange={(e) => handleHonorific(c.id, e.target.value)}
                             aria-label={`${c.bn} এর সম্বোধন`}
-                            style={{ padding: '4px 6px', fontSize: '13px' }}
+                            style={{ padding: '4px 6px', fontSize: '11.5px' }}
                           >
                             <option value="জনাব">জনাব</option>
                             <option value="মিসেস">মিসেস</option>

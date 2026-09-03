@@ -35,6 +35,10 @@
   --primary-soft: #f0f9ff;
   --primary-border: #bae6fd;
   --primary-dark: #0c4a6e;
+  /* সমিতির নাম সব শিরোনামে আকাশি নীল। উজ্জ্বল আকাশি (#38bdf8) সাদায়
+     ফ্যাকাশে, তাই #0284c7; গাঢ় সাইডবারের জন্য হালকা #7dd3fc।       */
+  --society: #0284c7;
+  --society-on-dark: #7dd3fc;
 
   --success: #059669;
   --success-light: #ecfdf5;
@@ -121,7 +125,7 @@ body {
   font-family: var(--font-family);
   background-color: var(--bg-main);
   color: var(--text-main);
-  font-size: 16px;
+  font-size: 14.5px;
   line-height: var(--leading-body);
   letter-spacing: 0;
 
@@ -258,14 +262,14 @@ b, strong { font-weight: 700; }
 }
 
 .sidebar-title {
-  font-size: 16.5px;
+  font-size: 15px;
   font-weight: 700;
   line-height: 1.3;
-  color: #f8fafc;
+  color: var(--society-on-dark);
 }
 
 .sidebar-sub {
-  font-size: 12.5px;
+  font-size: 11px;
   font-weight: 500;
   color: #7f92ad;
   margin-top: 3px;
@@ -292,7 +296,7 @@ b, strong { font-weight: 700; }
 }
 
 .nav-group-label {
-  font-size: 11px;
+  font-size: 10px;
   font-weight: 700;
   letter-spacing: 0.9px;
   color: #5b6b83;
@@ -310,7 +314,7 @@ b, strong { font-weight: 700; }
   color: #b6c2d3;
   text-decoration: none;
   font-weight: 500;
-  font-size: 15px;
+  font-size: 13.5px;
   line-height: 1.45;
   transition: background-color 0.16s var(--ease), color 0.16s var(--ease);
   cursor: pointer;
@@ -396,13 +400,13 @@ b, strong { font-weight: 700; }
   align-items: center;
   justify-content: center;
   font-weight: 700;
-  font-size: 15px;
+  font-size: 13.5px;
   flex-shrink: 0;
   box-shadow: 0 0 0 2px rgba(148, 163, 184, 0.18);
 }
 
 .user-name {
-  font-size: 13.5px;
+  font-size: 12px;
   font-weight: 600;
   color: #f1f5f9;
   white-space: nowrap;
@@ -411,7 +415,7 @@ b, strong { font-weight: 700; }
 }
 
 .user-role {
-  font-size: 11.5px;
+  font-size: 10.5px;
   color: #8296b0;
   line-height: 1.4;
 }
@@ -462,7 +466,7 @@ b, strong { font-weight: 700; }
 }
 
 .page-heading {
-  font-size: 20px;
+  font-size: 18px;
   font-weight: 700;
   color: var(--text-main);
   display: flex;
@@ -500,7 +504,7 @@ b, strong { font-weight: 700; }
 .month-selector select {
   background: transparent;
   border: none;
-  font-size: 15px;
+  font-size: 13.5px;
   font-weight: 600;
   color: var(--primary-dark);
   cursor: pointer;
@@ -530,7 +534,7 @@ b, strong { font-weight: 700; }
   border: 1px solid var(--border);
   padding: 6px 12px;
   border-radius: var(--radius-md);
-  font-size: 14px;
+  font-size: 12.5px;
   font-weight: 600;
   color: var(--text-muted);
   white-space: nowrap;
@@ -567,7 +571,7 @@ b, strong { font-weight: 700; }
 }
 
 .section-title {
-  font-size: 16px;
+  font-size: 14.5px;
   font-weight: 700;
   color: var(--text-body);
   margin-bottom: 12px;
@@ -606,14 +610,14 @@ b, strong { font-weight: 700; }
 }
 
 .page-banner h2 {
-  font-size: 20px;
+  font-size: 18px;
   font-weight: 700;
   color: #ffffff;
   line-height: 1.35;
 }
 
 .page-banner p {
-  font-size: 14px;
+  font-size: 12.5px;
   color: #cfeafd;
   margin-top: 4px;
   line-height: 1.55;
@@ -653,7 +657,7 @@ b, strong { font-weight: 700; }
 }
 
 .card-title {
-  font-size: 16.5px;
+  font-size: 15px;
   font-weight: 700;
   color: var(--text-main);
   display: flex;
@@ -663,7 +667,7 @@ b, strong { font-weight: 700; }
 }
 
 .card-subtitle {
-  font-size: 13.5px;
+  font-size: 12px;
   font-weight: 500;
   color: var(--text-muted);
   margin-top: 2px;
@@ -696,12 +700,12 @@ b, strong { font-weight: 700; }
   transform: translateY(-1px);
 }
 .action-card h4 {
-  font-size: 16px;
+  font-size: 14.5px;
   font-weight: 700;
   line-height: 1.4;
 }
 .action-card p {
-  font-size: 13.5px;
+  font-size: 12px;
   color: var(--text-muted);
   margin-top: 5px;
   line-height: 1.55;
@@ -778,14 +782,14 @@ b, strong { font-weight: 700; }
 .metric-card::after { content: none; }
 
 .metric-label {
-  font-size: 14px;
+  font-size: 12.5px;
   color: var(--text-muted);
   font-weight: 600;
   line-height: 1.45;
 }
 
 .metric-value {
-  font-size: 29px;
+  font-size: 26px;
   font-weight: 700;
   font-family: var(--font-display);
   line-height: 1.25;
@@ -795,7 +799,7 @@ b, strong { font-weight: 700; }
 }
 
 .metric-sub {
-  font-size: 13px;
+  font-size: 11.5px;
   color: var(--text-light);
   line-height: 1.5;
   margin-top: auto;
@@ -867,7 +871,7 @@ table.data-table {
   border-collapse: separate;
   border-spacing: 0;
   text-align: left;
-  font-size: 15.5px;
+  font-size: 14px;
 }
 
 table.data-table th {
@@ -880,7 +884,7 @@ table.data-table th {
   position: sticky;
   top: 0;
   z-index: 10;
-  font-size: 14.5px;
+  font-size: 13px;
   letter-spacing: 0.1px;
   line-height: 1.45;
   box-shadow: 0 1px 0 var(--border-strong);
@@ -899,7 +903,7 @@ table.data-table td {
   border-bottom: 1px solid var(--border-soft);
   color: var(--text-body);
   transition: background-color 0.12s var(--ease);
-  font-size: 15.5px;
+  font-size: 14px;
   line-height: 1.5;
   vertical-align: middle;
 }
@@ -957,7 +961,7 @@ table.data-table tr:focus-within select {
   text-align: center;
   color: var(--text-light);
   padding: 44px 20px 48px;
-  font-size: 15px;
+  font-size: 13.5px;
   line-height: 1.6;
 }
 
@@ -978,7 +982,7 @@ table.data-table tr:focus-within select {
 
 .empty-state-title {
   font-weight: 700;
-  font-size: 16.5px;
+  font-size: 15px;
   color: var(--text-main);
   margin-bottom: 5px;
 }
@@ -986,7 +990,7 @@ table.data-table tr:focus-within select {
 .empty-state p {
   margin: 0 auto 18px;
   max-width: 400px;
-  font-size: 14.5px;
+  font-size: 13px;
 }
 
 /* ---- মেট্রিক কার্ডে গত মাসের তুলনা ---- */
@@ -997,7 +1001,7 @@ table.data-table tr:focus-within select {
   margin-top: 10px;
   padding: 4px 10px;
   border-radius: 999px;
-  font-size: 12.5px;
+  font-size: 11px;
   font-weight: 600;
   line-height: 1.4;
   border: 1px solid transparent;
@@ -1050,7 +1054,7 @@ table.data-table tr:focus-within select {
   background: #fef3c7;
   color: #92400e;
   border: 1px solid #fcd34d;
-  font-size: 11.5px;
+  font-size: 10.5px;
   font-weight: 700;
   line-height: 1.5;
   white-space: nowrap;
@@ -1068,7 +1072,7 @@ table.data-table tr:focus-within select {
   gap: 5px;
   padding: 3px 11px;
   border-radius: var(--radius-full);
-  font-size: 13.5px;
+  font-size: 12px;
   font-weight: 600;
   line-height: 1.55;
   white-space: nowrap;
@@ -1116,7 +1120,7 @@ table.data-table tr:focus-within select {
   gap: 7px;
   padding: 9px 16px;
   border-radius: var(--radius-md);
-  font-size: 15px;
+  font-size: 13.5px;
   font-weight: 600;
   line-height: 1.4;
   cursor: pointer;
@@ -1205,13 +1209,13 @@ table.data-table tr:focus-within select {
 
 .btn-sm {
   padding: 6px 11px;
-  font-size: 13.5px;
+  font-size: 12px;
   gap: 5px;
 }
 
 .btn-lg {
   padding: 13px 22px;
-  font-size: 16.5px;
+  font-size: 15px;
 }
 
 .btn-block { width: 100%; }
@@ -1249,7 +1253,7 @@ table.data-table tr:focus-within select {
 
 .form-label {
   display: block;
-  font-size: 14.5px;
+  font-size: 13px;
   font-weight: 600;
   margin-bottom: 6px;
   color: var(--text-body);
@@ -1257,7 +1261,7 @@ table.data-table tr:focus-within select {
 }
 
 .form-hint {
-  font-size: 13px;
+  font-size: 11.5px;
   color: var(--text-light);
   margin-top: 5px;
   line-height: 1.5;
@@ -1271,7 +1275,7 @@ table.data-table tr:focus-within select {
   background: #fff;
   color: var(--text-main);
   outline: none;
-  font-size: 15.5px;
+  font-size: 14px;
   line-height: 1.5;
   transition: border-color 0.15s var(--ease), box-shadow 0.15s var(--ease),
     background-color 0.15s var(--ease);
@@ -1309,7 +1313,7 @@ table.data-table tr:focus-within select {
   border-radius: var(--radius-sm);
   border: 1px solid var(--border-strong);
   background: #fff;
-  font-size: 14.5px;
+  font-size: 13px;
   line-height: 1.5;
   outline: none;
   transition: border-color 0.15s var(--ease), box-shadow 0.15s var(--ease);
@@ -1365,7 +1369,7 @@ table.data-table tr:focus-within select {
 }
 
 .modal-title {
-  font-size: 17.5px;
+  font-size: 16px;
   font-weight: 700;
   line-height: 1.4;
   color: var(--text-main);
@@ -1410,7 +1414,7 @@ table.data-table tr:focus-within select {
   border-radius: var(--radius-md);
   box-shadow: var(--shadow-lg);
   font-weight: 500;
-  font-size: 14.5px;
+  font-size: 13px;
   line-height: 1.5;
   display: flex;
   align-items: center;
@@ -1449,7 +1453,7 @@ table.data-table tr:focus-within select {
   border-top: 1px solid var(--border);
   flex-wrap: wrap;
   gap: 12px;
-  font-size: 14.5px;
+  font-size: 13px;
   color: var(--text-muted);
 }
 
@@ -1518,18 +1522,85 @@ table.data-table tr:focus-within select {
 }
 
 .auth-title {
-  font-size: 23px;
+  font-size: 20.5px;
   font-weight: 700;
-  color: var(--text-main);
+  color: var(--society);
   line-height: 1.35;
   margin-bottom: 4px;
 }
 
+/* পাতার শিরোনামে সমিতির নামটুকু — বাকি অংশ স্বাভাবিক রঙে থাকে */
+.society-name {
+  color: var(--society);
+}
+
 .auth-subtitle {
-  font-size: 14.5px;
+  font-size: 13px;
   color: var(--text-muted);
   font-weight: 500;
   line-height: 1.5;
+}
+
+/* ---- লগইনের দুই মুড: অ্যাডমিন / ফ্ল্যাট মালিক ---- */
+.auth-mode-tabs {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 10px;
+  margin-bottom: 18px;
+}
+
+.auth-mode-tab {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 6px;
+  padding: 14px 10px;
+  border: 1.5px solid var(--border);
+  border-radius: var(--radius-md);
+  background: #fff;
+  cursor: pointer;
+  transition: border-color 0.15s var(--ease), background 0.15s var(--ease),
+    box-shadow 0.15s var(--ease);
+}
+
+.auth-mode-tab:hover {
+  border-color: var(--primary-border);
+  background: var(--primary-soft);
+}
+
+.auth-mode-tab .tab-label {
+  font-size: 13px;
+  font-weight: 700;
+  color: var(--text-main);
+  line-height: 1.3;
+}
+
+.auth-mode-tab .tab-hint {
+  font-size: 10.5px;
+  color: var(--text-muted);
+  line-height: 1.35;
+}
+
+/* বেছে নেওয়া ট্যাব — অ্যাডমিন নীল, মালিক সবুজ; রং দেখেই বোঝা যায়
+   কোন মুডে ঢোকা হচ্ছে, ভুল করে অন্য মুডে যাওয়ার আশঙ্কা কমে।      */
+.auth-mode-tab.active {
+  border-color: var(--primary);
+  background: var(--primary-light);
+  box-shadow: 0 0 0 3px var(--focus-ring);
+}
+
+.auth-mode-tab.active .tab-label {
+  color: var(--primary-dark);
+}
+
+.auth-mode-tab.viewer.active {
+  border-color: var(--success);
+  background: #e7f7ec;
+  box-shadow: 0 0 0 3px rgba(22, 163, 74, 0.15);
+}
+
+.auth-mode-tab.viewer.active .tab-label {
+  color: #15803d;
 }
 
 .auth-divider {
@@ -1538,7 +1609,7 @@ table.data-table tr:focus-within select {
   gap: 12px;
   margin: 24px 0 14px;
   color: var(--text-light);
-  font-size: 12.5px;
+  font-size: 11px;
   font-weight: 600;
 }
 .auth-divider::before,
@@ -1555,7 +1626,7 @@ table.data-table tr:focus-within select {
   color: var(--danger-dark);
   padding: 11px 14px;
   border-radius: var(--radius-md);
-  font-size: 14px;
+  font-size: 12.5px;
   font-weight: 600;
   line-height: 1.5;
   text-align: left;
@@ -1578,7 +1649,7 @@ table.data-table tr:focus-within select {
   background: #fff;
   cursor: pointer;
   text-align: center;
-  font-size: 14.5px;
+  font-size: 13px;
   font-weight: 600;
   color: var(--text-body);
   line-height: 1.45;
@@ -1604,7 +1675,7 @@ table.data-table tr:focus-within select {
 
 .auth-foot {
   margin-top: 20px;
-  font-size: 12.5px;
+  font-size: 11px;
   color: var(--text-light);
   line-height: 1.6;
 }
@@ -1650,8 +1721,8 @@ table.data-table tr:focus-within select {
 
 @media (max-width: 1280px) {
   .sidebar { width: 252px; }
-  .nav-item { font-size: 14.5px; padding: 9px 12px; }
-  .page-heading { font-size: 18.5px; }
+  .nav-item { font-size: 13px; padding: 9px 12px; }
+  .page-heading { font-size: 16.5px; }
 }
 
 @media (max-width: 900px) {
@@ -1734,7 +1805,7 @@ table.data-table tr:focus-within select {
 
   .nav-item {
     padding: 9px 11px !important;
-    font-size: 13.5px !important;
+    font-size: 12px !important;
   }
   .nav-item.active::before { display: none !important; }
 
@@ -1778,13 +1849,13 @@ table.data-table tr:focus-within select {
     gap: 12px !important;
   }
 
-  .metric-value { font-size: 25px !important; }
+  .metric-value { font-size: 22.5px !important; }
 
   .auth-card { padding: 30px 22px 26px !important; }
 }
 
 @media (max-width: 640px) {
-  body { font-size: 15.5px; }
+  body { font-size: 14px; }
 
   .metrics-grid { grid-template-columns: 1fr !important; }
 
@@ -1858,46 +1929,115 @@ table.data-table tr:focus-within select {
      হয় না, আর পাশে বাড়তি স্ক্রলবারও আসে না।
 
      সরু পর্দায় নিজে থেকেই ছোট হয়ে যায়: প্রকৃত প্রস্থ হয়
-     min(৮২০ × ১.৫, জায়গা) — তাই ছোট ল্যাপটপেও উপচে পড়ে না।       */
-  zoom: 1.5;
+     min(৮২০ × ১.২৫, জায়গা) — তাই ছোট ল্যাপটপেও উপচে পড়ে না।
+
+     আগে ১.৫ ছিল — তাতে ২৭ সারির টেবিল পর্দায় খুব বড় লাগত, একসাথে
+     অল্প কটি সারি দেখা যেত। ১.২৫-এ কাগজের চেহারা বজায় থেকেও পুরো
+     টেবিল এক নজরে ধরা যায়।                                          */
+  zoom: 1.25;
 }
 
 /* ---- লেজার রিপোর্টে ফ্ল্যাট বাছাইয়ের ঘর ----
-   লেজার বোতামের পাশেই বসে, তাই হালকা রঙের পটভূমি ও লেবেল দিয়ে
-   আলাদা করে চেনানো হয়েছে — নইলে বোতামের সারিতে মিশে যেত।      */
+   লেজার বোতামের পাশেই বসে। সাদা কার্ড, নীল কিনারা, বাঁয়ে ভবনের আইকন,
+   ডানে মোট ফ্ল্যাটের সংখ্যা — বোতামের সারিতে মিশে যায় না, অথচ মাসের
+   ঘরের সাথে একই পরিবারের লাগে।                                     */
 .ledger-flat-picker {
   display: flex;
   align-items: center;
-  gap: 8px;
+  gap: 9px;
   margin-left: 6px;
-  padding: 4px 10px 4px 12px;
-  background: var(--bg-subtle);
-  border: 1px solid var(--border);
+  padding: 4px 8px 4px 8px;
+  background: #fff;
+  border: 1px solid var(--primary-border);
   border-radius: var(--radius-md);
+  box-shadow: var(--shadow-xs);
+  transition: border-color 0.15s var(--ease), box-shadow 0.15s var(--ease);
+}
+
+.ledger-flat-picker:hover {
+  border-color: var(--primary);
+}
+
+.ledger-flat-picker:focus-within {
+  border-color: var(--primary);
+  box-shadow: 0 0 0 3px var(--focus-ring);
+}
+
+.ledger-flat-picker .picker-icon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 26px;
+  height: 26px;
+  border-radius: 7px;
+  background: var(--primary-light);
+  color: var(--primary);
+  flex-shrink: 0;
 }
 
 .ledger-flat-picker label {
-  font-size: 12.5px;
+  font-size: 11.5px;
   font-weight: 700;
-  color: var(--text-body);
+  color: var(--text-muted);
+  letter-spacing: 0.2px;
   white-space: nowrap;
   margin: 0;
 }
 
-.ledger-flat-picker .form-select {
+.ledger-flat-picker .picker-select {
+  position: relative;
+  display: flex;
+}
+
+.ledger-flat-picker .picker-select select {
+  appearance: none;
+  -webkit-appearance: none;
   width: auto;
-  min-width: 210px;
-  padding: 5px 30px 5px 10px;
+  min-width: 235px;
+  padding: 5px 30px 5px 11px;
+  font-family: inherit;
   font-size: 13px;
+  font-weight: 700;
+  color: var(--primary-dark);
+  background: var(--primary-soft);
+  border: 1px solid transparent;
+  border-radius: var(--radius-sm);
+  cursor: pointer;
+  outline: none;
+  transition: background 0.15s var(--ease);
+}
+
+.ledger-flat-picker .picker-select select:hover {
+  background: var(--primary-light);
+}
+
+.ledger-flat-picker .picker-chevron {
+  position: absolute;
+  right: 9px;
+  top: 50%;
+  transform: translateY(-50%);
+  pointer-events: none;
+  color: var(--primary);
+}
+
+.ledger-flat-picker .picker-count {
+  font-size: 11px;
   font-weight: 600;
+  color: var(--text-muted);
+  background: var(--bg-muted);
+  padding: 2px 8px;
+  border-radius: var(--radius-full);
+  white-space: nowrap;
 }
 
 @media (max-width: 720px) {
   .ledger-flat-picker {
     width: 100%;
     margin-left: 0;
+    flex-wrap: wrap;
   }
-  .ledger-flat-picker .form-select { flex: 1; min-width: 0; }
+  .ledger-flat-picker .picker-select { flex: 1 1 100%; }
+  .ledger-flat-picker .picker-select select { width: 100%; min-width: 0; }
 }
 
 /* ---- মাঝখানের জলছাপ — লেখার পেছনে, হালকা ---- */
@@ -1934,7 +2074,10 @@ table.data-table tr:focus-within select {
   align-items: center;
   justify-content: space-between;
   gap: 10px;
-  margin-bottom: 10px;
+  margin-bottom: 8px;
+  padding-bottom: 6px;
+  /* লেটারহেডের নিচের রেখা — শিরোনাম আর টেবিল আলাদা হয়ে যায় */
+  border-bottom: 1.5px solid #0f172a;
 }
 
 .print-head .head-logo {
@@ -1946,15 +2089,15 @@ table.data-table tr:focus-within select {
 
 .print-head .head-logo img {
   display: block;
-  width: 62px;
-  height: 62px;
+  width: 56px;
+  height: 56px;
   object-fit: contain;
 }
 
 .print-head .head-logo .logo-label {
-  width: 62px;
+  width: 56px;
   text-align: center;
-  font-size: 10px;
+  font-size: 9px;
   font-weight: 700;
   letter-spacing: 0.5px;
   margin-top: 2px;
@@ -1969,9 +2112,10 @@ table.data-table tr:focus-within select {
 /* সমিতির নাম আকাশি নীল। #0284c7 বেছেছি — উজ্জ্বল আকাশি (#38bdf8)
    সাদা কাগজে ফ্যাকাশে হয়ে পড়ে, ছাপার পর প্রায় দেখাই যায় না।     */
 .print-head .society {
-  font-size: 16.5px;
+  font-size: 15px;
   font-weight: 700;
   letter-spacing: 0.2px;
+  line-height: 1.3;
   color: #0284c7;
 }
 
@@ -1982,51 +2126,111 @@ table.data-table tr:focus-within select {
   color: #0f766e;
   font-weight: 700;
 }
-.print-head .committee { font-size: 12.5px; font-weight: 600; margin-top: 1px; }
+.print-head .committee { font-size: 11.5px; font-weight: 600; margin-top: 1px; color: #1e293b; }
 .print-head .title {
-  font-size: 12px;
-  font-weight: 600;
-  margin-top: 4px;
+  font-size: 11.5px;
+  font-weight: 700;
+  margin-top: 3px;
   text-decoration: underline;
+  text-underline-offset: 2px;
 }
 
 .print-head .head-date {
   width: 165px;
   flex-shrink: 0;
   text-align: right;
-  font-size: 11px;
+  font-size: 10.5px;
   font-weight: 600;
+  color: #1e293b;
 }
 
 /* ---- রিপোর্টের টেবিল ---- */
 table.print-table {
   width: 100%;
   border-collapse: collapse;
-  margin-top: 10px;
+  margin-top: 8px;
   background: transparent;
+  /* বাইরের ফ্রেম গাঢ়, ভেতরের রেখা হালকা — ছাপা খতিয়ানের প্রচলিত চেহারা;
+     সব রেখা কালো হলে টেবিলটি ভারী ও জালের মতো লাগে।                  */
+  border: 1.25px solid #0f172a;
 }
 
 table.print-table th,
 table.print-table td {
-  border: 1px solid #0f172a;
-  padding: 3px 6px;
-  font-size: 13px;
-  line-height: 1.4;
+  border: 1px solid #b6c2d1;
+  padding: 2.5px 6px;
+  font-size: 11px;
+  line-height: 1.35;
   background: transparent;
+  /* সব অঙ্ক সমান চওড়া — ডান-সারিবদ্ধ কলামে হাজার-শত ঠিক নিচে নিচে বসে */
+  font-variant-numeric: tabular-nums;
 }
 
 table.print-table th {
-  background: rgba(238, 241, 246, 0.9);
+  border: 1px solid #0f172a;
+  background: rgba(238, 241, 246, 0.92);
   font-weight: 700;
-  font-size: 12px;
+  font-size: 10.5px;
+  line-height: 1.3;
   text-align: center;
   vertical-align: middle;
+  color: #0f172a;
+}
+
+/* এক সারি পর পর হালকা ছোপ — ২৭ সারির টেবিলে চোখ লাইন হারায় না।
+   ছোপটি প্রায় স্বচ্ছ, তাই পেছনের জলছাপ ঢাকা পড়ে না।           */
+table.print-table tbody tr:nth-child(even) > td {
+  background: rgba(241, 245, 249, 0.55);
 }
 
 .print-table .dash,
 .print-sheet .dash {
   color: #dc2626;
   font-weight: 700;
+}
+
+/* বকেয়ার অঙ্ক লাল — '-' চিহ্নের মতোই, কারণ দুটোরই মানে টাকা বাকি আছে */
+.print-table .due-amount,
+.print-sheet .due-amount {
+  color: #b91c1c;
+  font-weight: 700;
+}
+
+/* ---- ফ্ল্যাটভিত্তিক লেজারের রং ----
+   ফ্ল্যাট নং গাঢ় নেভি — এটি পরিচয়, টাকা নয়; তাই টাকার কোনো রঙের
+   (সবুজ/লাল/বেগুনি) সাথে মেলে না, আবার সমিতির আকাশি থেকেও আলাদা।
+   ধার্য চার্জ হালকা বেগুনি, জমা সবুজ, বকেয়া লাল (থাকলে)।            */
+.print-sheet .flat-no {
+  color: #1e3a8a;
+  font-weight: 700;
+  letter-spacing: 0.3px;
+}
+
+.print-table th.th-charge,
+.print-table td.col-charge { color: #7c3aed; }
+
+.print-table th.th-paid,
+.print-table td.col-paid   { color: #15803d; }
+
+.print-table th.th-due     { color: #b91c1c; }
+.print-table th.th-flat    { color: #1e3a8a; }
+
+/* "কত মাসের বকেয়া" — লাল, তবে টাকার অঙ্কের চেয়ে হালকা, যাতে চোখ
+   আগে টাকার দিকেই যায়                                          */
+.print-table .due-months {
+  color: #b91c1c;
+  font-weight: 600;
+}
+
+.print-table td.col-charge,
+.print-table td.col-paid   { font-weight: 600; }
+
+/* "নেই" মানে কোনো বকেয়া নেই — সবুজ, কারণ এটি ভালো খবর */
+.print-table .no-due,
+.print-sheet .no-due,
+.data-table .no-due {
+  color: #15803d;
+  font-weight: 600;
 }
 
 /* ---- অগ্রীম প্রদানকারীর সারি ----
@@ -2052,6 +2256,22 @@ table.print-table tbody tr.advance-row > td:first-child,
 table.print-table tfoot td {
   font-weight: 700;
   background: rgba(243, 245, 249, 0.9);
+  border-top: 1.25px solid #0f172a;
+}
+
+/* ---- আয়-ব্যয় খতিয়ানের দুই পাশ রঙে আলাদা ----
+   আদায় সবুজ, খরচ লাল — কোন পাশে কী তা এক পলকেই বোঝা যায়। ঘরের
+   হালকা ছোপ আগে থেকেই ছিল, এখন লেখাটিও একই রঙে গাঢ় করা হলো। */
+.cashbook-table th.th-income,
+.cashbook-table tfoot td.tf-income {
+  color: #15803d;
+  background: #dcfce7;
+}
+
+.cashbook-table th.th-expense,
+.cashbook-table tfoot td.tf-expense {
+  color: #b91c1c;
+  background: #fee2e2;
 }
 
 /* ---- নিচের তিনটি যোগফলের বাক্স ---- */
@@ -2181,15 +2401,19 @@ table.print-table tfoot td {
   flex: 1;
   min-width: 180px;
   border: 1px solid #0f172a;
-  padding: 6px 9px;
-  font-size: 12.5px;
+  padding: 5px 9px;
+  font-size: 11px;
+  line-height: 1.4;
+  color: #334155;
   background: rgba(255, 255, 255, 0.72);
 }
 
 .print-totals .box b {
   display: block;
-  font-size: 14px;
-  margin-top: 2px;
+  font-size: 13px;
+  margin-top: 1px;
+  color: #0f172a;
+  font-variant-numeric: tabular-nums;
 }
 
 /* ---- স্বাক্ষরের ঘর ---- */
@@ -2222,10 +2446,12 @@ table.print-table tfoot td {
 .print-signs .s .dg { color: #475569; font-size: 7.5px; line-height: 1.25; }
 
 .print-foot {
-  margin-top: 16px;
-  font-size: 11px;
+  margin-top: 14px;
+  padding-top: 5px;
+  border-top: 1px solid #cbd5e1;
+  font-size: 9.5px;
   text-align: center;
-  color: #475569;
+  color: #64748b;
 }
 
 @media (max-width: 900px) {
@@ -2248,7 +2474,7 @@ table.print-table tfoot td {
   color: #78350f;
   padding: 12px 15px;
   border-radius: var(--radius-md);
-  font-size: 14px;
+  font-size: 12.5px;
   line-height: 1.6;
   margin-bottom: 22px;
 }
@@ -2273,7 +2499,7 @@ table.print-table tfoot td {
 }
 
 .charge-field-label {
-  font-size: 14.5px;
+  font-size: 13px;
   font-weight: 600;
   color: var(--text-body);
   line-height: 1.5;
@@ -2284,7 +2510,7 @@ table.print-table tfoot td {
   display: inline-flex;
   align-items: center;
   gap: 5px;
-  font-size: 12.5px;
+  font-size: 11px;
   color: var(--text-light);
   line-height: 1.5;
   margin-top: 5px;
@@ -2344,7 +2570,7 @@ table.print-table tfoot td {
   align-items: center;
   gap: 6px;
   font-weight: 700;
-  font-size: 13px;
+  font-size: 11.5px;
   color: var(--text-main);
   margin-bottom: 8px;
 }
@@ -2359,7 +2585,7 @@ table.print-table tfoot td {
 }
 
 .charge-help li {
-  font-size: 12.8px;
+  font-size: 11.5px;
   line-height: 1.55;
   color: var(--text-light);
 }
@@ -2381,12 +2607,12 @@ table.print-table tfoot td {
   min-width: 0;
 }
 .charge-form-summary .s-label {
-  font-size: 12.5px;
+  font-size: 11px;
   font-weight: 600;
   color: var(--text-muted);
 }
 .charge-form-summary .s-value {
-  font-size: 16px;
+  font-size: 14.5px;
   font-weight: 700;
   color: var(--text-main);
   overflow: hidden;
@@ -2427,7 +2653,7 @@ table.print-table tfoot td {
   color: #78350f;
   padding: 13px 16px;
   border-radius: var(--radius-md);
-  font-size: 14px;
+  font-size: 12.5px;
   line-height: 1.6;
   margin-top: 22px;
 }
@@ -2465,7 +2691,7 @@ table.print-table tfoot td {
   color: var(--danger-dark);
   padding: 11px 15px;
   border-radius: var(--radius-md);
-  font-size: 14px;
+  font-size: 12.5px;
   font-weight: 600;
   line-height: 1.6;
   margin-top: 18px;
@@ -2477,7 +2703,7 @@ table.print-table tfoot td {
   border: none;
   padding: 0;
   font: inherit;
-  font-size: 12.5px;
+  font-size: 11px;
   font-weight: 600;
   color: var(--primary);
   cursor: pointer;
@@ -2491,7 +2717,7 @@ table.print-table tfoot td {
 /* ফুটারে বাঁ পাশে ব্যাখ্যা, ডান পাশে বাটন */
 .charge-form-foot-note {
   margin-right: auto;
-  font-size: 13px;
+  font-size: 11.5px;
   color: var(--text-light);
   line-height: 1.5;
 }
@@ -2526,8 +2752,8 @@ table.print-table tfoot td {
 
 table.cashbook-table th,
 table.cashbook-table td {
-  font-size: 11px;
-  line-height: 1.45;
+  font-size: 10px;
+  line-height: 1.4;
   vertical-align: middle;
 }
 
@@ -2539,7 +2765,7 @@ table.cashbook-table td:nth-child(4) {
 
 table.cashbook-table tfoot td {
   font-weight: 700;
-  font-size: 12px;
+  font-size: 11px;
 }
 
 /* অসম্পূর্ণ মাসের হিসাব — ছাপার পাতাতেও যেন সতর্কতা থেকে যায় */
@@ -2592,14 +2818,14 @@ table.cashbook-table tfoot td {
 }
 
 .lt-label {
-  font-size: 12.5px;
+  font-size: 11px;
   color: #64748b;
   letter-spacing: .01em;
   margin-bottom: 3px;
 }
 
 .lt-value {
-  font-size: 25px;
+  font-size: 22.5px;
   font-weight: 700;
   line-height: 1.2;
   font-variant-numeric: tabular-nums;
@@ -2607,7 +2833,7 @@ table.cashbook-table tfoot td {
 }
 
 .lt-sub {
-  font-size: 12px;
+  font-size: 11px;
   color: #94a3b8;
   margin-top: 3px;
 }
@@ -2629,7 +2855,7 @@ table.cashbook-table tfoot td {
   align-items: center;
   justify-content: center;
   width: 26px;
-  font-size: 20px;
+  font-size: 18px;
   font-weight: 600;
   color: #cbd5e1;
   user-select: none;
@@ -2661,15 +2887,15 @@ table.cashbook-table tfoot td {
 
 @media (max-width: 820px) {
   .ledger-total-row { grid-template-columns: 1fr; gap: 8px; }
-  .lt-op { width: auto; height: 18px; font-size: 16px; }
-  .lt-value { font-size: 22px; }
+  .lt-op { width: auto; height: 18px; font-size: 14.5px; }
+  .lt-value { font-size: 20px; }
 }
 
 /* বিশেষ নোট — যোগফলের নিচের সারি, টাকার অঙ্ক নয় বলে আলাদা চেহারা */
 table.cashbook-table tfoot tr.cashbook-note td {
   background: #fff7ed;
   color: #7c2d12;
-  font-size: 10.5px;
+  font-size: 9.5px;
   font-weight: 400;
   line-height: 1.55;
   text-align: left;
@@ -2697,7 +2923,7 @@ table.cashbook-table tfoot tr.cashbook-note td {
 }
 
 .ln-hint {
-  font-size: 12px;
+  font-size: 11px;
   font-weight: 400;
   color: #b45309;
 }
@@ -2706,7 +2932,7 @@ table.cashbook-table tfoot tr.cashbook-note td {
   padding: 14px 4px;
   text-align: center;
   color: #b45309;
-  font-size: 14px;
+  font-size: 12.5px;
 }
 
 .ln-item {
@@ -2727,7 +2953,7 @@ table.cashbook-table tfoot tr.cashbook-note td {
   border-radius: 6px;
   background: #fef3c7;
   color: #92400e;
-  font-size: 12px;
+  font-size: 11px;
   display: inline-flex;
   align-items: center;
   justify-content: center;
@@ -2736,7 +2962,7 @@ table.cashbook-table tfoot tr.cashbook-note td {
 .ln-text {
   flex: 1;
   min-width: 0;
-  font-size: 13.5px;
+  font-size: 12px;
   line-height: 1.65;
   color: #422006;
 }

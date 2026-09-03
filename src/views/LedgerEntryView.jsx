@@ -67,7 +67,7 @@ function RowForm({ draft, setDraft, onSave, onCancel, presets }) {
                 key={p}
                 type="button"
                 className="btn btn-outline btn-sm"
-                style={{ fontSize: '12px', padding: '3px 9px' }}
+                style={{ fontSize: '11px', padding: '3px 9px' }}
                 onClick={() => setDraft({ ...draft, title: p })}
               >
                 {p}
@@ -135,7 +135,7 @@ function RowForm({ draft, setDraft, onSave, onCancel, presets }) {
                 title="টাকাটা এখনো দেওয়া হয়নি — যোগফলে ধরা হবে না"
                 style={{
                   display: 'flex', alignItems: 'center', gap: '4px',
-                  fontSize: '12px', color: '#64748b', whiteSpace: 'nowrap', cursor: 'pointer'
+                  fontSize: '11px', color: '#64748b', whiteSpace: 'nowrap', cursor: 'pointer'
                 }}
               >
                 <input
@@ -158,7 +158,7 @@ function RowForm({ draft, setDraft, onSave, onCancel, presets }) {
           ))}
           <div
             style={{
-              textAlign: 'right', fontWeight: 700, fontSize: '14px',
+              textAlign: 'right', fontWeight: 700, fontSize: '12.5px',
               color: '#0f172a', paddingRight: '46px', marginTop: '4px'
             }}
           >
@@ -213,7 +213,7 @@ function NoteForm({ draft, setDraft, onSave, onCancel }) {
         />
       </div>
       <div style={{ display: 'flex', gap: '8px' }}>
-        <div style={{ flex: 1, fontSize: '12.5px', color: '#92400e' }}>
+        <div style={{ flex: 1, fontSize: '11px', color: '#92400e' }}>
           এই লেখাটি কোনো যোগফলে ধরা হবে না — রিপোর্টে মোট আদায়-খরচের নিচে বসবে।
         </div>
         <button type="button" className="btn btn-outline btn-sm" onClick={onCancel}>
@@ -249,7 +249,7 @@ function LedgerSide({ side, month, rows, total, isReadOnly, onEdit, onDelete, on
         <div className="card-title" style={{ color: accent }}>
           {isIncome ? 'আদায়ের বিবরণ (+)' : 'খরচের বিবরণ (−)'}
         </div>
-        <div style={{ fontWeight: 700, fontSize: '17px', color: accent }}>
+        <div style={{ fontWeight: 700, fontSize: '15.5px', color: accent }}>
           ৳{U.bnNumber(total)}
         </div>
       </div>
@@ -276,7 +276,7 @@ function LedgerSide({ side, month, rows, total, isReadOnly, onEdit, onDelete, on
                 <span
                   style={{
                     minWidth: '22px', height: '22px', borderRadius: '6px', flexShrink: 0,
-                    background: '#f1f5f9', color: '#64748b', fontSize: '12px',
+                    background: '#f1f5f9', color: '#64748b', fontSize: '11px',
                     display: 'inline-flex', alignItems: 'center', justifyContent: 'center'
                   }}
                 >
@@ -290,7 +290,7 @@ function LedgerSide({ side, month, rows, total, isReadOnly, onEdit, onDelete, on
                     <span
                       className="pill"
                       style={{
-                        marginTop: '4px', fontSize: '11px',
+                        marginTop: '4px', fontSize: '10px',
                         background: '#eff6ff', color: '#1d4ed8'
                       }}
                     >
@@ -307,7 +307,7 @@ function LedgerSide({ side, month, rows, total, isReadOnly, onEdit, onDelete, on
                       key={li}
                       style={{
                         display: 'flex', justifyContent: 'space-between', gap: '10px',
-                        fontSize: '13.5px', color: '#475569', marginTop: '3px'
+                        fontSize: '12px', color: '#475569', marginTop: '3px'
                       }}
                     >
                       <span>↳ {l.text}</span>
@@ -515,7 +515,7 @@ export function LedgerEntryView({ onOpenPrint }) {
             {isRunningMonth && (
               <div
                 style={{
-                  marginTop: '4px', fontSize: '13px', color: '#b45309',
+                  marginTop: '4px', fontSize: '11.5px', color: '#b45309',
                   background: '#fef3c7', border: '1px solid #fcd34d',
                   borderRadius: '6px', padding: '5px 10px', display: 'inline-block'
                 }}
@@ -550,7 +550,7 @@ export function LedgerEntryView({ onOpenPrint }) {
               <div style={{ fontWeight: 700, color: '#b91c1c', marginBottom: '4px' }}>
                 ডাটাবেজে হিসাবের টেবিলটি এখনো তৈরি হয়নি
               </div>
-              <div style={{ color: '#7f1d1d', fontSize: '14px' }}>
+              <div style={{ color: '#7f1d1d', fontSize: '12.5px' }}>
                 Supabase-এর SQL Editor-এ <b>supabase/06_ledger.sql</b> ফাইলটি একবার চালিয়ে
                 নিন, তারপর এই পাতাটি রিফ্রেশ করুন। ততক্ষণ এখানে কিছু সেভ হবে না।
               </div>
@@ -567,7 +567,7 @@ export function LedgerEntryView({ onOpenPrint }) {
               <Wand2 size={17} color="#1d4ed8" />
               <b style={{ color: '#1e40af' }}>আগের মাসের হিসাব থেকে</b>
             </div>
-            <div style={{ fontSize: '14px', color: '#334155' }}>
+            <div style={{ fontSize: '12.5px', color: '#334155' }}>
               {carryover.title} — {U.bnNumber(carryover.amount)}
             </div>
             <button className="btn btn-outline btn-sm" style={{ marginTop: '10px' }} onClick={applyCarryover}>
@@ -582,7 +582,7 @@ export function LedgerEntryView({ onOpenPrint }) {
           style={{
             marginBottom: '18px', padding: '12px 16px', borderRadius: '10px',
             background: '#fef3c7', border: '1px solid #fcd34d', color: '#78350f',
-            fontSize: '14px'
+            fontSize: '12.5px'
           }}
         >
           <b>{U.monthLabel(selectedMonth)} মাসের খরচ এখনো লেখা হয়নি।</b> আদায়ের

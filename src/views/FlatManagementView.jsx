@@ -74,8 +74,8 @@ export function FlatManagementView() {
         }}
       >
         <div>
-          <h2 style={{ fontSize: '18px', fontWeight: 700 }}>ফ্ল্যাট ও মালিকদের তালিকা ব্যবস্থাপনা</h2>
-          <p style={{ fontSize: '12.5px', color: '#64748b', marginTop: '2px' }}>
+          <h2 style={{ fontSize: '16px', fontWeight: 700 }}>ফ্ল্যাট ও মালিকদের তালিকা ব্যবস্থাপনা</h2>
+          <p style={{ fontSize: '11px', color: '#64748b', marginTop: '2px' }}>
             মোট সক্রিয় ফ্ল্যাট: <b>{U.bnDigits(flats.length)} টি</b>
           </p>
         </div>
@@ -209,7 +209,7 @@ export function FlatManagementView() {
                 value={formData.joinMonth}
                 onChange={(e) => setFormData({ ...formData, joinMonth: e.target.value })}
               />
-              <span style={{ fontSize: '12.5px', color: '#64748b' }}>
+              <span style={{ fontSize: '11px', color: '#64748b' }}>
                 খালি রাখলে আগস্ট ২০২৪ থেকে চার্জ ধরা হবে। কেউ পরে যুক্ত হলে সেই মাসটি দিন —
                 তার আগের মাসে আর বকেয়া দেখাবে না।
               </span>
@@ -284,7 +284,7 @@ export function FlatManagementView() {
                 value={formData.joinMonth}
                 onChange={(e) => setFormData({ ...formData, joinMonth: e.target.value })}
               />
-              <span style={{ fontSize: '12.5px', color: '#64748b' }}>
+              <span style={{ fontSize: '11px', color: '#64748b' }}>
                 খালি রাখলে আগস্ট ২০২৪ থেকে চার্জ ধরা হবে। কেউ পরে যুক্ত হলে সেই মাসটি দিন —
                 তার আগের মাসে আর বকেয়া দেখাবে না।
               </span>

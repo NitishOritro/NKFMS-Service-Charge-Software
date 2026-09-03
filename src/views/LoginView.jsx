@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { useAuth } from '../context/AuthContext';
 import { useData } from '../context/DataContext';
-import { Mail, KeyRound, ShieldCheck, AlertCircle, Eye } from 'lucide-react';
+import { Mail, KeyRound, ShieldCheck, AlertCircle, Eye, ShieldUser, Users } from 'lucide-react';
 import { LOGO_BASE64 } from '../assets/logoData';
 
 export function LoginView() {
@@ -12,14 +12,17 @@ export function LoginView() {
   const { login } = useAuth();
   const { data } = useData();
 
-  const isViewer = username.trim().toLowerCase() === 'viewer';
+  // 'admin' = ইমেইল ও পাসওয়ার্ড দিয়ে প্রবেশ, 'viewer' = পাসওয়ার্ড ছাড়া
+  // শুধু রিপোর্ট দেখা। দুটি ট্যাব — কে কোন পথে ঢুকবেন তা শুরুতেই স্পষ্ট।
+  const [mode, setMode] = useState('admin');
+  const isViewer = mode === 'viewer';
 
   const handleSubmit = async (e) => {
     e.preventDefault();
     setError('');
     setBusy(true);
     try {
-      const res = await login(username, password);
+      const res = isViewer ? await login('viewer', '') : await login(username, password);
       if (!res.ok) {
         setError(res.error || 'লগইন ব্যর্থ হয়েছে।');
       }
@@ -28,8 +31,8 @@ export function LoginView() {
     }
   };
 
-  const pickRole = (name) => {
-    setUsername(name);
+  const pickMode = (next) => {
+    setMode(next);
     setPassword('');
     setError('');
   };
@@ -72,6 +75,31 @@ export function LoginView() {
 
         <div className="auth-divider">সার্ভিস চার্জ ব্যবস্থাপনা সফটওয়্যার</div>
 
+        <div className="auth-mode-tabs" role="tablist" aria-label="প্রবেশের ধরন">
+          <button
+            type="button"
+            role="tab"
+            aria-selected={!isViewer}
+            className={`auth-mode-tab${!isViewer ? ' active' : ''}`}
+            onClick={() => pickMode('admin')}
+          >
+            <ShieldUser size={22} color={!isViewer ? 'var(--primary)' : 'var(--text-muted)'} />
+            <span className="tab-label">অ্যাডমিন মুড</span>
+            <span className="tab-hint">এন্ট্রি ও হিসাব সংশোধন</span>
+          </button>
+          <button
+            type="button"
+            role="tab"
+            aria-selected={isViewer}
+            className={`auth-mode-tab viewer${isViewer ? ' active' : ''}`}
+            onClick={() => pickMode('viewer')}
+          >
+            <Users size={22} color={isViewer ? 'var(--success)' : 'var(--text-muted)'} />
+            <span className="tab-label">ফ্ল্যাট Owners মুড</span>
+            <span className="tab-hint">শুধু রিপোর্ট দেখা</span>
+          </button>
+        </div>
+
         {error && (
           <div className="auth-error">
             <AlertCircle size={17} />
@@ -80,6 +108,7 @@ export function LoginView() {
         )}
 
         <form onSubmit={handleSubmit} style={{ textAlign: 'left' }}>
+          {!isViewer && (
           <div className="form-group" style={{ marginBottom: '16px' }}>
             <label className="form-label" htmlFor="login-username">
               <span style={{ display: 'inline-flex', alignItems: 'center', gap: '7px' }}>
@@ -92,12 +121,14 @@ export function LoginView() {
               className="form-input"
               value={username}
               onChange={(e) => setUsername(e.target.value)}
-              placeholder="অ্যাডমিনের ইমেইল — শুধু দেখতে চাইলে viewer"
+              placeholder="অ্যাডমিনের ইমেইল"
               autoComplete="username"
               required
             />
           </div>
+          )}
 
+          {!isViewer && (
           <div className="form-group" style={{ marginBottom: '24px' }}>
             <label className="form-label" htmlFor="login-password">
               <span style={{ display: 'inline-flex', alignItems: 'center', gap: '7px' }}>
@@ -110,35 +141,37 @@ export function LoginView() {
               className="form-input"
               value={password}
               onChange={(e) => setPassword(e.target.value)}
-              placeholder={isViewer ? 'ভিউ মোডে পাসওয়ার্ড লাগে না' : 'পাসওয়ার্ড দিন'}
+              placeholder="পাসওয়ার্ড দিন"
               autoComplete="current-password"
-              disabled={isViewer}
             />
           </div>
+          )}
 
-          <button type="submit" className="btn btn-primary btn-lg btn-block" disabled={busy}>
-            <ShieldCheck size={20} />
-            <span>{busy ? 'যাচাই করা হচ্ছে…' : 'সফটওয়্যারে প্রবেশ করুন'}</span>
+          {isViewer && (
+            <p className="auth-subtitle" style={{ marginBottom: '20px', fontSize: '11.5px' }}>
+              ফ্ল্যাট মালিকদের জন্য — পাসওয়ার্ড লাগে না। প্রবেশ করে মাসিক হিসাব,
+              বকেয়া তালিকা ও অফিসিয়াল রিপোর্ট দেখতে পারবেন।
+            </p>
+          )}
+
+          <button
+            type="submit"
+            className={`btn btn-lg btn-block ${isViewer ? 'btn-success' : 'btn-primary'}`}
+            disabled={busy}
+          >
+            {isViewer ? <Eye size={20} /> : <ShieldCheck size={20} />}
+            <span>
+              {busy
+                ? 'যাচাই করা হচ্ছে…'
+                : isViewer ? 'রিপোর্ট দেখতে প্রবেশ করুন' : 'সফটওয়্যারে প্রবেশ করুন'}
+            </span>
           </button>
         </form>
 
-        <div className="auth-divider">এক ক্লিকে ইউজার নির্বাচন</div>
-
-        <div className="auth-role-grid">
-          <button
-            type="button"
-            onClick={() => pickRole('viewer')}
-            className={`auth-role-btn ${isViewer ? 'selected-viewer' : ''}`}
-            style={{ gridColumn: '1 / -1' }}
-          >
-            <span style={{ display: 'inline-flex', alignItems: 'center', gap: '7px' }}>
-              <Eye size={15} /> পাসওয়ার্ড ছাড়া দেখুন (View Only)
-            </span>
-          </button>
-        </div>
-
         <div className="auth-foot">
-          © {data.settings.societyName || 'নীলকণ্ঠ ফ্ল্যাট মালিক সমিতি'} — সংস্করণ ২.০
+          © <span className="society-name">
+            {data.settings.societyName || 'নীলকণ্ঠ ফ্ল্যাট মালিক সমিতি'}
+          </span> — সংস্করণ ২.০
         </div>
       </div>
     </div>

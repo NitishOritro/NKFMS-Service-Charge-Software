@@ -51,13 +51,14 @@ export function DashboardView({ setCurrentTab }) {
       title: 'একক ফ্ল্যাট এন্ট্রি',
       desc: 'একটি ফ্ল্যাটের বিগত ২৫ মাসের (আগস্ট ২০২৪ হতে আগস্ট ২০২৬) সব এন্ট্রি একসাথে দিন।'
     }]),
-    {
+    // এন্ট্রির কার্ডটিও ভিউ মুডে থাকে না — ওই পাতায় ঢোকার অনুমতি নেই
+    ...(isReadOnly ? [] : [{
       id: 'collection',
       icon: CheckCircle2,
       color: '#059669',
       title: 'মাসিক আদায় এন্ট্রি',
       desc: U.monthLabel(selectedMonth) + ' মাসের সকল ফ্ল্যাটের আদায় ও রসিদ তৈরি করুন।'
-    },
+    }]),
     {
       id: 'defaulters',
       icon: AlertTriangle,
@@ -79,7 +80,7 @@ export function DashboardView({ setCurrentTab }) {
       {/* উপরের ব্যানার */}
       <div className="page-banner">
         <div>
-          <h2>{data.settings.societyName} — ড্যাশবোর্ড</h2>
+          <h2><span className="society-name">{data.settings.societyName}</span> — ড্যাশবোর্ড</h2>
           <p>
             নির্বাচিত হিসাব মাস: <b>{U.monthLabel(selectedMonth)}</b>
             &nbsp;&nbsp;•&nbsp;&nbsp; মোট ফ্ল্যাট: <b>{U.bnDigits(totals.flatCount)} টি</b>
@@ -239,14 +240,16 @@ export function DashboardView({ setCurrentTab }) {
                         {U.monthLabel(selectedMonth)} মাসের জমা এন্ট্রি করলে কে কত টাকা
                         আদায় করেছেন তার হিসাব এখানে দেখা যাবে।
                       </p>
-                      <button
-                        type="button"
-                        className="btn btn-primary"
-                        onClick={() => setCurrentTab('charge-form')}
-                      >
-                        <ArrowRight size={16} />
-                        <span>এন্ট্রি শুরু করুন</span>
-                      </button>
+                      {!isReadOnly && (
+                        <button
+                          type="button"
+                          className="btn btn-primary"
+                          onClick={() => setCurrentTab('charge-form')}
+                        >
+                          <ArrowRight size={16} />
+                          <span>এন্ট্রি শুরু করুন</span>
+                        </button>
+                      )}
                     </td>
                   </tr>
                 )}

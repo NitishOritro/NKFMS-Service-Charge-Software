@@ -19,12 +19,14 @@ import { LOGO_BASE64 } from '../assets/logoData';
 const NAV_GROUPS = [
   {
     label: 'আদায় ও এন্ট্রি',
+    // ভিউ মুডে এই দলে শুধু ড্যাশবোর্ড থাকে, তখন 'এন্ট্রি' নামটি অর্থহীন
+    readOnlyLabel: 'সংক্ষিপ্ত চিত্র',
     items: [
       { id: 'dashboard', label: 'ড্যাশবোর্ড', icon: LayoutDashboard },
-      { id: 'collection', label: 'মাসিক আদায় এন্ট্রি', icon: CalendarCheck },
+      { id: 'collection', label: 'মাসিক আদায় এন্ট্রি', icon: CalendarCheck, adminOnly: true },
       // adminOnly — ভিউ মোডে এই পেজটি মেনুতে দেখা যাবে না
       { id: 'flat-entry', label: 'একক ফ্ল্যাট এন্ট্রি (২৫ মাস)', icon: Layers, highlight: true, adminOnly: true },
-      { id: 'charge-form', label: 'সার্ভিস চার্জ এন্ট্রি ফর্ম', icon: ClipboardList }
+      { id: 'charge-form', label: 'সার্ভিস চার্জ এন্ট্রি ফর্ম', icon: ClipboardList, adminOnly: true }
     ]
   },
   {
@@ -40,9 +42,9 @@ const NAV_GROUPS = [
   {
     label: 'ব্যবস্থাপনা',
     items: [
-      { id: 'flats', label: 'ফ্ল্যাট ব্যবস্থাপনা', icon: Building2 },
-      { id: 'collectors', label: 'আদায়কারী ও স্বাক্ষরকারী', icon: Users },
-      { id: 'settings', label: 'সেটিংস ও ব্যাকআপ', icon: Settings }
+      { id: 'flats', label: 'ফ্ল্যাট ব্যবস্থাপনা', icon: Building2, adminOnly: true },
+      { id: 'collectors', label: 'আদায়কারী ও স্বাক্ষরকারী', icon: Users, adminOnly: true },
+      { id: 'settings', label: 'সেটিংস ও ব্যাকআপ', icon: Settings, adminOnly: true }
     ]
   }
 ];
@@ -69,11 +71,16 @@ export function Sidebar({ currentTab, setCurrentTab, open = false, onClose }) {
       </div>
 
       <nav className="sidebar-nav">
-        {NAV_GROUPS.map((group) => (
+        {NAV_GROUPS.map((group) => {
+          const items = group.items.filter((item) => !(item.adminOnly && isReadOnly));
+          // ভিউ মুডে দলটির সব পাতা লুকানো হলে খালি শিরোনামও দেখানো হয় না
+          if (!items.length) return null;
+          return (
           <React.Fragment key={group.label}>
-            <div className="nav-group-label">{group.label}</div>
-            {group.items
-              .filter((item) => !(item.adminOnly && isReadOnly))
+            <div className="nav-group-label">
+              {isReadOnly && group.readOnlyLabel ? group.readOnlyLabel : group.label}
+            </div>
+            {items
               .map((item) => {
               const Icon = item.icon;
               const isActive = currentTab === item.id;
@@ -94,7 +101,8 @@ export function Sidebar({ currentTab, setCurrentTab, open = false, onClose }) {
               );
             })}
           </React.Fragment>
-        ))}
+          );
+        })}
       </nav>
 
       <div className="sidebar-footer">

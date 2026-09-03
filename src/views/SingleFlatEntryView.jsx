@@ -24,7 +24,7 @@ const FOOT_CELL = {
   bottom: 0,
   zIndex: 9,
   background: 'var(--bg-muted)',
-  fontSize: '14px'
+  fontSize: '12.5px'
 };
 
 // একটি রসিদের মার্কআপ — পর্দার মডাল ও কাগজের প্রিন্ট দুই জায়গাতেই এটাই ব্যবহৃত হয়।
@@ -40,14 +40,14 @@ function ReceiptSheet({ payment, flat, settings }) {
       }}
     >
       <div style={{ textAlign: 'center', borderBottom: '1px solid #cbd5e1', paddingBottom: '10px', marginBottom: '12px' }}>
-        <h3 style={{ fontSize: '16px', fontWeight: 700 }}>{settings.societyName}</h3>
-        <p style={{ fontSize: '12px', color: '#64748b' }}>{settings.committeeName}</p>
-        <span style={{ display: 'inline-block', marginTop: '6px', background: '#0284c7', color: '#fff', padding: '2px 10px', borderRadius: '4px', fontSize: '12px', fontWeight: 700 }}>
+        <h3 style={{ fontSize: '14.5px', fontWeight: 700, color: 'var(--society)' }}>{settings.societyName}</h3>
+        <p style={{ fontSize: '11px', color: '#64748b' }}>{settings.committeeName}</p>
+        <span style={{ display: 'inline-block', marginTop: '6px', background: '#0284c7', color: '#fff', padding: '2px 10px', borderRadius: '4px', fontSize: '11px', fontWeight: 700 }}>
           সার্ভিস চার্জ আদায় রসিদ
         </span>
       </div>
 
-      <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '10px', fontSize: '13px', marginBottom: '12px' }}>
+      <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '10px', fontSize: '11.5px', marginBottom: '12px' }}>
         <div>রসিদ নং: <b>{flat.flatNo}-{U.monthLabelEn(payment.month)}</b></div>
         <div style={{ textAlign: 'right' }}>তারিখ: <b>{U.dateLabel(payment.receivedOn)}</b></div>
         <div>ফ্ল্যাট নং: <b>{flat.flatNo}</b></div>
@@ -65,7 +65,7 @@ function ReceiptSheet({ payment, flat, settings }) {
           borderRadius: 'var(--radius-md)',
           padding: '12px',
           textAlign: 'center',
-          fontSize: '18px',
+          fontSize: '16px',
           fontWeight: 700,
           color: '#065f46',
           margin: '14px 0'
@@ -74,7 +74,7 @@ function ReceiptSheet({ payment, flat, settings }) {
         জমাকৃত টাকা: {U.bnTaka(payment.amount)}/-
       </div>
 
-      <div style={{ display: 'flex', justifyContent: 'space-between', marginTop: '30px', fontSize: '12px', color: '#475569' }}>
+      <div style={{ display: 'flex', justifyContent: 'space-between', marginTop: '30px', fontSize: '11px', color: '#475569' }}>
         <div style={{ borderTop: '1px solid #64748b', width: '130px', textAlign: 'center', paddingTop: '4px' }}>
           জমাদানকারীর স্বাক্ষর
         </div>
@@ -394,12 +394,12 @@ export function SingleFlatEntryView({ onOpenLedger }) {
       >
         <div style={{ display: 'flex', alignItems: 'flex-end', gap: '18px', flexWrap: 'wrap' }}>
           <div style={{ minWidth: '280px' }}>
-            <label style={{ fontSize: '14px', fontWeight: 700, color: '#334155', display: 'block', marginBottom: '6px' }}>
+            <label style={{ fontSize: '12.5px', fontWeight: 700, color: '#334155', display: 'block', marginBottom: '6px' }}>
               ফ্ল্যাট নির্বাচন:
             </label>
             <select
               className="form-select"
-              style={{ width: '100%', fontWeight: 700, borderColor: 'var(--primary)', padding: '9px 14px', fontSize: '15.5px' }}
+              style={{ width: '100%', fontWeight: 700, borderColor: 'var(--primary)', padding: '9px 14px', fontSize: '14px' }}
               value={selectedFlatId}
               onChange={(e) => setSelectedFlatId(e.target.value)}
             >
@@ -412,12 +412,12 @@ export function SingleFlatEntryView({ onOpenLedger }) {
           </div>
 
           <div style={{ minWidth: '310px' }}>
-            <label style={{ fontSize: '14px', fontWeight: 700, color: '#334155', display: 'block', marginBottom: '6px' }}>
+            <label style={{ fontSize: '12.5px', fontWeight: 700, color: '#334155', display: 'block', marginBottom: '6px' }}>
               মাস / সাল ফিল্টার:
             </label>
             <select
               className="form-select"
-              style={{ width: '100%', padding: '9px 14px', fontSize: '15.5px' }}
+              style={{ width: '100%', padding: '9px 14px', fontSize: '14px' }}
               value={monthFilter}
               onChange={(e) => setMonthFilter(e.target.value)}
             >
@@ -436,7 +436,7 @@ export function SingleFlatEntryView({ onOpenLedger }) {
                 onClick={handleBulkFillUnpaid}
                 className="btn btn-primary"
                 title="যেসব মাস খালি আছে সেগুলোতে সার্ভিস চার্জ বসান"
-                style={{ padding: '9px 16px', fontSize: '15px' }}
+                style={{ padding: '9px 16px', fontSize: '13.5px' }}
               >
                 <Sparkles size={16} />
                 <span>সব খালি ঘরে ১,৫০০/- বসান</span>
@@ -445,7 +445,7 @@ export function SingleFlatEntryView({ onOpenLedger }) {
               <button
                 onClick={() => setBulkCollectorModalOpen(true)}
                 className="btn btn-outline"
-                style={{ padding: '9px 16px', fontSize: '15px' }}
+                style={{ padding: '9px 16px', fontSize: '13.5px' }}
               >
                 <Users size={16} />
                 <span>সবার জন্য একই আদায়কারী</span>
@@ -462,7 +462,7 @@ export function SingleFlatEntryView({ onOpenLedger }) {
                 ? 'এই ফ্ল্যাটের সব মাসের রসিদ একসাথে দেখুন ও প্রিন্ট করুন'
                 : 'এই ফ্ল্যাটের কোনো মাসে জমা লেখা নেই'
             }
-            style={{ padding: '9px 16px', fontSize: '15px' }}
+            style={{ padding: '9px 16px', fontSize: '13.5px' }}
           >
             <FileText size={16} />
             <span>সব রিসিট একসাথে ({U.bnDigits(paidReceipts.length)})</span>
@@ -517,7 +517,7 @@ export function SingleFlatEntryView({ onOpenLedger }) {
               <ResidentBadge flat={currentFlat} />
             </span>
           </div>
-          <span style={{ fontSize: '12px', color: '#64748b' }}>
+          <span style={{ fontSize: '11px', color: '#64748b' }}>
             প্রদর্শিত: {U.bnDigits(displayMonths.length)} টি মাস &nbsp;|&nbsp; 
             <span style={{ color: '#059669', fontWeight: 600 }}>সবুজ = জমা</span> &nbsp;|&nbsp; 
             <span style={{ color: '#ca8a04', fontWeight: 600 }}>হলুদ = এন্ট্রি ফোকাস</span>
@@ -638,7 +638,7 @@ export function SingleFlatEntryView({ onOpenLedger }) {
                                 ? `এন্ট্রি সেভ করুন (ধার্য ${U.bnNumber(charge)}/-)`
                                 : `এই ফ্ল্যাটে ${U.monthLabel(chargeStart)} থেকে চার্জ ধরা শুরু`
                             }
-                            style={{ padding: '3px 7px', fontSize: '12px', color: isReadOnly ? undefined : 'var(--success)' }}
+                            style={{ padding: '3px 7px', fontSize: '11px', color: isReadOnly ? undefined : 'var(--success)' }}
                           >
                             <Save size={13} />
                             <span>সেভ</span>
@@ -648,7 +648,7 @@ export function SingleFlatEntryView({ onOpenLedger }) {
                             disabled={!isPaid}
                             className="btn btn-outline btn-sm"
                             title={isPaid ? 'রিসিট দেখুন' : 'জমা না থাকলে রিসিট দেখা যাবে না'}
-                            style={{ padding: '3px 7px', fontSize: '12px', color: isPaid ? 'var(--primary)' : undefined }}
+                            style={{ padding: '3px 7px', fontSize: '11px', color: isPaid ? 'var(--primary)' : undefined }}
                           >
                             <Receipt size={13} />
                             <span>রিসিট</span>
@@ -658,7 +658,7 @@ export function SingleFlatEntryView({ onOpenLedger }) {
                             disabled={isReadOnly || (!isPaid && !isDrafting)}
                             className="btn btn-outline btn-sm"
                             title={(isPaid || isDrafting) ? 'ডাটা ক্লীয়ার করুন' : 'ক্লীয়ার করার মতো কোনো এন্ট্রি নেই'}
-                            style={{ padding: '3px 7px', fontSize: '12px', color: !isReadOnly && (isPaid || isDrafting) ? '#ef4444' : undefined }}
+                            style={{ padding: '3px 7px', fontSize: '11px', color: !isReadOnly && (isPaid || isDrafting) ? '#ef4444' : undefined }}
                           >
                             <Eraser size={13} />
                             <span>ক্লীয়ার</span>
@@ -733,7 +733,7 @@ export function SingleFlatEntryView({ onOpenLedger }) {
               </option>
             ))}
           </select>
-          <p style={{ fontSize: '12px', color: '#64748b', marginTop: '8px' }}>
+          <p style={{ fontSize: '11px', color: '#64748b', marginTop: '8px' }}>
             এই ফ্ল্যাটের যেসব মাসে টাকা জমা লেখা আছে সেগুলোতে এই আদায়কারীর নাম সেট করা হবে।
           </p>
         </div>
@@ -757,7 +757,7 @@ export function SingleFlatEntryView({ onOpenLedger }) {
           </>
         }
       >
-        <p style={{ fontSize: '12.5px', color: '#64748b', marginBottom: '12px' }}>
+        <p style={{ fontSize: '11px', color: '#64748b', marginBottom: '12px' }}>
           যেসব মাসে টাকা জমা লেখা আছে কেবল সেগুলোর রসিদ এখানে দেখানো হচ্ছে। প্রিন্ট করলে
           প্রতিটি রসিদ আলাদা পাতায় ছাপা হবে।
         </p>

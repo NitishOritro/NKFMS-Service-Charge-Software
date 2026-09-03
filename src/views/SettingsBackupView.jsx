@@ -57,7 +57,7 @@ export function SettingsBackupView() {
             alignItems: 'center',
             gap: '10px',
             color: '#065f46',
-            fontSize: '14.5px',
+            fontSize: '13px',
             fontWeight: 600
           }}
         >
@@ -127,7 +127,7 @@ export function SettingsBackupView() {
                   onChange={(e) => setSettingsForm({ ...settingsForm, startMonth: e.target.value })}
                   required
                 />
-                <span style={{ fontSize: '12.5px', color: '#64748b' }}>ডিফল্ট ফরম্যাট: 2024-08 (আগস্ট ২০২৪)</span>
+                <span style={{ fontSize: '11px', color: '#64748b' }}>ডিফল্ট ফরম্যাট: 2024-08 (আগস্ট ২০২৪)</span>
               </div>
 
               {!isReadOnly && (
@@ -159,10 +159,10 @@ export function SettingsBackupView() {
                     borderRadius: 'var(--radius-md)'
                   }}
                 >
-                  <h4 style={{ fontSize: '15px', fontWeight: 700, color: '#0369a1', marginBottom: '6px' }}>
+                  <h4 style={{ fontSize: '13.5px', fontWeight: 700, color: '#0369a1', marginBottom: '6px' }}>
                     ১. ব্যাকআপ ডাউনলোড (Export)
                   </h4>
-                  <p style={{ fontSize: '13px', color: '#64748b', marginBottom: '12px' }}>
+                  <p style={{ fontSize: '11.5px', color: '#64748b', marginBottom: '12px' }}>
                     সম্পূর্ণ ডেটাবেজের একটি `.json` কপি নিজের কম্পিউটার বা মোবাইলে সেভ করুন।
                   </p>
                   <button onClick={exportBackupJson} className="btn btn-primary btn-sm">
@@ -178,7 +178,7 @@ export function SettingsBackupView() {
                     border: '1px solid #e2e8f0',
                     borderRadius: 'var(--radius-md)',
                     color: '#64748b',
-                    fontSize: '13.5px'
+                    fontSize: '12px'
                   }}
                 >
                   🔒 <b>ডেটা ডাউনলোড সংরক্ষিত:</b> ভিউ মুডে ডেটাবেজ ডাউনলোড বা ব্যাকআপ সুবিধা নিষ্ক্রিয় রয়েছে। ডেটা এক্সপোর্ট করতে অ্যাডমিন অ্যাকাউন্ট ব্যবহার করুন।
@@ -195,10 +195,10 @@ export function SettingsBackupView() {
                       borderRadius: 'var(--radius-md)'
                     }}
                   >
-                    <h4 style={{ fontSize: '15px', fontWeight: 700, color: '#334155', marginBottom: '6px' }}>
+                    <h4 style={{ fontSize: '13.5px', fontWeight: 700, color: '#334155', marginBottom: '6px' }}>
                       ২. ব্যাকআপ রিস্টোর (Import)
                     </h4>
-                    <p style={{ fontSize: '13px', color: '#64748b', marginBottom: '12px' }}>
+                    <p style={{ fontSize: '11.5px', color: '#64748b', marginBottom: '12px' }}>
                       পূর্বে ডাউনলোড করা ব্যাকআপ JSON ফাইল আপলোড করে ডেটা ফিরিয়ে আনুন।
                     </p>
                     <label className="btn btn-outline btn-sm" style={{ cursor: 'pointer', display: 'inline-flex' }}>
@@ -222,10 +222,10 @@ export function SettingsBackupView() {
                       marginTop: '10px'
                     }}
                   >
-                    <h4 style={{ fontSize: '15px', fontWeight: 700, color: '#991b1b', marginBottom: '6px', display: 'flex', alignItems: 'center', gap: '6px' }}>
+                    <h4 style={{ fontSize: '13.5px', fontWeight: 700, color: '#991b1b', marginBottom: '6px', display: 'flex', alignItems: 'center', gap: '6px' }}>
                       <AlertTriangle size={16} /> ডেটা রিসেট (Reset to Initial Seed)
                     </h4>
-                    <p style={{ fontSize: '13px', color: '#7f1d1d', marginBottom: '12px' }}>
+                    <p style={{ fontSize: '11.5px', color: '#7f1d1d', marginBottom: '12px' }}>
                       সফটওয়্যারটিকে মূল ২১৬টি পেমেন্ট রেকর্ডযুক্ত আদি অবস্থায় ফিরিয়ে নিতে চান?
                     </p>
                     <button

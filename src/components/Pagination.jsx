@@ -29,7 +29,7 @@ export function Pagination({
         borderTop: '1px solid var(--border)',
         flexWrap: 'wrap',
         gap: '12px',
-        fontSize: '15px'
+        fontSize: '13.5px'
       }}
     >
       <div style={{ display: 'flex', alignItems: 'center', gap: '10px', color: '#64748b' }}>

@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { useData } from '../context/DataContext';
 import * as Calc from '../utils/calc';
 import * as U from '../utils/format';
-import { Printer, FileText, ChevronLeft, Layers } from 'lucide-react';
+import { Printer, FileText, ChevronLeft, ChevronDown, Layers, Building2 } from 'lucide-react';
 import { Watermark } from '../components/Watermark';
 import { ResidentBadge } from '../components/ResidentBadge';
 import { MonthSelector } from '../components/MonthSelector';
@@ -20,7 +20,7 @@ const DASH = <span className="dash">-</span>;
  *                    যেভাবে মার্জ করা থাকে ঠিক সেভাবেই।
  */
 function cashbookCells(entries) {
-  const cell = { padding: '4px 7px', verticalAlign: 'middle' };
+  const cell = { padding: '2.5px 6px', verticalAlign: 'middle' };
   const out = [];
 
   entries.forEach((e, idx) => {
@@ -196,19 +196,29 @@ export function ReportView({
               চেপে এখানে আসা হয়, তার গায়েই বাছাইয়ের ঘর।              */}
           {reportType === 'ledger' && (
             <div className="ledger-flat-picker">
-              <label htmlFor="ledger-flat">ফ্ল্যাট বাছুন:</label>
-              <select
-                id="ledger-flat"
-                className="form-select"
-                value={selectedLedgerFlatId}
-                onChange={(e) => setSelectedLedgerFlatId(e.target.value)}
-              >
-                {data.flats.map((f) => (
-                  <option key={f.id} value={f.id}>
-                    {f.flatNo} — {f.ownerName}
-                  </option>
-                ))}
-              </select>
+              <span className="picker-icon" aria-hidden="true">
+                <Building2 size={15} />
+              </span>
+              <label htmlFor="ledger-flat">ফ্ল্যাট সিলেক্ট করুন</label>
+              {/* নেটিভ select-এর তীরটি ব্রাউজারভেদে আলাদা দেখায়, তাই নিজের
+                  তীর বসানো — ঘরটি সব জায়গায় একই রকম লাগে।            */}
+              <div className="picker-select">
+                <select
+                  id="ledger-flat"
+                  value={selectedLedgerFlatId}
+                  onChange={(e) => setSelectedLedgerFlatId(e.target.value)}
+                >
+                  {data.flats.map((f) => (
+                    <option key={f.id} value={f.id}>
+                      {f.flatNo} — {f.ownerName}
+                    </option>
+                  ))}
+                </select>
+                <ChevronDown size={15} className="picker-chevron" aria-hidden="true" />
+              </div>
+              <span className="picker-count" title="মোট ফ্ল্যাট">
+                {U.bnDigits(data.flats.length)}টি
+              </span>
             </div>
           )}
         </div>
@@ -276,7 +286,7 @@ export function ReportView({
             তারিখ: {U.monthEndDateLabel(headDateMonth)}
             {reportType === 'ledger' && ledgerFlat && (
               <div style={{ fontSize: '10.5px', marginTop: '2px' }}>
-                ফ্ল্যাট: <b>{ledgerFlat.flatNo}</b>
+                ফ্ল্যাট: <b className="flat-no">{ledgerFlat.flatNo}</b>
               </div>
             )}
           </div>
@@ -290,9 +300,9 @@ export function ReportView({
                 <tr>
                   <th style={{ width: '6%' }}>ক্রমিক<br />নং</th>
                   <th style={{ width: '32%', textAlign: 'left' }}>ফ্ল্যাট মালিকের নাম<br />(ফ্ল্যাট নম্বর ক্রম অনুযায়ী)</th>
-                  <th style={{ width: '9%' }}>ফ্ল্যাট<br />নং</th>
-                  <th style={{ width: '14%', textAlign: 'right' }}>{monthShort} জমা<br />(i)</th>
-                  <th style={{ width: '17%', textAlign: 'right' }}>মোট বকেয়া পাওনা<br />{monthShort} পর্যন্ত (ii)</th>
+                  <th className="th-flat" style={{ width: '9%' }}>ফ্ল্যাট<br />নং</th>
+                  <th className="th-paid" style={{ width: '14%', textAlign: 'right' }}>{monthShort} জমা<br />(i)</th>
+                  <th className="th-due" style={{ width: '17%', textAlign: 'right' }}>মোট বকেয়া পাওনা<br />{monthShort} পর্যন্ত (ii)</th>
                   <th style={{ width: '22%' }}>{monthShort} জমার<br />স্বাক্ষর</th>
                 </tr>
               </thead>
@@ -301,11 +311,13 @@ export function ReportView({
                   const paidCell = r.monthPaid > 0 ? U.bnNumber(r.monthPaid) : DASH;
                   // অগ্রীম প্রদানকারীর সারি সবুজ রঙে চিহ্নিত হয় — সবাই যেন এক নজরে দেখেন
                   const isAdvance = r.due <= 0 && r.advance > 0;
+                  // বকেয়া থাকলে অঙ্কটি লাল, অগ্রীম থাকলে সবুজ — টাকা কার
+                  // দিকে পাওনা তা এক পলকেই বোঝা যায়।
                   const dueCell = r.due > 0
-                    ? U.bnNumber(r.due)
+                    ? <span className="due-amount">{U.bnNumber(r.due)}</span>
                     : (isAdvance
                         ? <span className="advance-tag">অগ্রীম {U.bnNumber(r.advance)}</span>
-                        : 'নেই');
+                        : <span className="no-due">নেই</span>);
                   const sigNames = r.collectorIds.map(getCollectorName).filter(Boolean);
                   const sigCell = sigNames.length ? sigNames.join(', ') : DASH;
 
@@ -313,10 +325,10 @@ export function ReportView({
                     <tr key={r.flat.id} className={isAdvance ? 'advance-row' : undefined}>
                       <td style={{ textAlign: 'center' }}>{U.bnDigits(r.flat.serial)}</td>
                       <td style={{ textAlign: 'left' }}><b>{r.flat.ownerName}</b></td>
-                      <td style={{ textAlign: 'center' }}>{r.flat.flatNo}</td>
-                      <td style={{ textAlign: 'right' }}>{paidCell}</td>
+                      <td style={{ textAlign: 'center' }}><b className="flat-no">{r.flat.flatNo}</b></td>
+                      <td className="col-paid" style={{ textAlign: 'right' }}>{paidCell}</td>
                       <td style={{ textAlign: 'right', fontWeight: r.due > 0 ? 700 : 400 }}>{dueCell}</td>
-                      <td style={{ textAlign: 'center', fontSize: '9.5px' }}>{sigCell}</td>
+                      <td style={{ textAlign: 'center', fontSize: '9px', color: '#334155' }}>{sigCell}</td>
                     </tr>
                   );
                 })}
@@ -324,8 +336,12 @@ export function ReportView({
               <tfoot>
                 <tr>
                   <td colSpan="3" style={{ textAlign: 'right' }}>সর্বমোট</td>
-                  <td style={{ textAlign: 'right' }}>{U.bnNumber(totals.monthCollected)}</td>
-                  <td style={{ textAlign: 'right' }}>{U.bnNumber(totals.totalDue)}</td>
+                  <td className="col-paid" style={{ textAlign: 'right' }}>{U.bnNumber(totals.monthCollected)}</td>
+                  <td style={{ textAlign: 'right' }}>
+                    {totals.totalDue > 0
+                      ? <span className="due-amount">{U.bnNumber(totals.totalDue)}</span>
+                      : U.bnNumber(totals.totalDue)}
+                  </td>
                   <td>&nbsp;</td>
                 </tr>
               </tfoot>
@@ -380,11 +396,11 @@ export function ReportView({
               <thead>
                 <tr>
                   <th style={{ width: '6%' }}>ক্রমিক<br />নং</th>
-                  <th style={{ width: '33%' }}>আদায়ের বিবরণ (+)</th>
-                  <th style={{ width: '11%' }}>আদায়ের<br />পরিমান</th>
+                  <th className="th-income" style={{ width: '33%' }}>আদায়ের বিবরণ (+)</th>
+                  <th className="th-income" style={{ width: '11%' }}>আদায়ের<br />পরিমান</th>
                   <th style={{ width: '6%' }}>ক্রমিক<br />নং</th>
-                  <th style={{ width: '33%' }}>খরচের বিবরণ (−)</th>
-                  <th style={{ width: '11%' }}>খরচের<br />পরিমান</th>
+                  <th className="th-expense" style={{ width: '33%' }}>খরচের বিবরণ (−)</th>
+                  <th className="th-expense" style={{ width: '11%' }}>খরচের<br />পরিমান</th>
                 </tr>
               </thead>
               <tbody>
@@ -404,16 +420,16 @@ export function ReportView({
               </tbody>
               <tfoot>
                 <tr>
-                  <td colSpan="2" style={{ textAlign: 'center', background: '#dcfce7' }}>
+                  <td colSpan="2" className="tf-income" style={{ textAlign: 'center' }}>
                     মোট আদায়ের পরিমান
                   </td>
-                  <td style={{ textAlign: 'right', background: '#dcfce7' }}>
+                  <td className="tf-income" style={{ textAlign: 'right' }}>
                     {U.bnNumber(cash.totalIncome)}
                   </td>
-                  <td colSpan="2" style={{ textAlign: 'center', background: '#fee2e2' }}>
+                  <td colSpan="2" className="tf-expense" style={{ textAlign: 'center' }}>
                     মোট খরচের পরিমান
                   </td>
-                  <td style={{ textAlign: 'right', background: '#fee2e2' }}>
+                  <td className="tf-expense" style={{ textAlign: 'right' }}>
                     {U.bnNumber(cash.totalExpense)}
                   </td>
                 </tr>
@@ -434,7 +450,7 @@ export function ReportView({
                         ? 'ক্যাশ ঘাটতি রয়েছে'
                         : 'ক্যাশ উদ্বৃত্ত রয়েছে'}{' '}
                     = &nbsp;
-                    <b style={{ fontSize: '13.5px' }}>
+                    <b style={{ fontSize: '12px' }}>
                       {cashDeficit ? '−' : ''}
                       {U.bnNumber(Math.abs(cash.balance))}
                     </b>
@@ -501,7 +517,7 @@ export function ReportView({
               <thead>
                 <tr>
                   <th style={{ width: '5%' }}>ক্রম</th>
-                  <th style={{ width: '8%' }}>ফ্ল্যাট</th>
+                  <th className="th-flat" style={{ width: '8%' }}>ফ্ল্যাট</th>
                   {/* নাম ২০% → ২৫%, মোবাইল ১২% → ৭%।
                       "বসবাসরত অবস্থায়" ব্যাজটি নামের পাশে বসতে ২১৪px
                       জায়গা লাগত, ছিল মাত্র ২০৭px — তাই প্রতিবার নিচের
@@ -510,9 +526,9 @@ export function ReportView({
                       জায়গাটুকু নামের কলামে দেওয়া হলো।              */}
                   <th style={{ width: '25%', textAlign: 'left' }}>মালিকের নাম</th>
                   <th style={{ width: '7%' }}>মোবাইল</th>
-                  <th style={{ width: '11%', textAlign: 'right' }}>ধার্যকৃত<br />চার্জ</th>
-                  <th style={{ width: '11%', textAlign: 'right' }}>মোট<br />জমা</th>
-                  <th style={{ width: '11%', textAlign: 'right' }}>বর্তমান<br />বকেয়া</th>
+                  <th className="th-charge" style={{ width: '11%', textAlign: 'right' }}>ধার্যকৃত<br />চার্জ</th>
+                  <th className="th-paid" style={{ width: '11%', textAlign: 'right' }}>মোট<br />জমা</th>
+                  <th className="th-due" style={{ width: '11%', textAlign: 'right' }}>বর্তমান<br />বকেয়া</th>
                   <th style={{ width: '11%' }}>সমতুল্য</th>
                 </tr>
               </thead>
@@ -522,16 +538,27 @@ export function ReportView({
                   return (
                     <tr key={st.flat.id}>
                       <td style={{ textAlign: 'center' }}>{U.bnDigits(idx + 1)}</td>
-                      <td style={{ textAlign: 'center' }}><b>{st.flat.flatNo}</b></td>
+                      <td style={{ textAlign: 'center' }}><b className="flat-no">{st.flat.flatNo}</b></td>
+                      {/* বকেয়া বিবরণীতে "বসবাসরত অবস্থায়" ব্যাজটি দেখানো হয় না —
+                          এই কাগজের বিষয় শুধু কে কত টাকা পাওনা রেখেছেন।     */}
                       <td style={{ textAlign: 'left' }}>
                         <b>{st.flat.ownerName}</b>
-                        <ResidentBadge flat={st.flat} className="is-compact" />
                       </td>
-                      <td style={{ textAlign: 'center', fontSize: '10px' }}>{st.flat.phone || '—'}</td>
-                      <td style={{ textAlign: 'right' }}>{U.bnNumber(st.charged)}</td>
-                      <td style={{ textAlign: 'right' }}>{U.bnNumber(st.paid)}</td>
-                      <td style={{ textAlign: 'right', fontWeight: 700 }}>{st.due ? U.bnNumber(st.due) : '০'}</td>
-                      <td style={{ textAlign: 'center' }}>{st.due > 0 ? `${U.bnDigits(eqMonths)} মাস` : '—'}</td>
+                      <td style={{ textAlign: 'center', fontSize: '9.5px', color: '#334155' }}>{st.flat.phone || '—'}</td>
+                      <td className="col-charge" style={{ textAlign: 'right' }}>{U.bnNumber(st.charged)}</td>
+                      <td className="col-paid" style={{ textAlign: 'right' }}>{U.bnNumber(st.paid)}</td>
+                      {/* বকেয়া থাকলে অঙ্কটি লাল — কার কাছে পাওনা আছে তা এক
+                          পলকেই চোখে পড়ে; শূন্য হলে স্বাভাবিক রঙেই থাকে।  */}
+                      <td style={{ textAlign: 'right', fontWeight: 700 }}>
+                        {st.due > 0
+                          ? <span className="due-amount">{U.bnNumber(st.due)}</span>
+                          : '০'}
+                      </td>
+                      <td style={{ textAlign: 'center' }}>
+                        {st.due > 0
+                          ? <span className="due-months">{U.bnDigits(eqMonths)} মাস</span>
+                          : '—'}
+                      </td>
                     </tr>
                   );
                 })}
@@ -564,8 +591,8 @@ export function ReportView({
         {/* REPORT 3: Ledger Statement */}
         {reportType === 'ledger' && ledgerFlat && ledgerStatus && (
           <>
-            <div style={{ marginBottom: '10px', fontSize: '12px' }}>
-              ফ্ল্যাট নং: <b>{ledgerFlat.flatNo}</b> &nbsp;|&nbsp; 
+            <div style={{ marginBottom: '8px', fontSize: '11px', color: '#1e293b' }}>
+              ফ্ল্যাট নং: <b className="flat-no">{ledgerFlat.flatNo}</b> &nbsp;|&nbsp; 
               মালিকের নাম: <b className="owner-name">{ledgerFlat.ownerName}</b> &nbsp;|&nbsp; 
               মোবাইল: <b>{ledgerFlat.phone || '—'}</b>
             </div>
@@ -574,10 +601,10 @@ export function ReportView({
               <thead>
                 <tr>
                   <th style={{ width: '32%', textAlign: 'left' }}>মাস / বিবরণ</th>
-                  <th style={{ width: '16%', textAlign: 'right' }}>ধার্য চার্জ</th>
-                  <th style={{ width: '16%', textAlign: 'right' }}>জমা</th>
+                  <th className="th-charge" style={{ width: '16%', textAlign: 'right' }}>ধার্য চার্জ</th>
+                  <th className="th-paid" style={{ width: '16%', textAlign: 'right' }}>জমা</th>
                   <th style={{ width: '18%', textAlign: 'center' }}>আদায়কারী</th>
-                  <th style={{ width: '18%', textAlign: 'right' }}>বকেয়া টাকা</th>
+                  <th className="th-due" style={{ width: '18%', textAlign: 'right' }}>বকেয়া টাকা</th>
                 </tr>
               </thead>
               <tbody>
@@ -589,22 +616,38 @@ export function ReportView({
                         <ResidentBadge flat={ledgerFlat} />
                       )}
                     </td>
-                    <td style={{ textAlign: 'right' }}>{lr.charge ? U.bnNumber(lr.charge) : DASH}</td>
-                    <td style={{ textAlign: 'right' }}>{lr.paid ? U.bnNumber(lr.paid) : DASH}</td>
-                    <td style={{ textAlign: 'center', fontSize: '9.5px' }}>
+                    <td className="col-charge" style={{ textAlign: 'right' }}>
+                      {lr.charge ? U.bnNumber(lr.charge) : DASH}
+                    </td>
+                    <td className="col-paid" style={{ textAlign: 'right' }}>
+                      {lr.paid ? U.bnNumber(lr.paid) : DASH}
+                    </td>
+                    <td style={{ textAlign: 'center', fontSize: '9px', color: '#334155' }}>
                       {lr.collectorIds.map(getCollectorName).filter(Boolean).join(', ') || DASH}
                     </td>
-                    <td style={{ textAlign: 'right', fontWeight: 700 }}>{U.bnNumber(lr.balance)}</td>
+                    {/* বকেয়া থাকলেই কেবল লাল — শূন্য হলে স্বাভাবিক, নইলে রঙের
+                        অর্থ হারায়                                          */}
+                    <td style={{ textAlign: 'right', fontWeight: 700 }}>
+                      {lr.balance > 0
+                        ? <span className="due-amount">{U.bnNumber(lr.balance)}</span>
+                        : U.bnNumber(lr.balance)}
+                    </td>
                   </tr>
                 ))}
               </tbody>
               <tfoot>
                 <tr>
                   <td style={{ textAlign: 'right' }}>সর্বমোট</td>
-                  <td style={{ textAlign: 'right' }}>{U.bnNumber(ledgerStatus.opening + ledgerStatus.charged)}</td>
-                  <td style={{ textAlign: 'right' }}>{U.bnNumber(ledgerStatus.paid)}</td>
+                  <td className="col-charge" style={{ textAlign: 'right' }}>
+                    {U.bnNumber(ledgerStatus.opening + ledgerStatus.charged)}
+                  </td>
+                  <td className="col-paid" style={{ textAlign: 'right' }}>{U.bnNumber(ledgerStatus.paid)}</td>
                   <td></td>
-                  <td style={{ textAlign: 'right' }}>{U.bnNumber(ledgerStatus.balance)}</td>
+                  <td style={{ textAlign: 'right' }}>
+                    {ledgerStatus.balance > 0
+                      ? <span className="due-amount">{U.bnNumber(ledgerStatus.balance)}</span>
+                      : U.bnNumber(ledgerStatus.balance)}
+                  </td>
                 </tr>
               </tfoot>
             </table>

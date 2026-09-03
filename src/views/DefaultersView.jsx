@@ -54,10 +54,10 @@ export function DefaultersView({ onOpenSelectivePrint }) {
         }}
       >
         <div>
-          <h2 style={{ fontSize: '18px', fontWeight: 700, color: 'var(--danger-dark)' }}>
+          <h2 style={{ fontSize: '16px', fontWeight: 700, color: 'var(--danger-dark)' }}>
             বকেয়া ফ্ল্যাটের তালিকা ও বিবরণী ({U.monthLabel(selectedMonth)} পর্যন্ত)
           </h2>
-          <p style={{ fontSize: '12.5px', color: '#64748b', marginTop: '2px' }}>
+          <p style={{ fontSize: '11px', color: '#64748b', marginTop: '2px' }}>
             মোট বকেয়াকৃত ফ্ল্যাট: <b>{U.bnDigits(defaulters.length)} টি</b> &nbsp;|&nbsp; 
             নির্বাচিত: <b>{U.bnDigits(selectedIds.length)} টি</b>
           </p>
@@ -125,7 +125,7 @@ export function DefaultersView({ onOpenSelectivePrint }) {
                       <td style={{ textAlign: 'center', color: '#64748b' }}>{U.bnDigits(s.flat.serial)}</td>
                       <td style={{ textAlign: 'center' }}><b>{s.flat.flatNo}</b></td>
                       <td><b>{s.flat.ownerName}</b></td>
-                      <td style={{ color: '#64748b', fontSize: '12px' }}>{s.flat.phone || '—'}</td>
+                      <td style={{ color: '#64748b', fontSize: '11px' }}>{s.flat.phone || '—'}</td>
                       <td style={{ textAlign: 'right' }}>{U.bnNumber(s.charged)}</td>
                       <td style={{ textAlign: 'right', color: 'var(--success-dark)' }}>{U.bnNumber(s.paid)}</td>
                       <td style={{ textAlign: 'right', fontWeight: 700, color: s.due > 0 ? 'var(--danger)' : 'var(--success)' }}>
@@ -150,7 +150,7 @@ export function DefaultersView({ onOpenSelectivePrint }) {
               <tfoot>
                 <tr style={{ background: '#f1f5f9', fontWeight: 700 }}>
                   <td colSpan="7" style={{ textAlign: 'right' }}>সর্বমোট বকেয়া পাওনা:</td>
-                  <td style={{ textAlign: 'right', color: 'var(--danger)', fontSize: '15px' }}>
+                  <td style={{ textAlign: 'right', color: 'var(--danger)', fontSize: '13.5px' }}>
                     {U.bnTaka(statuses.reduce((acc, s) => acc + s.due, 0))}
                   </td>
                   <td colSpan="2"></td>

@@ -102,10 +102,10 @@ export function MonthlyCollectionView() {
         }}
       >
         <div>
-          <h2 style={{ fontSize: '18px', fontWeight: 700, color: 'var(--text-main)' }}>
+          <h2 style={{ fontSize: '16px', fontWeight: 700, color: 'var(--text-main)' }}>
             {U.monthLabel(selectedMonth)} — মাসিক আদায় এন্ট্রি
           </h2>
-          <p style={{ fontSize: '12.5px', color: '#64748b', marginTop: '2px' }}>
+          <p style={{ fontSize: '11px', color: '#64748b', marginTop: '2px' }}>
             নিচে প্রতিটি ফ্ল্যাটের এ মাসের জমা, আদায়কারী ও তারিখ পূরণ করুন (ইনপুট দেওয়ার সাথে সাথে অটো-সেভ হবে)।
           </p>
         </div>
@@ -200,7 +200,7 @@ export function MonthlyCollectionView() {
                             disabled={isReadOnly}
                             className="btn btn-outline btn-sm"
                             title={`এন্ট্রি সেভ করুন (ধার্য ${U.bnNumber(r.monthRate)}/-)`}
-                            style={{ padding: '3px 7px', fontSize: '12px', color: isReadOnly ? undefined : 'var(--success)' }}
+                            style={{ padding: '3px 7px', fontSize: '11px', color: isReadOnly ? undefined : 'var(--success)' }}
                           >
                             <Save size={13} />
                             <span>সেভ</span>
@@ -210,7 +210,7 @@ export function MonthlyCollectionView() {
                             disabled={!isPaid}
                             className="btn btn-outline btn-sm"
                             title={isPaid ? 'রিসিট দেখুন' : 'জমা না থাকলে রিসিট দেখা যাবে না'}
-                            style={{ padding: '3px 7px', fontSize: '12px', color: isPaid ? 'var(--primary)' : undefined }}
+                            style={{ padding: '3px 7px', fontSize: '11px', color: isPaid ? 'var(--primary)' : undefined }}
                           >
                             <Receipt size={13} />
                             <span>রিসিট</span>
@@ -220,7 +220,7 @@ export function MonthlyCollectionView() {
                             disabled={isReadOnly || !isPaid}
                             className="btn btn-outline btn-sm"
                             title={isPaid ? 'ডাটা ক্লীয়ার করুন' : 'ক্লীয়ার করার মতো কোনো এন্ট্রি নেই'}
-                            style={{ padding: '3px 7px', fontSize: '12px', color: !isReadOnly && isPaid ? '#ef4444' : undefined }}
+                            style={{ padding: '3px 7px', fontSize: '11px', color: !isReadOnly && isPaid ? '#ef4444' : undefined }}
                           >
                             <Eraser size={13} />
                             <span>ক্লীয়ার</span>
@@ -234,11 +234,11 @@ export function MonthlyCollectionView() {
               <tfoot>
                 <tr style={{ background: '#f8fafc', fontWeight: 700 }}>
                   <td colSpan="4" style={{ textAlign: 'right' }}>এ মাসে সর্বমোট আদায়:</td>
-                  <td style={{ color: 'var(--primary)', fontSize: '15px' }}>{U.bnTaka(totals.monthCollected)}</td>
+                  <td style={{ color: 'var(--primary)', fontSize: '13.5px' }}>{U.bnTaka(totals.monthCollected)}</td>
                   <td colSpan="2" style={{ color: '#64748b' }}>
                     {U.bnDigits(totals.paidThisMonth)} টি ফ্ল্যাট পরিশোধ করেছে
                   </td>
-                  <td style={{ textAlign: 'right', color: 'var(--danger)', fontSize: '15px' }}>
+                  <td style={{ textAlign: 'right', color: 'var(--danger)', fontSize: '13.5px' }}>
                     {U.bnTaka(totals.totalDue)}
                   </td>
                   <td></td>
@@ -287,7 +287,7 @@ export function MonthlyCollectionView() {
             }}
           >
             <div style={{ textAlign: 'center', borderBottom: '1px solid #cbd5e1', paddingBottom: '10px', marginBottom: '12px' }}>
-              <h3 style={{ fontSize: '16px', fontWeight: 700 }}>{data.settings.societyName}</h3>
+              <h3 style={{ fontSize: '16px', fontWeight: 700, color: 'var(--society)' }}>{data.settings.societyName}</h3>
               <p style={{ fontSize: '12px', color: '#64748b' }}>{data.settings.committeeName}</p>
               <span style={{ display: 'inline-block', marginTop: '6px', background: '#0284c7', color: '#fff', padding: '2px 10px', borderRadius: '4px', fontSize: '12px', fontWeight: 700 }}>
                 সার্ভিস চার্জ আদায় রসিদ

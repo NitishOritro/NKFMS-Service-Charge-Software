@@ -3,6 +3,7 @@ import { useData } from '../context/DataContext';
 import * as Calc from '../utils/calc';
 import * as U from '../utils/format';
 import { FileSpreadsheet, Printer } from 'lucide-react';
+import { MonthSelector } from '../components/MonthSelector';
 
 export function MonthlySummaryView({ onOpenPrint }) {
   const { data, selectedMonth } = useData();
@@ -28,13 +29,20 @@ export function MonthlySummaryView({ onOpenPrint }) {
           marginBottom: '20px'
         }}
       >
-        <div>
-          <h2 style={{ fontSize: '18px', fontWeight: 700 }}>
-            {U.monthLabel(selectedMonth)} — মাসিক হিসাবায়ন ও সারসংক্ষেপ
-          </h2>
-          <p style={{ fontSize: '12.5px', color: '#64748b', marginTop: '2px' }}>
-            সকল ২৭টি ফ্ল্যাটের মাসিক সার্ভিস চার্জ জমা ও সর্বমোট বকেয়া পাওনার বিবরণী।
-          </p>
+        <div style={{ display: 'flex', alignItems: 'center', gap: '16px', flexWrap: 'wrap' }}>
+          <div>
+            <h2 style={{ fontSize: '16px', fontWeight: 700 }}>
+              {U.monthLabel(selectedMonth)} — মাসিক হিসাবায়ন ও সারসংক্ষেপ
+            </h2>
+            <p style={{ fontSize: '11px', color: '#64748b', marginTop: '2px' }}>
+              সকল ২৭টি ফ্ল্যাটের মাসিক সার্ভিস চার্জ জমা ও সর্বমোট বকেয়া পাওনার বিবরণী।
+            </p>
+          </div>
+
+          {/* মাস বাছাইয়ের ঘরটি শিরোনামের পাশেই — উপরের কোণে থাকলে
+              ফ্ল্যাট মালিকদের চোখে পড়ত না, মাস বদলে রিপোর্ট দেখাই
+              তাঁদের মূল কাজ।                                        */}
+          <MonthSelector id="summary-month" />
         </div>
 
         <button onClick={onOpenPrint} className="btn btn-primary btn-sm">
@@ -86,9 +94,9 @@ export function MonthlySummaryView({ onOpenPrint }) {
                           ? U.bnNumber(r.due)
                           : isAdvance
                             ? <span className="advance-tag">অগ্রীম {U.bnNumber(r.advance)}</span>
-                            : 'নেই'}
+                            : <span className="no-due">নেই</span>}
                       </td>
-                      <td style={{ textAlign: 'center', fontSize: '12px' }}>
+                      <td style={{ textAlign: 'center', fontSize: '11px' }}>
                         {sigNames.length ? sigNames.join(', ') : '—'}
                       </td>
                     </tr>
@@ -96,7 +104,7 @@ export function MonthlySummaryView({ onOpenPrint }) {
                 })}
               </tbody>
               <tfoot>
-                <tr style={{ background: '#f1f5f9', fontWeight: 700, fontSize: '14px' }}>
+                <tr style={{ background: '#f1f5f9', fontWeight: 700, fontSize: '12.5px' }}>
                   <td colSpan="3" style={{ textAlign: 'right' }}>সর্বমোট:</td>
                   <td style={{ textAlign: 'right', color: 'var(--primary)' }}>{U.bnTaka(totals.monthCollected)}</td>
                   <td style={{ textAlign: 'right', color: 'var(--danger)' }}>{U.bnTaka(totals.totalDue)}</td>
