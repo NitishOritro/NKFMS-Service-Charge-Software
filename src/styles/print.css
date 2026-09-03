@@ -67,6 +67,12 @@
   }
 
   /* Printable Sheet & Centered Watermark */
+  /* মোড়কটি কাগজে কিছু কাটবে না */
+  .report-scroll {
+    overflow: visible !important;
+    width: auto !important;
+  }
+
   .print-sheet {
     /* পর্দার বড় করে দেখানোটা কেবল মনিটরের জন্য — কাগজে আসল মাপ */
     zoom: 1 !important;
@@ -153,6 +159,16 @@
     font-size: 16.5px !important;
     font-weight: 700 !important;
     letter-spacing: .2px !important;
+    color: #0284c7 !important;
+    -webkit-print-color-adjust: exact !important;
+    print-color-adjust: exact !important;
+  }
+
+  .print-sheet .owner-name {
+    color: #0f766e !important;
+    font-weight: 700 !important;
+    -webkit-print-color-adjust: exact !important;
+    print-color-adjust: exact !important;
   }
 
   .print-head .committee {
@@ -255,6 +271,46 @@
     position: relative !important;
     z-index: 1 !important;
   }
+
+  /* নিচের বি.দ্র. — কাগজেও বাঁ পাশের লাল দাগ ও হালকা পটভূমি থাকবে */
+  .print-note {
+    display: flex !important;
+    align-items: baseline !important;
+    gap: 6px !important;
+    margin-top: 6px !important;
+    padding: 3px 7px !important;
+    font-size: 10px !important;
+    line-height: 1.45 !important;
+    color: #000 !important;
+    background: #fdf2f2 !important;
+    border-left: 2.5px solid #dc2626 !important;
+    border-radius: 2px !important;
+    position: relative !important;
+    z-index: 1 !important;
+    -webkit-print-color-adjust: exact !important;
+    print-color-adjust: exact !important;
+  }
+
+  .print-note-tag {
+    flex-shrink: 0 !important;
+    font-weight: 700 !important;
+    color: #b91c1c !important;
+    -webkit-print-color-adjust: exact !important;
+    print-color-adjust: exact !important;
+  }
+
+  /* হিসাবের বাক্সে টাকার রঙ — ব্রাউজার যেন ছেঁটে সাদাকালো না করে দেয় */
+  .print-totals .amt-paid,
+  .print-totals .amt-due,
+  .print-totals .amt-advance {
+    font-weight: 700 !important;
+    -webkit-print-color-adjust: exact !important;
+    print-color-adjust: exact !important;
+  }
+
+  .print-totals .amt-paid    { color: #15803d !important; }
+  .print-totals .amt-due     { color: #b91c1c !important; }
+  .print-totals .amt-advance { color: #a16207 !important; }
 
   .print-totals .box {
     flex: 1 !important;

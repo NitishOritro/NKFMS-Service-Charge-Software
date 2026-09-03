@@ -213,22 +213,34 @@ export function ReportView({
           )}
         </div>
 
-        <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+        <div className="report-toolbar-actions">
           {/* হিসাবের মাস — আগে উপরের নেভবারে ছিল, রিপোর্টের বোতামগুলো থেকে
               দূরে বলে চোখে পড়ত না। প্রিন্ট বোতামের পাশে আনা হলো।        */}
           <MonthSelector id="report-month" />
 
           <button
             onClick={() => window.print()}
-            className="btn btn-success"
-            style={{ padding: '8px 18px', fontWeight: 700 }}
+            className="btn btn-success btn-print"
           >
             <Printer size={16} />
-            <span>প্রিন্ট / PDF ডাউনলোড (Ctrl + P)</span>
+            <span>
+              প্রিন্ট / PDF ডাউনলোড
+              {/* ফোনে কীবোর্ড নেই, তাই শর্টকাটটি সেখানে দেখানো হয় না */}
+              <span className="only-desktop"> (Ctrl + P)</span>
+            </span>
           </button>
         </div>
       </div>
 
+      {/* ফোনে রিপোর্ট পাশে সরিয়ে দেখতে হয় — সেটি জানিয়ে দেওয়া */}
+      <div className="report-scroll-hint no-print">
+        <span>↔</span>
+        <span>পুরো রিপোর্ট দেখতে আঙুল দিয়ে পাশে সরান</span>
+      </div>
+
+      {/* ফোনে শিটটি পাশে সরিয়ে দেখার ঘর। ডেস্কটপে এটি নিছক একটি
+          মোড়ক — কোনো প্রভাব ফেলে না।                              */}
+      <div className="report-scroll">
       {/* Printable Sheet Container */}
       <div
         className="card print-sheet"
@@ -321,18 +333,26 @@ export function ReportView({
 
             <div className="print-totals">
               <div className="box">
-                {monthShort} মাসে মোট প্রদানকৃত টাকার পরিমাণ: <b>{U.bnNumber(totals.monthCollected)}/-</b>
+                {monthShort} মাসে মোট প্রদানকৃত টাকার পরিমাণ:{' '}
+                <b className="amt-paid">{U.bnNumber(totals.monthCollected)}/-</b>
               </div>
               <div className="box">
-                মোট বকেয়া সার্ভিস চার্জ: <b>{U.bnNumber(totals.totalDue)}/-</b>
+                মোট বকেয়া সার্ভিস চার্জ:{' '}
+                <b className="amt-due">{U.bnNumber(totals.totalDue)}/-</b>
               </div>
               <div className="box">
-                মোট অগ্রীম প্রদান: <b>{U.bnNumber(totals.totalAdvance)}/-</b>
+                মোট অগ্রীম প্রদান:{' '}
+                <b className="amt-advance">{U.bnNumber(totals.totalAdvance)}/-</b>
               </div>
             </div>
 
-            <div style={{ fontSize: '10.5px', fontStyle: 'italic', marginTop: '6px' }}>
-              {DASH} চিহ্ন মানে {monthShort} মাসের সার্ভিস চার্জ {U.bnNumber(Calc.rateForMonth(s, selectedMonth))}/- জমা হয়নি।
+            <div className="print-note">
+              <span className="print-note-tag">বি.দ্র.</span>
+              <span>
+                “{monthShort} জমা” ঘরে {DASH} চিহ্ন যেখানে রয়েছে, সেই ফ্ল্যাটের {monthShort}{' '}
+                মাসের ধার্য সার্ভিস চার্জ <b>{U.bnNumber(Calc.rateForMonth(s, selectedMonth))}/-</b>{' '}
+                এখনো জমা পড়েনি।
+              </span>
             </div>
 
             <div className="print-signs">
@@ -546,7 +566,7 @@ export function ReportView({
           <>
             <div style={{ marginBottom: '10px', fontSize: '12px' }}>
               ফ্ল্যাট নং: <b>{ledgerFlat.flatNo}</b> &nbsp;|&nbsp; 
-              মালিকের নাম: <b>{ledgerFlat.ownerName}</b> &nbsp;|&nbsp; 
+              মালিকের নাম: <b className="owner-name">{ledgerFlat.ownerName}</b> &nbsp;|&nbsp; 
               মোবাইল: <b>{ledgerFlat.phone || '—'}</b>
             </div>
 
@@ -596,7 +616,7 @@ export function ReportView({
               </div>
               <div className="box" style={{ border: '2px solid #000' }}>
                 বকেয়া পাওনা ({monthShort} পর্যন্ত):{' '}
-                <b style={{ color: '#b91c1c' }}>{U.bnNumber(ledgerStatus.due)}/-</b>
+                <b className="amt-due">{U.bnNumber(ledgerStatus.due)}/-</b>
               </div>
             </div>
 
@@ -614,6 +634,7 @@ export function ReportView({
             </div>
           </>
         )}
+      </div>
       </div>
     </div>
   );
