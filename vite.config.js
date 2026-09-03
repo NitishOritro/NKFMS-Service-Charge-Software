@@ -6,6 +6,11 @@ const react = require('@vitejs/plugin-react');
 // সফটওয়্যারের ডাটার একটিমাত্র উৎস
 const DATA_FILE = path.resolve(__dirname, 'data/nkfms-data.json');
 
+// প্রতিটি বিল্ডের আলাদা পরিচয়। কোডের ভেতরে __BUILD_ID__ হয়ে বসে, আর
+// একই নম্বর dist/version.json-এ লেখা হয় — দুটি মিলিয়ে অ্যাপ বুঝতে পারে
+// ব্যবহারকারীর হাতে পুরোনো কোড আছে কিনা।
+const BUILD_ID = Date.now().toString(36);
+
 /**
  * /api/data — অ্যাপ এখান থেকেই ডাটা পড়ে এবং এখানেই লিখে রাখে।
  * ফলে ব্রাউজারের ক্যাশ/localStorage-এর উপর কোনো নির্ভরতা থাকে না, আর
@@ -73,8 +78,9 @@ function nkfmsDataApi() {
     configurePreviewServer(server) {
       server.middlewares.use(handle);
     },
-    // বিল্ডের সময় ডাটা ফাইলটি dist-এ কপি হয় — স্ট্যাটিক হোস্টিংয়ে (Vercel)
-    // অ্যাপ /data/nkfms-data.json থেকে পড়তে পারে (শুধু-পড়া)
+    // বিল্ডের সময় ডাটা ফাইলটি dist-এ কপি হয় — স্ট্যাটিক হোস্টিংয়ে
+    // অ্যাপ /data/nkfms-data.json থেকে পড়তে পারে (শুধু-পড়া)।
+    // সাথে version.json — পুরোনো ক্যাশ ধরার জন্য (src/utils/cacheGuard.js)
     closeBundle() {
       try {
         const outDir = path.resolve(__dirname, 'dist/data');
@@ -83,12 +89,25 @@ function nkfmsDataApi() {
       } catch (e) {
         console.warn('[nkfms] dist-এ ডাটা ফাইল কপি করা যায়নি:', e.message);
       }
+
+      try {
+        fs.writeFileSync(
+          path.resolve(__dirname, 'dist/version.json'),
+          JSON.stringify({ buildId: BUILD_ID, builtAt: new Date().toISOString() }, null, 2),
+          'utf8'
+        );
+      } catch (e) {
+        console.warn('[nkfms] version.json লেখা যায়নি:', e.message);
+      }
     }
   };
 }
 
 module.exports = defineConfig({
   plugins: [react.default ? react.default() : react(), nkfmsDataApi()],
+  define: {
+    __BUILD_ID__: JSON.stringify(BUILD_ID)
+  },
   server: {
     port: 3000,
     open: true,

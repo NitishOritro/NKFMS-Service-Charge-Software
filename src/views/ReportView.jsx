@@ -655,7 +655,7 @@ export function ReportView({
             <div className="print-totals" style={{ marginTop: '12px' }}>
               <div className="box">
                 মোট পরিশোধিত ({monthShort} পর্যন্ত):{' '}
-                <b>{U.bnNumber(ledgerStatus.paid)}/-</b>
+                <b className="amt-paid">{U.bnNumber(ledgerStatus.paid)}/-</b>
               </div>
               <div className="box" style={{ border: '2px solid #000' }}>
                 বকেয়া পাওনা ({monthShort} পর্যন্ত):{' '}

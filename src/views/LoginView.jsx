@@ -14,7 +14,11 @@ export function LoginView() {
 
   // 'admin' = ইমেইল ও পাসওয়ার্ড দিয়ে প্রবেশ, 'viewer' = পাসওয়ার্ড ছাড়া
   // শুধু রিপোর্ট দেখা। দুটি ট্যাব — কে কোন পথে ঢুকবেন তা শুরুতেই স্পষ্ট।
-  const [mode, setMode] = useState('admin');
+  //
+  // শুরুতে 'viewer' বেছে রাখা — ব্যবহারকারীদের প্রায় সবাই ফ্ল্যাট মালিক,
+  // অ্যাডমিন মাত্র কয়েকজন। তাঁরা এক ক্লিকেই রিপোর্ট দেখতে ঢুকতে পারেন,
+  // আর অ্যাডমিনের কাছে ট্যাব বদলানোটা অভ্যাসের ব্যাপার।
+  const [mode, setMode] = useState('viewer');
   const isViewer = mode === 'viewer';
 
   const handleSubmit = async (e) => {

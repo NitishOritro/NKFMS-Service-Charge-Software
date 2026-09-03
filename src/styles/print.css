@@ -278,7 +278,7 @@
   }
 
   .print-table .due-months {
-    color: #b91c1c !important;
+    color: #475569 !important;
     font-weight: 600 !important;
     -webkit-print-color-adjust: exact !important;
     print-color-adjust: exact !important;
@@ -396,17 +396,17 @@
   }
 
   /* হিসাবের বাক্সে টাকার রঙ — ব্রাউজার যেন ছেঁটে সাদাকালো না করে দেয় */
-  .print-totals .amt-paid,
-  .print-totals .amt-due,
-  .print-totals .amt-advance {
+  .print-totals .box b.amt-paid,
+  .print-totals .box b.amt-due,
+  .print-totals .box b.amt-advance {
     font-weight: 700 !important;
     -webkit-print-color-adjust: exact !important;
     print-color-adjust: exact !important;
   }
 
-  .print-totals .amt-paid    { color: #15803d !important; }
-  .print-totals .amt-due     { color: #b91c1c !important; }
-  .print-totals .amt-advance { color: #a16207 !important; }
+  .print-totals .box b.amt-paid    { color: #15803d !important; }
+  .print-totals .box b.amt-due     { color: #b91c1c !important; }
+  .print-totals .box b.amt-advance { color: #a16207 !important; }
 
   .print-totals .box {
     flex: 1 !important;

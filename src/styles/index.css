@@ -2215,10 +2215,13 @@ table.print-table tbody tr:nth-child(even) > td {
 .print-table th.th-due     { color: #b91c1c; }
 .print-table th.th-flat    { color: #1e3a8a; }
 
-/* "কত মাসের বকেয়া" — লাল, তবে টাকার অঙ্কের চেয়ে হালকা, যাতে চোখ
-   আগে টাকার দিকেই যায়                                          */
+/* "কত মাসের বকেয়া" — নিরপেক্ষ স্লেট ধূসর।
+   এটি টাকা নয়, সময়ের মাপ; পাশের ঘরের লাল অঙ্কেরই আরেক রূপ। লাল দিলে
+   একই খবর দুবার চেঁচিয়ে বলা হতো আর পুরো কলামটা সতর্কবার্তার মতো
+   দেখাত। ধূসরে চোখ আগে টাকার অঙ্কে যায়, সংখ্যাটি সহায়ক তথ্য হয়েই
+   থাকে — ছাপা হিসাবের কাগজে এটাই প্রচলিত রীতি।                   */
 .print-table .due-months {
-  color: #b91c1c;
+  color: #475569;
   font-weight: 600;
 }
 
@@ -2393,9 +2396,11 @@ table.print-table tfoot td {
 /* ---- হিসাবের বাক্সে টাকার রঙ ----
    এক নজরে বোঝার জন্য: জমা সবুজ, বকেয়া লাল, অগ্রীম হলুদ।
    হলুদটি গাঢ় (#a16207) — উজ্জ্বল হলুদ সাদা কাগজে পড়া যায় না।   */
-.print-totals .amt-paid    { color: #15803d; }
-.print-totals .amt-due     { color: #b91c1c; }
-.print-totals .amt-advance { color: #a16207; }
+/* b.amt-* — নিচের `.print-totals .box b` নিয়মটির চেয়ে বেশি নির্দিষ্ট
+   হতে হবে, নইলে সেটির গাঢ় রং এই তিনটিকে ঢেকে দেয়। */
+.print-totals .box b.amt-paid    { color: #15803d; }
+.print-totals .box b.amt-due     { color: #b91c1c; }
+.print-totals .box b.amt-advance { color: #a16207; }
 
 .print-totals .box {
   flex: 1;
