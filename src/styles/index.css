@@ -68,7 +68,7 @@
   --focus-ring: rgba(3, 105, 161, 0.22);
 
   /* ---------- সারফেস ও নিউট্রাল ---------- */
-  --bg-main: #f1f5f9;
+  --bg-main: #f3f5f9;
   --bg-card: #ffffff;
   --bg-subtle: #f8fafc;
   --bg-muted: #f1f5f9;
@@ -83,7 +83,7 @@
   --text-muted: #64748b;
   --text-light: #94a3b8;
 
-  --border: #e2e8f0;
+  --border: #e4e8ef;
   --border-soft: #eef2f7;
   --border-strong: #cbd5e1;
 
@@ -231,7 +231,10 @@ b, strong { font-weight: 700; }
 .sidebar {
   width: 282px;
   height: 100vh;
-  background: linear-gradient(180deg, var(--bg-sidebar-2) 0%, var(--bg-sidebar) 100%);
+  /* উপরে-বাঁয়ে একটু নীলচে আভা — চ্যাপ্টা কালো দেয়ালের বদলে গভীরতা আসে */
+  background:
+    radial-gradient(520px 260px at -10% -10%, rgba(14, 165, 233, 0.16), transparent 70%),
+    linear-gradient(180deg, var(--bg-sidebar-2) 0%, var(--bg-sidebar) 100%);
   color: #e2e8f0;
   display: flex;
   flex-direction: column;
@@ -258,7 +261,7 @@ b, strong { font-weight: 700; }
   background: #fff;
   padding: 3px;
   flex-shrink: 0;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.25);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3), 0 0 0 1px rgba(125, 211, 252, 0.35);
 }
 
 .sidebar-title {
@@ -298,9 +301,19 @@ b, strong { font-weight: 700; }
 .nav-group-label {
   font-size: 10px;
   font-weight: 700;
-  letter-spacing: 0.9px;
-  color: #5b6b83;
-  padding: 14px 14px 5px;
+  letter-spacing: 1px;
+  color: #6b7d97;
+  padding: 16px 14px 6px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+/* লেবেলের পর একটি সরু রেখা — দলগুলো আলাদা করে চেনা যায় */
+.nav-group-label::after {
+  content: '';
+  flex: 1;
+  height: 1px;
+  background: rgba(148, 163, 184, 0.14);
 }
 .nav-group-label:first-child { padding-top: 4px; }
 
@@ -316,7 +329,8 @@ b, strong { font-weight: 700; }
   font-weight: 500;
   font-size: 13.5px;
   line-height: 1.45;
-  transition: background-color 0.16s var(--ease), color 0.16s var(--ease);
+  transition: background-color 0.16s var(--ease), color 0.16s var(--ease),
+    transform 0.16s var(--ease);
   cursor: pointer;
   border: none;
   background: transparent;
@@ -333,14 +347,17 @@ b, strong { font-weight: 700; }
 .nav-item:hover {
   background-color: var(--bg-sidebar-hover);
   color: #ffffff;
+  transform: translateX(2px);
 }
 .nav-item:hover svg { opacity: 1; }
 
 .nav-item.active {
-  background: linear-gradient(135deg, #0284c7 0%, #0369a1 100%);
+  background: linear-gradient(135deg, #0ea5e9 0%, #0369a1 100%);
   color: #ffffff;
   font-weight: 600;
-  box-shadow: 0 4px 14px -4px rgba(2, 132, 199, 0.65);
+  box-shadow: 0 6px 16px -6px rgba(14, 165, 233, 0.7),
+    inset 0 1px 0 rgba(255, 255, 255, 0.18);
+  transform: none;
 }
 .nav-item.active svg { opacity: 1; }
 
@@ -445,9 +462,11 @@ b, strong { font-weight: 700; }
    ========================================================================== */
 
 .navbar {
-  min-height: 62px;
+  min-height: 60px;
   flex-shrink: 0;
-  background: var(--bg-card);
+  background: rgba(255, 255, 255, 0.86);
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
   border-bottom: 1px solid var(--border);
   padding: 0 22px;
   display: flex;
@@ -466,16 +485,27 @@ b, strong { font-weight: 700; }
 }
 
 .page-heading {
-  font-size: 18px;
+  font-size: 17px;
   font-weight: 700;
   color: var(--text-main);
+  letter-spacing: -0.1px;
   display: flex;
   align-items: center;
-  gap: 8px;
+  gap: 10px;
   line-height: 1.35;
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
+}
+
+/* শিরোনামের আগে ছোট নীল দাগ — পাতার নামটি আলাদা করে চোখে পড়ে */
+.page-heading::before {
+  content: '';
+  width: 4px;
+  height: 20px;
+  border-radius: var(--radius-full);
+  background: linear-gradient(180deg, #0ea5e9, #0369a1);
+  flex-shrink: 0;
 }
 
 .navbar-right {
@@ -581,9 +611,9 @@ b, strong { font-weight: 700; }
 }
 
 .page-banner {
-  background: linear-gradient(120deg, #0c4a6e 0%, #0369a1 55%, #0284c7 100%);
+  background: linear-gradient(115deg, #0b3654 0%, #0c4a6e 35%, #0369a1 70%, #0ea5e9 100%);
   border-radius: var(--radius-lg);
-  padding: 20px 24px;
+  padding: 18px 24px;
   color: #ffffff;
   margin-bottom: 22px;
   box-shadow: var(--shadow-md);
@@ -594,6 +624,18 @@ b, strong { font-weight: 700; }
   gap: 16px;
   position: relative;
   overflow: hidden;
+}
+
+/* ব্যানারে মিহি বিন্দুর জাল — সমতল নীলের বদলে বুনট আসে */
+.page-banner::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background-image: radial-gradient(rgba(255, 255, 255, 0.10) 1px, transparent 1px);
+  background-size: 18px 18px;
+  mask-image: linear-gradient(90deg, transparent 0%, #000 45%, #000 100%);
+  -webkit-mask-image: linear-gradient(90deg, transparent 0%, #000 45%, #000 100%);
+  pointer-events: none;
 }
 
 /* ব্যানারে সূক্ষ্ম আলোকচ্ছটা */
@@ -610,7 +652,7 @@ b, strong { font-weight: 700; }
 }
 
 .page-banner h2 {
-  font-size: 18px;
+  font-size: 17.5px;
   font-weight: 700;
   color: #ffffff;
   line-height: 1.35;
@@ -624,6 +666,8 @@ b, strong { font-weight: 700; }
 }
 
 .page-banner b { color: #ffffff; }
+/* গাঢ় নীলের উপর আকাশি পড়া যায় না — সমিতির নাম এখানে হালকা আকাশি */
+.page-banner .society-name { color: #bae6fd; }
 
 .page-banner > * { position: relative; z-index: 1; }
 
@@ -646,14 +690,14 @@ b, strong { font-weight: 700; }
 }
 
 .card-header {
-  padding: 14px 20px;
+  padding: 12px 18px;
   border-bottom: 1px solid var(--border);
   display: flex;
   align-items: center;
   justify-content: space-between;
   gap: 12px;
   flex-wrap: wrap;
-  background: var(--bg-subtle);
+  background: #fbfcfe;
 }
 
 .card-title {
@@ -683,7 +727,7 @@ b, strong { font-weight: 700; }
 
 /* ক্লিকযোগ্য অ্যাকশন কার্ড (ড্যাশবোর্ডের দ্রুত কার্যক্রম) */
 .action-card {
-  padding: 18px 20px;
+  padding: 15px 18px 14px;
   cursor: pointer;
   margin-bottom: 0;
   text-align: left;
@@ -700,7 +744,7 @@ b, strong { font-weight: 700; }
   transform: translateY(-1px);
 }
 .action-card h4 {
-  font-size: 14.5px;
+  font-size: 14px;
   font-weight: 700;
   line-height: 1.4;
 }
@@ -715,18 +759,28 @@ b, strong { font-weight: 700; }
   display: flex;
   align-items: center;
   justify-content: space-between;
-  margin-bottom: 12px;
+  margin-bottom: 10px;
+}
+
+/* তীরটি হোভারে ডানে সরে — "এখানে যাওয়া যায়" ইঙ্গিত */
+.action-card-top > svg {
+  transition: transform 0.18s var(--ease), opacity 0.18s var(--ease);
+  opacity: 0.55;
+}
+.action-card:hover .action-card-top > svg {
+  transform: translateX(4px);
+  opacity: 1;
 }
 
 .action-icon {
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  width: 42px;
-  height: 42px;
+  width: 40px;
+  height: 40px;
   border-radius: var(--radius-md);
   color: #fff;
-  box-shadow: var(--shadow-sm);
+  box-shadow: 0 6px 14px -6px rgba(15, 23, 42, 0.45), inset 0 1px 0 rgba(255, 255, 255, 0.25);
 }
 
 .action-card.featured {
@@ -750,7 +804,7 @@ b, strong { font-weight: 700; }
   background: var(--bg-card);
   border-radius: var(--radius-lg);
   border: 1px solid var(--border);
-  padding: 17px 20px 16px;
+  padding: 16px 18px 15px 20px;
   display: flex;
   flex-direction: column;
   position: relative;
@@ -764,38 +818,52 @@ b, strong { font-weight: 700; }
   box-shadow: var(--shadow-md);
 }
 
-/* উপরে সরু রঙিন রেখা — বাঁ পাশের মোটা দাগের চেয়ে পরিচ্ছন্ন */
+/* বাঁ পাশে রঙিন দাগ + ডান-উপরে সেই রঙের নরম আভা — কার্ড কোন খবর
+   বলছে তা রং দিয়েই বোঝা যায়, লেখা পড়ার আগেই                     */
 .metric-card::before {
   content: '';
   position: absolute;
-  top: 0;
+  top: 12px;
+  bottom: 12px;
   left: 0;
-  right: 0;
-  height: 3px;
+  width: 4px;
+  border-radius: 0 4px 4px 0;
+  background: var(--mc, var(--primary));
 }
-.metric-card.primary::before { background: linear-gradient(90deg, #0284c7, #38bdf8); }
-.metric-card.success::before { background: linear-gradient(90deg, #059669, #34d399); }
-.metric-card.warning::before { background: linear-gradient(90deg, #d97706, #fbbf24); }
-.metric-card.danger::before  { background: linear-gradient(90deg, #dc2626, #f87171); }
-
-/* আগের বাঁ পাশের মোটা দাগ বাতিল */
-.metric-card::after { content: none; }
+.metric-card::after {
+  content: '';
+  position: absolute;
+  top: -70px;
+  right: -70px;
+  width: 170px;
+  height: 170px;
+  border-radius: 50%;
+  background: radial-gradient(circle, var(--mc-soft, rgba(2, 132, 199, 0.14)) 0%, transparent 68%);
+  pointer-events: none;
+}
+.metric-card.primary { --mc: #0284c7; --mc-soft: rgba(2, 132, 199, 0.16); }
+.metric-card.success { --mc: #059669; --mc-soft: rgba(5, 150, 105, 0.16); }
+.metric-card.warning { --mc: #d97706; --mc-soft: rgba(217, 119, 6, 0.16); }
+.metric-card.danger  { --mc: #dc2626; --mc-soft: rgba(220, 38, 38, 0.14); }
+.metric-card > * { position: relative; z-index: 1; }
 
 .metric-label {
-  font-size: 12.5px;
+  font-size: 12px;
   color: var(--text-muted);
   font-weight: 600;
   line-height: 1.45;
+  letter-spacing: 0.1px;
 }
 
 .metric-value {
-  font-size: 26px;
+  font-size: 25px;
   font-weight: 700;
   font-family: var(--font-display);
+  font-variant-numeric: tabular-nums;
   line-height: 1.25;
-  margin: 7px 0 3px;
+  margin: 6px 0 3px;
   color: var(--text-main);
-  letter-spacing: -0.2px;
+  letter-spacing: -0.3px;
 }
 
 .metric-sub {
@@ -875,18 +943,18 @@ table.data-table {
 }
 
 table.data-table th {
-  background: #eef2f7;
-  color: #334155;
+  background: #f7f9fc;
+  color: #475569;
   font-weight: 700;
-  padding: 12px 15px;
+  padding: 9px 14px;
   border-bottom: 1px solid var(--border-strong);
   white-space: nowrap;
   position: sticky;
   top: 0;
   z-index: 10;
-  font-size: 13px;
-  letter-spacing: 0.1px;
-  line-height: 1.45;
+  font-size: 12px;
+  letter-spacing: 0.3px;
+  line-height: 1.4;
   box-shadow: 0 1px 0 var(--border-strong);
 }
 
@@ -899,12 +967,12 @@ table.data-table td {
 }
 
 table.data-table td {
-  padding: 10px 15px;
+  padding: 7px 14px;
   border-bottom: 1px solid var(--border-soft);
   color: var(--text-body);
   transition: background-color 0.12s var(--ease);
-  font-size: 14px;
-  line-height: 1.5;
+  font-size: 13.5px;
+  line-height: 1.45;
   vertical-align: middle;
 }
 
@@ -912,8 +980,13 @@ table.data-table tbody tr:last-child td {
   border-bottom: none;
 }
 
+/* এক সারি পর পর হালকা ছোপ — ২৭ সারিতে চোখ লাইন হারায় না */
+table.data-table tbody tr:nth-child(even) td {
+  background: #fafbfd;
+}
+
 table.data-table tbody tr:hover td {
-  background: var(--bg-subtle);
+  background: #eef6ff;
 }
 
 table.data-table tfoot td {
@@ -1136,6 +1209,11 @@ table.data-table tr:focus-within select {
   transform: translateY(1px);
 }
 
+.btn:focus-visible {
+  outline: none;
+  box-shadow: 0 0 0 3px var(--focus-ring);
+}
+
 .btn:disabled,
 .btn[disabled] {
   opacity: 0.5;
@@ -1147,9 +1225,9 @@ table.data-table tr:focus-within select {
 .btn svg, .btn-icon svg { flex-shrink: 0; }
 
 .btn-primary {
-  background: var(--primary);
+  background: linear-gradient(180deg, #0284c7 0%, #0369a1 100%);
   color: #fff;
-  box-shadow: 0 1px 2px rgba(3, 105, 161, 0.25);
+  box-shadow: 0 1px 2px rgba(3, 105, 161, 0.3), inset 0 1px 0 rgba(255, 255, 255, 0.18);
 }
 .btn-primary:hover:not(:disabled) {
   background: var(--primary-hover);
@@ -1160,9 +1238,9 @@ table.data-table tr:focus-within select {
 }
 
 .btn-success {
-  background: var(--success);
+  background: linear-gradient(180deg, #10b981 0%, #059669 100%);
   color: #fff;
-  box-shadow: 0 1px 2px rgba(5, 150, 105, 0.25);
+  box-shadow: 0 1px 2px rgba(5, 150, 105, 0.3), inset 0 1px 0 rgba(255, 255, 255, 0.18);
 }
 .btn-success:hover:not(:disabled) {
   background: var(--success-dark);
@@ -1819,18 +1897,38 @@ table.data-table tr:focus-within select {
 
   .navbar {
     height: auto !important;
-    padding: 12px 16px !important;
+    padding: 10px 12px !important;
     flex-wrap: wrap !important;
-    gap: 10px !important;
+    gap: 8px !important;
+    position: sticky !important;
+    top: 0 !important;
   }
 
-  .navbar-left, .navbar-right {
+  /* শিরোনাম হ্যামবার্গারের পাশে বাঁয়ে; চিপগুলো নিচের সারিতে,
+     জায়গা না কুলালে আড়াআড়ি স্ক্রল — আর দুই লাইনে ভাঙে না          */
+  .navbar-left {
     width: 100% !important;
-    justify-content: space-between !important;
-    flex-wrap: wrap !important;
+    justify-content: flex-start !important;
+    flex-wrap: nowrap !important;
   }
+  .navbar-right {
+    width: 100% !important;
+    justify-content: flex-start !important;
+    flex-wrap: nowrap !important;
+    overflow-x: auto !important;
+    -webkit-overflow-scrolling: touch !important;
+    scrollbar-width: none;
+  }
+  .navbar-right::-webkit-scrollbar { display: none; }
 
-  .page-heading { white-space: normal !important; }
+  .page-heading {
+    white-space: normal !important;
+    font-size: 15px !important;
+    line-height: 1.3 !important;
+    min-width: 0;
+  }
+  .page-heading::before { display: none; }
+  .navbar-left .pill { flex-shrink: 0; }
 
   .page-body {
     padding: 14px 12px 22px !important;
@@ -1855,9 +1953,18 @@ table.data-table tr:focus-within select {
 }
 
 @media (max-width: 640px) {
-  body { font-size: 14px; }
+  body { font-size: 13.5px; }
 
-  .metrics-grid { grid-template-columns: 1fr !important; }
+  /* ফোনেও দুই কলাম — এক কলামে চারটি কার্ড লম্বা টাওয়ার হয়ে যেত */
+  .metrics-grid { gap: 10px !important; }
+  .metric-card { padding: 13px 12px 12px 15px !important; }
+  .metric-value { font-size: 19px !important; }
+  .metric-label { font-size: 11px !important; }
+  .metric-sub { font-size: 10.5px !important; }
+  .page-banner { padding: 14px 16px !important; margin-bottom: 14px !important; }
+  .page-banner h2 { font-size: 15px !important; }
+  .page-banner p { font-size: 11.5px !important; }
+  .quick-action-grid { gap: 10px !important; }
 
   .pagination-container {
     flex-direction: column !important;
@@ -1900,8 +2007,9 @@ table.data-table tr:focus-within select {
   margin-bottom: 24px;
 }
 
-@media (max-width: 640px) {
-  .quick-action-grid { grid-template-columns: 1fr !important; }
+/* খুব সরু ফোনে (৩৬০px-এর নিচে) তবেই এক কলাম */
+@media (max-width: 359px) {
+  .metrics-grid { grid-template-columns: 1fr !important; }
 }
 
 /* ==========================================================================
