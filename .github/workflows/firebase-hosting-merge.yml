@@ -11,7 +11,13 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
+      # Supabase-এর কী দুটি বিল্ডের সময়েই বান্ডিলে বসে যায় (Vite এর নিয়ম)।
+      # .env ফাইলটি গিটে নেই, তাই এখানে GitHub Secrets থেকে দিতে হয় —
+      # নইলে ডেপ্লয় হওয়া সাইট ডাটাবেজে পৌঁছাতে পারে না।
       - run: npm ci && npm run build
+        env:
+          VITE_SUPABASE_URL: ${{ secrets.VITE_SUPABASE_URL }}
+          VITE_SUPABASE_ANON_KEY: ${{ secrets.VITE_SUPABASE_ANON_KEY }}
       - uses: FirebaseExtended/action-hosting-deploy@v0
         with:
           repoToken: ${{ secrets.GITHUB_TOKEN }}
